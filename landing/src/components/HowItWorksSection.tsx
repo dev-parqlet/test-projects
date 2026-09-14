@@ -67,13 +67,13 @@ export default function HowItWorksSection() {
   const lineW = `${fillPct * 0.6667}%`;
 
   return (
-    <div className="rounded-[16px] bg-[#222222] px-[65px] py-[72px] text-center">
+    <div className="rounded-[16px] bg-[#222222] px-[65px] py-[72px] text-center max-md:px-[20px] max-md:py-[48px]">
       <span className="mb-8 inline-flex items-center rounded-full bg-[#292929] px-5 font-[family-name:var(--font-heading)] text-[11px] font-medium uppercase tracking-[0.14em] text-[#A7A7A7] leading-none" style={{ paddingTop: 8, paddingBottom: 8 }}>
         The Parqlet Loop
       </span>
 
-      <h2 className="mb-10 font-[family-name:var(--font-heading)] text-[42px] font-normal leading-[1.1] text-white">
-        How guest parking powered <span className="whitespace-nowrap">by Parqlet</span><br />
+      <h2 className="mb-10 font-[family-name:var(--font-heading)] text-[42px] font-normal leading-[1.1] text-white max-md:text-[24px] max-md:mb-7">
+        How guest parking powered <span className="max-md:whitespace-nowrap">by Parqlet</span><br />
         <span className="text-[#C7E51F]">works in your building</span>
       </h2>
 
@@ -83,7 +83,7 @@ export default function HowItWorksSection() {
             key={tab}
             onClick={() => setActiveTab(tab)}
             style={{ borderRadius: 6, height: 32 }}
-            className={`cursor-pointer px-10 font-[family-name:var(--font-heading)] text-base font-normal transition-all ${
+            className={`cursor-pointer px-10 max-md:px-6 font-[family-name:var(--font-heading)] text-base font-normal transition-all ${
               activeTab === tab
                 ? "bg-[#3D3D3D] text-white"
                 : "text-white/50 hover:text-white/70"
@@ -117,7 +117,7 @@ export default function HowItWorksSection() {
       </div>
 
       {/* Cards */}
-      <div className="grid grid-cols-3 gap-6 text-left max-lg:grid-cols-1">
+      <div className="grid grid-cols-3 gap-6 text-left max-lg:grid-cols-1 max-md:gap-4">
         {steps.map((step, i) => (
           <div
             key={isMobile && i === activeStep ? `${activeTab}-step-${activeStep}` : `${activeTab}-${i}`}
@@ -149,7 +149,7 @@ export default function HowItWorksSection() {
                   animation: activeStep === i ? "shimmerSpin 3s linear infinite" : "none",
                 }}
               />
-              <div className="relative m-[1.5px] rounded-[19px] p-7 min-h-[200px]" style={{ zIndex: 1, background: "#2A2A2A" }}>
+              <div className="relative m-[1.5px] rounded-[19px] p-7 min-h-[200px] max-md:p-5 max-md:min-h-[160px]" style={{ zIndex: 1, background: "#2A2A2A" }}>
                 <h3 className="mb-3 font-[family-name:var(--font-heading)] text-[17px] font-semibold leading-snug text-white">
                   {step.title}
                 </h3>

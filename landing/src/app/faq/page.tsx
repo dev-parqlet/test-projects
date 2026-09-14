@@ -11,8 +11,8 @@ const FAQ_DATA = [
     items: [
       { q: "What is Parqlet?", a: "Parqlet is a guest parking management platform built for high-rise buildings and HOA communities. It gives residents a private mobile app to book and share parking spots, and gives buildings a web dashboard to manage all parking activity. When a neighbor books your spot, you earn credits toward your own future guest bookings." },
       { q: "Who is Parqlet for?", a: "Parqlet is designed for two groups: Residents — who want an easy app-based way to book guest parking and share their spot when they're not using it. And HOAs and building management companies — who want full visibility into who is parking in their building, reduce unauthorized parking, and optionally generate revenue from parking reservations." },
-      { q: "Where is Parqlet available?", a: "Parqlet is currently launching in Texas and expanding nationally. The platform is available in any building whose HOA has signed a Parqlet agreement. If your building isn't on Parqlet yet, ask your building manager to reach out to us at hello@parqlet.com." },
-      { q: "How much does Parqlet cost for residents?", a: "For most residents, Parqlet is free. The platform runs on a credit economy — you earn credits when your spot is used and spend them when booking for guests. Some buildings may configure monetary fees for bookings. If so, the fee is always shown before you confirm. There are never hidden charges." },
+      { q: "What type of communities does Parqlet work with?", a: "Parqlet works with HOA-managed condominiums and property management rental apartments where residents have assigned guest parking. If your community fits that model and isn't on Parqlet yet, reach out to us at hello@parqlet.com." },
+      { q: "How much does Parqlet cost for residents?", a: "The platform runs on a credit economy: you earn credits when your spot is used and spend them when booking for guests. If you didn't earn credits yet, you can purchase them when booking a parking spot for your guest. Buildings configure monetary fees for bookings and they are always shown before you complete payment." },
       { q: "How do I contact Parqlet?", a: "Email us at hello@parqlet.com. Standard response is within 24–48 business hours. For urgent issues during an active booking, use the in-app Report Issue feature." },
     ],
   },
@@ -22,9 +22,9 @@ const FAQ_DATA = [
       { q: "How do I join Parqlet?", a: "You need an invitation from your building. Once your HOA activates Parqlet, you'll receive an invite link by email. Your email is verified against the building's resident database — if your email isn't on file, contact your building management to add it. Registration takes about 2 minutes." },
       { q: "Is there a mobile app?", a: "Yes. Parqlet has a resident mobile app for both iOS and Android. Your building's Parqlet is private — only verified residents of your building can access it." },
       { q: "What is the Neighbor Broadcast?", a: "If no spots are available when you're trying to book, you can send a Neighbor Broadcast — an anonymous in-app notification asking if any resident wants to open up their spot. Responses are completely voluntary. No one is required to respond." },
-      { q: "What notifications will I receive?", a: "Push notifications for booking confirmations, expiry alerts, occupied-spot alerts, and account activity — no extra consent needed. If you provide a phone number and opt in, you can also receive SMS texts for the same events. SMS is fully optional." },
+      { q: "What notifications will I receive?", a: "Push notifications for booking confirmations, expiry alerts, occupied-spot alerts, account activity, and occasional engagement reminders (like unused credits or open availability nearby). No extra consent needed. If you provide a phone number and opt in, you can also receive SMS texts for booking-related events. SMS is fully optional." },
       { q: "Do I have to give my phone number?", a: "No. Your phone number is optional. If you provide it, a separate consent screen asks if you want SMS alerts. You can tap 'No Thanks' and still use every Parqlet feature through push notifications only." },
-      { q: "How do I delete my account?", a: "Email hello@parqlet.com to request account deletion. Your data will be deleted or anonymized per our Privacy Policy. Any remaining credits are forfeited upon deletion." },
+      { q: "How do I delete my account?", a: "You can delete your account on the profile page. Your data will be deleted per our Privacy Policy. Any remaining credits are forfeited upon deletion." },
     ],
   },
   {
@@ -41,7 +41,7 @@ const FAQ_DATA = [
     category: "Bookings & Guests",
     items: [
       { q: "How do I book a parking spot for my guest?", a: "In the app, select an available spot, choose your time window, and enter your guest's license plate. Before confirming, you'll complete a quick liability acknowledgment. Once confirmed, you receive a digital permit to share with your guest — by text, screenshot, or QR code." },
-      { q: "How does my guest know their parking is confirmed?", a: "A booking is only valid once you receive both an in-app confirmation screen AND a confirmation notification to your email. It's your responsibility to verify you received both before your guest arrives. Share the permit screen with your guest so they have the spot number, time window, and license plate on record." },
+      { q: "How does my guest know their parking is confirmed?", a: "A booking is only valid once you receive an in-app confirmation. It's your responsibility to verify that you see the 'Upcoming' booking card in your Bookings section before your guest arrives. Your guest will receive an SMS at the phone number you entered when you created the booking. You can also share the permit screen with your guest so they have the spot number, time window, and license plate on record." },
       { q: "What if the spot is occupied when my guest arrives?", a: "Tap Report Issue in the app immediately. Parqlet notifies the Spot Owner anonymously. If the spot isn't cleared within 15 minutes, Parqlet tries to find an alternative at no extra cost. If none is available, your credit is refunded automatically. Enforcement decisions — including towing — are made by the HOA, not Parqlet." },
       { q: "My guest got towed despite having a valid permit — what do I do?", a: "Contact hello@parqlet.com immediately with your Booking ID and your guest's license plate. Parqlet will verify the booking was active and provide documentation. Bring that documentation to your HOA — they are required to honor valid Parqlet permits. If the HOA wrongfully authorized the tow, your claim is against the HOA and/or towing company. Parqlet is not financially responsible for towing fees." },
       { q: "What happens if my guest overstays the booking window?", a: "At booking expiry, the app sends automatic reminders to you and the Spot Owner. Overstay is a building rule violation and may result in towing at your expense, plus a penalty fee. It is your responsibility to ensure your guest leaves on time." },
@@ -58,7 +58,7 @@ const FAQ_DATA = [
       { q: "Do credits expire?", a: "Credits do not expire during your active membership. If your building terminates its Parqlet agreement, all credits expire on the termination date. Credits are also forfeited if your account is terminated for cause." },
       { q: "How are payments processed?", a: "All monetary payments are processed by Stripe, Inc. Parqlet never stores your raw card data. Accepted methods include credit cards, debit cards, and Apple Pay where available. The fee for any booking is always shown before you confirm." },
       { q: "What is a penalty fee?", a: "Penalty fees may apply for: parking your guest in the wrong spot, guest overstay after a reminder is ignored, or other material violations tied to your booking. Penalty fees are disclosed in writing before your card is charged. You have 14 days to dispute any penalty fee by contacting hello@parqlet.com." },
-      { q: "When do I get a refund?", a: "Credit refunds are instant and automatic when: the spot was occupied with no alternative available, or you cancelled more than 24 hours before the window started. Late cancellations (under 24 hours) are not refunded — the Spot Owner earns the credit. Monetary refunds are processed within 5–10 business days depending on the reason. See our full Refund Policy at parqlet.com/refunds." },
+      { q: "When do I get a refund?", a: "Credit refunds are instant and automatic when: the spot was occupied with no alternative available, or you cancelled more than 24 hours before the window started. Late cancellations (under 24 hours) are not refunded; the Spot Owner earns the credit. If you purchased Credits using Apple Pay, Google Pay, or a card, that purchase is not reversed or refunded to your original payment method. Credits are the only refund currency." },
       { q: "Are credits taxable income?", a: "Parqlet takes no position on this. Credits have no fixed dollar value and are not exchangeable for cash. We do not issue tax forms in connection with credits. Consult a qualified tax advisor for your individual situation." },
     ],
   },
@@ -149,7 +149,7 @@ export default function FaqPage() {
             <Image src="/images/logo.svg" alt="Parqlet" width={341} height={85} className="h-24 w-auto" priority />
           </Link>
           <Link href="/" className="flex items-center gap-1.5 text-sm font-normal text-[#504F4D] hover:text-[#222] transition-colors">
-            <Image src="/images/ic_arrow left.svg" alt="" width={16} height={16} />
+            <Image src="/images/ic_arrow-right.svg" alt="" width={16} height={16} />
             Back to home
           </Link>
         </div>

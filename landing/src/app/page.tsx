@@ -394,21 +394,21 @@ export default function Home() {
       {/* ── NAV ── */}
       <nav className="sticky top-0 z-50 border-b border-black/5 bg-[#F8F6F2]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1160px] items-center justify-between px-5 py-16">
-          <Image src="/images/logo.svg" alt="ParQlet" width={341} height={85} className="h-24 w-auto" priority />
-          <div className="flex items-center gap-3">
+          <Image src="/images/logo.svg" alt="ParQlet" width={341} height={85} className="h-24 w-auto max-sm:h-16" priority />
+          <div className="flex items-center gap-3 max-sm:gap-2">
             <a
               href="https://dashboard.parqlet.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="cursor-pointer rounded-lg border border-[#222]/20 px-5 py-2 font-[family-name:var(--font-heading)] text-sm font-normal text-[#222] transition-all hover:border-[#222]/40 hover:bg-black/4"
+              className="cursor-pointer rounded-lg border border-[#222]/20 px-5 py-2 font-[family-name:var(--font-heading)] text-sm font-normal text-[#222] transition-all hover:border-[#222]/40 hover:bg-black/4 max-sm:text-xs max-sm:px-3 max-sm:py-1.5"
             >
               Log in
             </a>
             <button
               onClick={() => setShowDemoModal(true)}
-              className="flex items-center gap-2 cursor-pointer rounded-lg bg-[#C7E51F] px-5 py-2 font-[family-name:var(--font-heading)] text-sm font-normal text-[#222] transition-all hover:opacity-88"
+              className="flex items-center gap-2 cursor-pointer rounded-lg bg-[#C7E51F] px-5 py-2 font-[family-name:var(--font-heading)] text-sm font-normal text-[#222] transition-all hover:opacity-88 max-sm:text-xs max-sm:px-3 max-sm:py-1.5"
             >
-              Book a demo <Image src="/images/ic_arrow right.svg" alt="" width={16} height={16} />
+              Book a demo <Image src="/images/ic_arrow-right.svg" alt="" width={16} height={16} />
             </button>
           </div>
         </div>
@@ -419,7 +419,7 @@ export default function Home() {
         {/* Dark hero container */}
         <div
           ref={heroContainerRef}
-          className="relative min-h-[702px] max-md:min-h-[494px] max-md:flex max-md:items-center overflow-hidden rounded-[16px] bg-[#222222]"
+          className="relative min-h-[702px] max-md:min-h-[480px] max-md:flex max-md:items-center overflow-hidden rounded-[16px] bg-[#222222]"
         >
           {/* Full grid — both directions */}
           <div
@@ -434,7 +434,7 @@ export default function Home() {
           {/* Content-area overlay — hides grid inside the empty rectangle (6 cols × 3 rows) */}
           <div
             aria-hidden
-            className="pointer-events-none absolute"
+            className="pointer-events-none absolute max-md:inset-x-0"
             style={isMobileHero
               ? { left: 0, top: 68, right: 0, height: 358, background: "#222222" }
               : { left: 0, top: 137, width: 816, height: 407, background: "#222222" }
@@ -454,38 +454,37 @@ export default function Home() {
           {/* Glowing cross at bottom-right corner of empty rectangle */}
           <div
             aria-hidden
-            className="pointer-events-none absolute"
+            className="pointer-events-none absolute max-md:hidden"
             style={{ left: 816, top: 544, transform: "translate(-50%, -50%)", opacity: 0.65 }}
           >
             <GlowCross />
           </div>
 
-          {/* ── Left text block — absolutely spans the empty rectangle, content centered within it ── */}
-          <div
-            className="z-10 flex items-center"
+{/* Left text block — absolutely spans the empty rectangle, content centered within it */}
+<div
+            className="z-10 flex items-center w-full"
             style={isMobileHero
-              ? { position: "relative", width: "100%" }
+              ? { position: "relative", width: "100%", paddingTop: "24px", paddingBottom: "24px" }
               : { position: "absolute", top: 137, height: 407, left: 0, right: 0 }
             }
           >
-          <div className="flex flex-col gap-7 px-14 max-md:pl-[24px] max-md:pr-[24px]">
+          <div className="flex flex-col gap-5 max-md:gap-4 max-md:w-full max-md:px-5 px-14">
             {/* Pill badge */}
             <span
-              className="hero-in-1 inline-flex w-fit items-center rounded-full bg-white/8 px-4 py-1.5 font-[family-name:var(--font-heading)] text-[10px] font-medium uppercase tracking-[0.12em] text-white whitespace-nowrap"
-              style={{ paddingLeft: 20, paddingRight: 20 }}
+              className="hero-in-1 inline-flex w-fit items-center rounded-full bg-white/8 px-4 py-1.5 font-[family-name:var(--font-heading)] text-[10px] font-medium uppercase tracking-[0.12em] text-white max-md:text-[9px] max-md:leading-tight max-md:px-5"
             >
-              Currently piloting with select high rise buildings in Austin, TX
+              LIVE IN SELECT HIGH RISE BUILDINGS IN AUSTIN, TX
             </span>
 
             {/* Heading */}
-            <div className="flex flex-col gap-6">
-              <h1 className="hero-in-2 whitespace-nowrap font-[family-name:var(--font-heading)] text-[44px] font-normal leading-[1.05] text-white max-md:whitespace-normal max-md:text-[28px]">
+            <div className="flex flex-col">
+              <h1 className="hero-in-2 mb-4 font-[family-name:var(--font-heading)] text-[44px] font-normal leading-[1.05] text-white max-md:text-[26px] max-md:leading-[1.15] max-md:mb-0">
                 No{" "}
                 <span className="text-[#C7E51F]">guest parking</span>
                 {" "}in your building?
               </h1>
-              <p className="hero-in-3 max-w-[520px] font-[family-name:var(--font-heading)] text-[18px] font-normal leading-[1.5] text-white">
-                Parqlet turns unused resident parking into a secure guest parking solution
+              <p className="hero-in-3 mb-6 font-[family-name:var(--font-heading)] text-[18px] font-normal leading-[1.5] text-white max-md:text-[16px] max-md:mb-[24px] max-md:mt-[16px]">
+                Parqlet is a peer-to-peer platform where residents securely share unused parking with neighbors and earn credits toward rewards.
               </p>
             </div>
 
@@ -494,16 +493,15 @@ export default function Home() {
               onClick={() => setShowDemoModal(true)}
               className="hero-in-4 flex items-center gap-2 w-fit cursor-pointer rounded-[10px] bg-[#C7E51F] px-6 py-3 font-[family-name:var(--font-heading)] text-[15px] font-normal text-[#222] transition-all hover:opacity-90 hover:-translate-y-px"
             >
-              Book a demo <Image src="/images/ic_arrow right.svg" alt="" width={16} height={16} />
+              Book a demo <Image src="/images/ic_arrow-right.svg" alt="" width={16} height={16} />
             </button>
           </div>
           </div>
 
-          {/* ── Bottom tagline bar ── */}
           {/* ── Animated car ── */}
           <div
             data-car="wrapper"
-            className="pointer-events-none absolute"
+            className="pointer-events-none absolute max-md:hidden"
             style={{ transform: "translate(-50%, -50%)" }}
           >
             <div data-car="rot">
@@ -529,14 +527,14 @@ export default function Home() {
         >
           <div className="flex w-[480px] shrink flex-col gap-12 min-w-[280px] max-lg:w-full">
             <div className="flex flex-col gap-[16px]">
-              <Pill className="self-start rounded-full bg-[#EEECE8]">For HOA</Pill>
+              <Pill className="self-start rounded-full bg-[#EEECE8]">For Building Management</Pill>
               <div className="flex flex-col gap-[16px]">
                 <h2 className="font-[family-name:var(--font-heading)] text-[34px] font-normal leading-[1.1] text-primary max-md:text-[26px]">
                   <div>Full visibility and control</div>
                   <div>without added workload</div>
                 </h2>
                 <p className="text-base font-normal leading-6 text-[#504F4D] pb-6">
-                  ParQlet gives HOA management a clear, real-time view of guest parking activity while keeping
+                  ParQlet gives Building Management a clear, real-time view of guest parking activity while keeping
                   the system private, secure, and easy to operate.
                 </p>
               </div>
@@ -614,7 +612,7 @@ export default function Home() {
           </p>
           <div className="relative w-full mt-[32px] p-[10px]">
             <CornerLines />
-            <div className="relative w-full">
+            <div className="relative w-full max-md:block">
               <Image
                 src="/images/Gamification_image.png"
                 alt="ParQlet gamification"
@@ -624,7 +622,7 @@ export default function Home() {
               />
               {/* Credits earned modal — glass card */}
               <div
-                className="absolute right-[3%] top-1/2 -translate-y-1/2 rounded-[20px] p-5 shadow-2xl"
+                className="absolute right-[3%] top-1/2 -translate-y-1/2 rounded-[20px] p-5 shadow-2xl max-md:relative max-md:shadow-none max-md:inset-auto max-md:translate-y-0 max-md:mt-4 max-md:!w-full max-md:right-auto max-md:left-auto max-md:top-auto max-md:bottom-auto max-md:rounded-2xl"
                 style={{
                   width: "23%",
                   background: "rgba(255,255,255,0.60)",
@@ -679,7 +677,7 @@ export default function Home() {
             className="absolute right-0 top-1/2 h-auto w-[240px] -translate-y-1/2 hidden lg:block"
           />
 
-          <div className="relative flex items-center gap-12 px-14 max-lg:flex-col" style={{ paddingTop: 80, paddingBottom: 80, zIndex: 1 }}>
+          <div className="relative flex items-center gap-12 px-14 max-lg:flex-col max-md:px-5 max-md:gap-8" style={{ paddingTop: 80, paddingBottom: 80, zIndex: 1 }}>
             {/* Left: text + form */}
             <div className="flex flex-col gap-7 flex-1">
               <span
@@ -689,7 +687,7 @@ export default function Home() {
                 Ready to move forward?
               </span>
               <h2 className="cta-in-2 font-[family-name:var(--font-heading)] text-[34px] font-normal leading-[1.1] text-white max-md:text-[26px]">
-                Let&apos;s bring <span className="text-[#C7E51F]">structure</span> to guest parking at<br className="hidden md:block" />your high rise
+                Let&apos;s bring <span className="text-[#C7E51F]">structure</span> to guest parking at<br className="hidden md:block" /> your high rise
               </h2>
               <p className="cta-in-3 text-base font-normal leading-6 text-[#A7A7A7]">
                 Book a demo with us and see how your residents and management<br />can benefit from our solution
@@ -700,26 +698,26 @@ export default function Home() {
                 alt="ParQlet activity cards"
                 width={400}
                 height={200}
-                className="block h-auto lg:hidden" style={{ width: '69%' }}
+                className="block h-auto lg:hidden max-md:w-[90%] max-md:mx-auto max-sm:mt-2"
               />
 
               <div className="cta-in-4 flex flex-col gap-2">
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3 max-md:flex-col max-md:items-stretch">
                   <input
                     ref={ctaInputRef}
                     type="email"
                     value={ctaEmail}
                     onChange={(e) => setCtaEmail(e.target.value)}
                     placeholder="Enter your work email"
-                    className="h-[42px] w-60 rounded-lg border border-white/20 bg-[#292929] text-[15px] text-white outline-none transition-colors placeholder:text-white/30 focus:border-white/50" style={{ paddingLeft: 16, paddingRight: 16 }}
+                    className="h-[42px] w-60 rounded-lg border border-white/20 bg-[#292929] text-[15px] text-white outline-none transition-colors placeholder:text-white/30 focus:border-white/50 max-md:w-full" style={{ paddingLeft: 16, paddingRight: 16 }}
                   />
                   <button
                     onClick={handleCtaSubmit}
                     disabled={ctaSubmitting}
-                    className="flex h-[42px] cursor-pointer items-center gap-2 rounded-lg bg-[#C7E51F] px-5 font-[family-name:var(--font-heading)] text-[15px] font-normal text-[#222] transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex h-[42px] cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#C7E51F] px-5 font-[family-name:var(--font-heading)] text-[15px] font-normal text-[#222] transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 max-md:w-full"
                   >
                     {ctaSubmitting ? "Sending..." : "Request early access"}
-                    {!ctaSubmitting && <Image src="/images/ic_arrow right.svg" alt="" width={16} height={16} />}
+                    {!ctaSubmitting && <Image src="/images/ic_arrow-right.svg" alt="" width={16} height={16} />}
                   </button>
                 </div>
                 {ctaError && <p className="text-sm text-red-400">{ctaError}</p>}
@@ -839,11 +837,7 @@ export default function Home() {
 
             {demoStatus === "success" ? (
               <div className="flex flex-col items-center gap-4 py-8 text-center">
-                <div className="flex h-[60px] w-[60px] items-center justify-center rounded-full bg-lime">
-                  <svg width="28" height="22" viewBox="0 0 28 22" fill="none">
-                    <path d="M2 11L10 19L26 3" stroke="#222" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
+                <Image src="/images/il_check_in_the_square.svg" alt="" width={80} height={80} />
                 <h3 className="font-[family-name:var(--font-heading)] text-[22px] font-normal text-primary">Request sent!</h3>
                 <p className="text-[15px] text-text-muted">We&apos;ll get back to you within 24 hours.</p>
                 <button
@@ -918,9 +912,14 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={demoSubmitting}
-                className="h-[52px] w-full cursor-pointer rounded-[10px] bg-[#C7E51F] font-[family-name:var(--font-heading)] text-base font-normal text-[#222] transition-opacity hover:opacity-85 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="h-[52px] w-full cursor-pointer rounded-[10px] bg-[#C7E51F] font-[family-name:var(--font-heading)] text-base font-normal text-[#222] transition-opacity hover:opacity-85 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {demoSubmitting ? "Sending..." : "Book a Demo"}
+                <span className="flex items-center gap-2">
+                  {demoSubmitting ? "Sending..." : "Book a Demo"}
+                  {!demoSubmitting && (
+                    <Image src="/images/ic_arrow-right.svg" alt="" width={16} height={16} className="flex-shrink-0" />
+                  )}
+                </span>
               </button>
 
               <p className="text-center text-[13px] text-[#504F4D]">We&apos;ll respond within 24 hours.</p>

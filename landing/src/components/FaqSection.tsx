@@ -14,7 +14,7 @@ const FAQ_ITEMS = [
     a: "Yes. Every Parqlet community is private and only accessible to verified residents of that specific building. Residents must join through an invitation from their HOA or building management.",
   },
   {
-    q: "What does the HOA dashboard include?",
+    q: "What does the Building Management dashboard include?",
     a: "The dashboard provides real-time parking activity, booking logs, resident management tools, enforcement records, and integrations with property management systems.",
   },
   {
