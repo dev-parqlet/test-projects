@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ParQlet — Guest Parking for High Rises</title>
+  <meta name="description" content="ParQlet turns unused resident parking into a secure guest parking solution for high-rise buildings." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    // Allow overriding BACKEND_URL before the main script loads
+    window.BACKEND_URL = window.BACKEND_URL || "";
+  </script>
+  <script src="main.js" defer></script>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav class="nav">
+    <div class="nav-inner container">
+      <img src="images/logo.png" alt="ParQlet" class="nav-logo" width="341" height="85" />
+      <div class="nav-actions">
+        <a href="https://dashboard.parqlet.com" target="_blank" rel="noopener noreferrer" class="nav-btn nav-btn-outline">Sign In</a>
+        <button class="nav-btn">Book Demo</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="animate-fade-up delay-1">
+          <span class="pill">Currently piloting with select high rise buildings in Austin, TX</span>
+        </div>
+        <div class="animate-fade-up delay-2 hero-text-stack">
+          <h1 class="hero-title">No guest parking in your building?</h1>
+          <p class="hero-subtitle">ParQlet turns unused resident parking into a secure guest parking solution</p>
+        </div>
+        <div class="animate-fade-up delay-3 hero-form">
+          <div class="hero-input-row">
+            <input
+              type="email"
+              class="hero-input"
+              placeholder="Enter your work email"
+              aria-label="Work email"
+            />
+            <button class="hero-submit-btn">
+              Request Early Access
+              <span class="arrow-icon">
+                <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+                  <path d="M7.5 1L12 5M12 5L7.5 9M12 5H1" stroke="#222" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </button>
+          </div>
+          <p class="hero-error"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SKYLINE ── -->
+  <div class="skkyline-section">
+    <img src="images/skyline.jpg" alt="City skyline" class="skkyline-img" width="1440" height="374" />
+    <div class="skkyline-scroll-hint">
+      <span class="skkyline-scroll-label">Explore more</span>
+      <svg width="16" height="8" viewBox="0 0 16 8" fill="none" style="color:#504f4d">
+        <path d="M1 1l7 6 7-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ── CONTENT ── -->
+  <div class="section-wrapper">
+
+    <!-- ── HOA SECTION ── -->
+    <section id="next-section" class="scroll-reveal hoa-section" style="opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease">
+      <div class="hoa-left">
+        <div class="hoa-left-stack">
+          <span class="pill pill-left">For HOA</span>
+          <div class="hoa-left-stack">
+            <h2 class="hoa-title">
+              <div>Full visibility and control</div>
+              <div>without added workload</div>
+            </h2>
+            <p class="hoa-desc">
+              ParQlet gives HOA management a clear, real-time view of guest parking activity while keeping
+              the system private, secure, and easy to operate.
+            </p>
+          </div>
+        </div>
+        <ul class="hoa-bullets">
+          <li class="bullet-item">
+            <img src="images/bullet-dot.svg" alt="" class="bullet-dot" width="13" height="13" />
+            <span class="bullet-text">Access private, resident-only system. No public access</span>
+          </li>
+          <li class="bullet-item">
+            <img src="images/bullet-dot.svg" alt="" class="bullet-dot" width="13" height="13" />
+            <span class="bullet-text">See which guest vehicles are parked in the building in real time</span>
+          </li>
+          <li class="bullet-item">
+            <img src="images/bullet-dot.svg" alt="" class="bullet-dot" width="13" height="13" />
+            <span class="bullet-text">Verify vehicles through license plate matching</span>
+          </li>
+          <li class="bullet-item">
+            <img src="images/bullet-dot.svg" alt="" class="bullet-dot" width="13" height="13" />
+            <span class="bullet-text">No technical maintenance needed. Cancel anytime</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="hoa-visual">
+        <div class="hoa-visual-bg">
+          <img src="images/hoa-dashboard.png" alt="HOA dashboard" width="661" height="527" />
+        </div>
+        <div class="hoa-visual-overlay1">
+          <img src="images/recent-activity.png" alt="Recent activity" width="616" height="336" />
+        </div>
+        <div class="hoa-visual-overlay2">
+          <img src="images/bookings-graph.png" alt="Bookings graph" width="395" height="319" />
+        </div>
+      </div>
+    </section>
+
+    <!-- ── RESIDENTS SECTION ── -->
+    <section class="scroll-reveal hoa-section reverse" style="opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease">
+      <div class="hoa-left">
+        <div class="hoa-left-stack">
+          <span class="pill pill-left">For Residents</span>
+          <div class="hoa-left-stack">
+            <h2 class="hoa-title">
+              <div>Guest parking is a new perk</div>
+              <div>without a hustle</div>
+            </h2>
+            <p class="hoa-desc">
+              ParQlet makes it easy for residents to coordinate parking within their building while turning
+              unused parking spots into a valuable resource.
+            </p>
+          </div>
+        </div>
+        <ul class="hoa-bullets">
+          <li class="bullet-item">
+            <img src="images/bullet-dot.svg" alt="" class="bullet-dot" width="13" height="13" />
+            <span class="bullet-text">Sharing parking spot with neighbors when not using it</span>
+          </li>
+          <li class="bullet-item">
+            <img src="images/bullet-dot.svg" alt="" class="bullet-dot" width="13" height="13" />
+            <span class="bullet-text">Booking parking spots for your guests directly within the building</span>
+          </li>
+          <li class="bullet-item">
+            <img src="images/bullet-dot.svg" alt="" class="bullet-dot" width="13" height="13" />
+            <span class="bullet-text">Earning credits each time a spot is used</span>
+          </li>
+          <li class="bullet-item">
+            <img src="images/bullet-dot.svg" alt="" class="bullet-dot" width="13" height="13" />
+            <span class="bullet-text">Using credits later to book parking for guests or exchange to a gift card</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="residents-visual">
+        <div class="residents-visual-bg">
+          <img src="images/residents-bg.png" alt="Residents app background" width="661" height="527" />
+        </div>
+        <div class="residents-visual-overlay">
+          <img src="images/residents-screens.png" alt="ParQlet resident app screens" width="458" height="527" />
+        </div>
+      </div>
+    </section>
+
+    <!-- ── GAMIFICATION SECTION ── -->
+    <section class="scroll-reveal gamification-section" style="opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease">
+      <span class="pill pill-left">Gamification</span>
+      <h2 class="gamification-title">Turn your parking spot into a simple, rewarding system</h2>
+      <p class="gamification-desc">
+        ParQlet introduces a coin-based system that makes sharing your parking spot easy, fun, and rewarding
+        — encouraging residents to make their spots available when not in use.
+      </p>
+      <div class="coin-container">
+        <img src="images/credit-coin.png" alt="ParQlet credit coin" class="animate-coin-rotate" width="267" height="267" />
+      </div>
+    </section>
+
+    <!-- ── CTA SECTION ── -->
+    <section class="scroll-reveal cta-section" style="opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease">
+      <img src="images/cta-bg.jpg" alt="" class="cta-bg" width="1160" height="480" />
+      <div class="cta-content">
+        <span class="pill pill-left">Ready to move forward?</span>
+        <h2 class="cta-title">Let&apos;s bring structure to guest parking at your high rise</h2>
+        <p class="cta-desc">Book a demo with us and see how your residents and management can benefit from our solution.</p>
+        <button class="cta-btn">Book Demo</button>
+      </div>
+    </section>
+
+  </div><!-- /.section-wrapper -->
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer container-wide">
+    <span class="footer-text">
+      <a href="mailto:hello@parqlet.com" class="footer-link">hello@parqlet.com</a>
+    </span>
+    <span class="footer-text">All rights reserved.</span>
+  </footer>
+
+</body>
+</html>
