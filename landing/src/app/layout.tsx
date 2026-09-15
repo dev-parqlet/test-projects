@@ -15,9 +15,9 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
-  title: "ParQlet — Guest Parking for High Rises",
+  title: "Parqlet — Guest Parking for Multifamily Communities",
   description:
-    "ParQlet turns unused resident parking into a secure guest parking solution for high-rise buildings.",
+    "Parqlet turns unused resident parking into a secure guest parking solution for high-rise buildings.",
 };
 
 export default function RootLayout({

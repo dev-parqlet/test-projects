@@ -85,6 +85,15 @@ export function ArrowIcon() {
   );
 }
 
+/** True only on the real production domain. Everywhere else (localhost,
+ *  preview/test deployments) form submits skip the network call
+ *  entirely and just simulate success, so testing the UI never sends
+ *  real lead data to the production API. */
+function isProductionHost(): boolean {
+  const host = window.location.hostname;
+  return host === "parqlet.com" || host === "www.parqlet.com";
+}
+
 /* ══════════════════════════════════════════════
    MAIN PAGE
    ══════════════════════════════════════════════ */
@@ -295,12 +304,14 @@ export default function Home() {
     setHeroSubmitting(true);
     setHeroError("");
     try {
-      const res = await fetch("https://api.parqlet.com/api/leads/early-access", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: heroEmail }),
-      });
-      if (!res.ok) throw new Error();
+      if (isProductionHost()) {
+        const res = await fetch("https://api.parqlet.com/api/leads/early-access", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: heroEmail }),
+        });
+        if (!res.ok) throw new Error();
+      }
       setShowConfirmPopup(true);
     } catch {
       setHeroError("Something went wrong. Please try again.");
@@ -317,12 +328,14 @@ export default function Home() {
     setCtaSubmitting(true);
     setCtaError("");
     try {
-      const res = await fetch("https://api.parqlet.com/api/leads/early-access", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: ctaEmail }),
-      });
-      if (!res.ok) throw new Error();
+      if (isProductionHost()) {
+        const res = await fetch("https://api.parqlet.com/api/leads/early-access", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: ctaEmail }),
+        });
+        if (!res.ok) throw new Error();
+      }
       setShowConfirmPopup(true);
       setCtaEmail("");
     } catch {
@@ -337,12 +350,14 @@ export default function Home() {
     setDemoSubmitting(true);
     setDemoStatus("idle");
     try {
-      const res = await fetch("https://api.parqlet.com/api/leads/book-demo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(demoForm),
-      });
-      if (!res.ok) throw new Error();
+      if (isProductionHost()) {
+        const res = await fetch("https://api.parqlet.com/api/leads/book-demo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(demoForm),
+        });
+        if (!res.ok) throw new Error();
+      }
       setDemoStatus("success");
       setDemoForm({ fullName: "", email: "", company: "", building: "", city: "", role: "", details: "", website: "" });
     } catch {
@@ -394,7 +409,7 @@ export default function Home() {
       {/* ── NAV ── */}
       <nav className="sticky top-0 z-50 border-b border-black/5 bg-[#F8F6F2]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1160px] items-center justify-between px-5 py-16">
-          <Image src="/images/logo.svg" alt="ParQlet" width={341} height={85} className="h-24 w-auto max-sm:h-16" priority />
+          <Image src="/images/logo.svg" alt="Parqlet" width={341} height={85} className="h-24 w-auto max-sm:h-16" priority />
           <div className="flex items-center gap-3 max-sm:gap-2">
             <a
               href="https://dashboard.parqlet.com"
@@ -471,9 +486,9 @@ export default function Home() {
           <div className="flex flex-col gap-5 max-md:gap-4 max-md:w-full max-md:px-5 px-14">
             {/* Pill badge */}
             <span
-              className="hero-in-1 inline-flex w-fit items-center rounded-full bg-white/8 px-4 py-1.5 font-[family-name:var(--font-heading)] text-[10px] font-medium uppercase tracking-[0.12em] text-white max-md:text-[9px] max-md:leading-tight max-md:px-5"
+              className="hero-in-1 inline-flex w-fit items-center rounded-full bg-white/8 px-6 py-1.5 font-[family-name:var(--font-heading)] text-[10px] font-medium uppercase tracking-[0.12em] text-white max-md:text-[9px] max-md:leading-tight max-md:px-6"
             >
-              LIVE IN SELECT HIGH RISE BUILDINGS IN AUSTIN, TX
+              LIVE IN SELECT HIGH-RISE BUILDINGS IN AUSTIN, TX
             </span>
 
             {/* Heading */}
@@ -534,7 +549,7 @@ export default function Home() {
                   <div>without added workload</div>
                 </h2>
                 <p className="text-base font-normal leading-6 text-[#504F4D] pb-6">
-                  ParQlet gives Building Management a clear, real-time view of guest parking activity while keeping
+                  Parqlet gives Building Management a clear, real-time view of guest parking activity while keeping
                   the system private, secure, and easy to operate.
                 </p>
               </div>
@@ -568,7 +583,7 @@ export default function Home() {
                   <div>without a hustle</div>
                 </h2>
                 <p className="text-base font-normal leading-6 text-[#504F4D] pb-6">
-                  ParQlet makes it easy for residents to coordinate parking within their building while turning
+                  Parqlet makes it easy for residents to coordinate parking within their building while turning
                   unused parking spots into a valuable resource.
                 </p>
               </div>
@@ -584,7 +599,7 @@ export default function Home() {
           {/* Residents visual */}
           <div className="relative min-w-0 flex-1 max-lg:w-full max-lg:max-w-[520px] max-lg:self-center p-[10px]">
             <CornerLines />
-            <Image src="/images/residence.png" alt="ParQlet resident app screens" width={661} height={527} sizes="(max-width: 1024px) 100vw, 60vw" className="w-full h-auto rounded-[20px]" />
+            <Image src="/images/residence.png" alt="Parqlet resident app screens" width={661} height={527} sizes="(max-width: 1024px) 100vw, 60vw" className="w-full h-auto rounded-[20px]" />
           </div>
         </section>
 
@@ -615,7 +630,7 @@ export default function Home() {
             <div className="relative w-full max-md:block">
               <Image
                 src="/images/Gamification_image.png"
-                alt="ParQlet gamification"
+                alt="Parqlet gamification"
                 width={1120}
                 height={600}
                 className="w-full h-auto rounded-[20px]"
@@ -671,7 +686,7 @@ export default function Home() {
           {/* Mini cards — absolutely anchored to bottom-right, bleeding into edge */}
           <Image
             src="/images/mini cards.png"
-            alt="ParQlet activity cards"
+            alt="Parqlet activity cards"
             width={240}
             height={180}
             className="absolute right-0 top-1/2 h-auto w-[240px] -translate-y-1/2 hidden lg:block"
@@ -695,7 +710,7 @@ export default function Home() {
               {/* Mobile-only image — shown above the CTA on small screens */}
               <Image
                 src="/images/mini-cards-mobile-v2.png"
-                alt="ParQlet activity cards"
+                alt="Parqlet activity cards"
                 width={400}
                 height={200}
                 className="block h-auto lg:hidden max-md:w-[90%] max-md:mx-auto max-sm:mt-2"
@@ -737,7 +752,7 @@ export default function Home() {
           <div className="flex items-center gap-6 font-[family-name:var(--font-heading)] text-xs font-normal uppercase tracking-wider text-text-muted">
             <a href="/faq" className="text-inherit no-underline hover:underline">FAQ</a>
             <a href="https://parqlet-terms-and-privacy.notion.site/Privacy-Policy-35d38574a76480a0be27c1cac5735ebe" target="_blank" rel="noopener noreferrer" className="text-inherit no-underline hover:underline">Privacy Policy</a>
-            <a href="https://parqlet-terms-and-privacy.notion.site/Terms-of-Service-35d38574a76480228d7bc194bc23c6de" target="_blank" rel="noopener noreferrer" className="text-inherit no-underline hover:underline">Terms of Service</a>
+            <a href="/terms" className="text-inherit no-underline hover:underline">Terms of Service</a>
           </div>
           <span className="font-[family-name:var(--font-heading)] text-xs font-normal uppercase tracking-wider text-text-muted">
             All rights reserved
@@ -750,7 +765,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <a href="/faq" className="whitespace-nowrap text-inherit no-underline hover:underline">FAQ</a>
             <a href="https://parqlet-terms-and-privacy.notion.site/Privacy-Policy-35d38574a76480a0be27c1cac5735ebe" target="_blank" rel="noopener noreferrer" className="whitespace-nowrap text-inherit no-underline hover:underline">Privacy Policy</a>
-            <a href="https://parqlet-terms-and-privacy.notion.site/Terms-of-Service-35d38574a76480228d7bc194bc23c6de" target="_blank" rel="noopener noreferrer" className="whitespace-nowrap text-inherit no-underline hover:underline">Terms of Service</a>
+            <a href="/terms" className="whitespace-nowrap text-inherit no-underline hover:underline">Terms of Service</a>
           </div>
           {/* Row 2: Email + All rights reserved */}
           <div className="flex items-center justify-between">
@@ -814,7 +829,7 @@ export default function Home() {
 
             <h2 className="mb-3 font-[family-name:var(--font-heading)] text-[28px] font-normal text-primary">Book a Demo</h2>
             <p className="mb-2 text-[15px] leading-normal text-text-muted">
-              Tell us a bit about your building and we&apos;ll show you how ParQlet can work for your community.
+              Tell us a bit about your building and we&apos;ll show you how Parqlet can work for your community.
             </p>
             <p className="mb-7 flex items-center gap-1.5 text-[13px] text-[#504F4D]">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

@@ -4,6 +4,24 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
+/** Turns a literal "parqlet.com/terms" mention inside an FAQ answer into
+ *  a real link to the site's own /terms page — the answer stays a plain
+ *  string for search-indexing purposes; only the rendered output links. */
+function linkifyTerms(text: string) {
+  const marker = "parqlet.com/terms";
+  const i = text.indexOf(marker);
+  if (i === -1) return text;
+  return (
+    <>
+      {text.slice(0, i)}
+      <Link href="/terms" className="text-[#222] underline underline-offset-2 hover:text-[#000]">
+        {marker}
+      </Link>
+      {text.slice(i + marker.length)}
+    </>
+  );
+}
+
 /* ── FAQ data ── */
 const FAQ_DATA = [
   {
@@ -277,7 +295,7 @@ export default function FaqPage() {
                           <div style={{ display: "grid", gridTemplateRows: isOpen ? "1fr" : "0fr", transition: "grid-template-rows 0.3s ease" }}>
                             <div style={{ overflow: "hidden" }}>
                               <p className="px-6 pb-5 text-[15px] font-normal leading-relaxed text-[#504F4D]">
-                                {item.a}
+                                {linkifyTerms(item.a)}
                               </p>
                             </div>
                           </div>
@@ -308,7 +326,7 @@ export default function FaqPage() {
                     </button>
                     <div style={{ display: "grid", gridTemplateRows: isOpen ? "1fr" : "0fr", transition: "grid-template-rows 0.3s ease" }}>
                       <div style={{ overflow: "hidden" }}>
-                        <p className="px-6 pb-5 text-[15px] font-normal leading-relaxed text-[#504F4D]">{item.a}</p>
+                        <p className="px-6 pb-5 text-[15px] font-normal leading-relaxed text-[#504F4D]">{linkifyTerms(item.a)}</p>
                       </div>
                     </div>
                   </div>
