@@ -88,6 +88,13 @@ function makeBookings(buildingId, counts, spots, owned, startIndex) {
       status,
       hasNote: i % 9 === 0,
       creditsSpent: owned ? 0 : Math.max(1, Math.ceil(durationHours / 24)),
+      // Apartments are paid in dollars, HOAs in credits. `amountCents` is
+      // the gross the renter paid; the dashboard derives our commission
+      // from it rather than storing a second, divergent number.
+      amountCents: owned
+        ? spotPriceCents(pick(spots, i)) * Math.max(1, Math.ceil(durationHours / 24))
+        : null,
+      commissionPct: owned ? COMMISSION_PCT : null,
       createdAt: new Date(start.getTime() - 86_400_000).toISOString(),
       updatedAt: new Date(start.getTime() - 86_400_000).toISOString(),
       idShort: uuid(i).slice(-6),
@@ -116,6 +123,22 @@ function makeBookings(buildingId, counts, spots, owned, startIndex) {
 // Must line up with the numbered blocks in app/lib/demo/apartments-data.ts,
 // or a booking cites a spot the Parking Spots page does not list.
 const APARTMENT_SPOTS = ["4", "11", "23", "38", "204", "217", "228", "305", "312"];
+
+/**
+ * Daily price for a numbered spot, mirroring the blocks in
+ * app/lib/demo/apartments-data.ts. Kept in step by hand because the seeder
+ * is plain node and the data module is TypeScript; if the blocks there
+ * change, change them here too or a booking will quote a price the Parking
+ * Spots page disagrees with.
+ */
+function spotPriceCents(number) {
+  const n = Number(number);
+  if (n >= 1 && n <= 40) return 1500;
+  if (n >= 201 && n <= 230) return 1200;
+  return 900;
+}
+
+const COMMISSION_PCT = 20;
 const HOA_SPOTS = ["419", "251", "222", "519", "108", "330"];
 
 const data = [

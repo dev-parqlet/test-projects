@@ -14,6 +14,8 @@ import { Badge } from "../../components/ui/Badge";
 import { IdDisplay } from "../../components/ui/IdDisplay";
 import { Pagination } from "../../components/ui/Pagination";
 import { TableHeadLabel } from "../../components/ui/TableHeadLabel";
+import { readVariant } from "../../lib/demo/variants";
+import { formatMoney, netToBuilding } from "../../lib/demo/apartments-data";
 import { CopyableCell } from "../../components/ui/CopyableCell";
 import { PhoneWithTooltip } from "../parking/components/phone-tooltip";
 import { NAME_TEXT_WIDTH, NAME_COLUMN_WIDTH } from "../../lib/name-cell";
@@ -60,19 +62,37 @@ const BOOKING_START_WIDTH = "12 1 130px";
 const BOOKING_END_WIDTH   = "11 1 115px";
 const NOTES_WIDTH         = "10 1 70px";
 
-const COLUMNS: { label: string; flex: number | string }[] = [
-  { label: "Booking ID",    flex: BOOKING_ID_WIDTH },
-  { label: "Unit #",        flex: UNIT_WIDTH },
-  { label: "Resident Name", flex: NAME_COLUMN_WIDTH },
-  { label: "Booked Spot",   flex: BOOKED_SPOT_WIDTH },
-  { label: "Spot Owner",    flex: NAME_COLUMN_WIDTH },
-  { label: "Guest Name",    flex: NAME_COLUMN_WIDTH },
-  { label: "License Plate", flex: LICENSE_PLATE_WIDTH },
-  { label: "Booking Start", flex: BOOKING_START_WIDTH },
-  { label: "Booking End",   flex: BOOKING_END_WIDTH },
-  { label: "Status",        flex: STATUS_COLUMN_WIDTH },
-  { label: "Notes",         flex: NOTES_WIDTH },
-];
+const MONEY_WIDTH         = "10 1 95px";
+
+/**
+ * Apartments are paid in dollars and own their spots; HOAs are paid in
+ * credits and their residents own the spots. So the money columns appear
+ * only for Apartments, and "Spot Owner" only for an HOA - naming an owner
+ * for a spot the building itself owns would be wrong, not just empty.
+ */
+function columnsFor(variant: "hoa" | "apartments"): { label: string; flex: number | string }[] {
+  return [
+    { label: "Booking ID",    flex: BOOKING_ID_WIDTH },
+    { label: "Unit #",        flex: UNIT_WIDTH },
+    { label: "Resident Name", flex: NAME_COLUMN_WIDTH },
+    { label: "Booked Spot",   flex: BOOKED_SPOT_WIDTH },
+    ...(variant === "hoa"
+      ? [{ label: "Spot Owner", flex: NAME_COLUMN_WIDTH }]
+      : []),
+    { label: "Guest Name",    flex: NAME_COLUMN_WIDTH },
+    { label: "License Plate", flex: LICENSE_PLATE_WIDTH },
+    { label: "Booking Start", flex: BOOKING_START_WIDTH },
+    { label: "Booking End",   flex: BOOKING_END_WIDTH },
+    ...(variant === "apartments"
+      ? [
+          { label: "Paid",         flex: MONEY_WIDTH },
+          { label: "You receive",  flex: MONEY_WIDTH },
+        ]
+      : []),
+    { label: "Status",        flex: STATUS_COLUMN_WIDTH },
+    { label: "Notes",         flex: NOTES_WIDTH },
+  ];
+}
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -363,6 +383,7 @@ function NoteModal({
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function BookingRow({ booking, isLast, onOpenNote, highlighted, rowRef, isCurrentTab, isPastTab }: { booking: Booking; isLast: boolean; onOpenNote: () => void; highlighted?: boolean; rowRef?: React.RefObject<HTMLDivElement | null>; isCurrentTab: boolean; isPastTab: boolean }) {
+  const isApartments = readVariant() === "apartments";
   const cell = (flex: number | string, content: React.ReactNode, extraStyle?: React.CSSProperties) => (
     <div style={{ flex: typeof flex === "number" ? `${flex} 1 0` : flex, minWidth: 0, ...extraStyle }}>
       {content}
@@ -447,7 +468,7 @@ function BookingRow({ booking, isLast, onOpenNote, highlighted, rowRef, isCurren
         </div>
       )}
       {cell(BOOKED_SPOT_WIDTH,  <CopyableCell value={booking.spotNumber}><span style={cellTxt}>{booking.spotNumber}</span></CopyableCell>)}
-      {cell(NAME_COLUMN_WIDTH,
+      {isApartments ? null : cell(NAME_COLUMN_WIDTH,
         booking.spotOwnerName ? (
           <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)", minWidth: 0 }}>
             <CopyableCell value={booking.spotOwnerName} style={nameTextStyle}>
@@ -470,6 +491,20 @@ function BookingRow({ booking, isLast, onOpenNote, highlighted, rowRef, isCurren
       {cell(LICENSE_PLATE_WIDTH, <CopyableCell value={booking.licensePlate}><span style={cellTxt}>{booking.licensePlate}</span></CopyableCell>)}
       {cell(BOOKING_START_WIDTH, <CopyableCell value={booking.bookingStart}><span style={cellTxt}>{booking.bookingStart}</span></CopyableCell>)}
       {cell(BOOKING_END_WIDTH, <CopyableCell value={booking.bookingEnd}><span style={cellTxt}>{booking.bookingEnd}</span></CopyableCell>)}
+      {/* Gross, then what actually reaches the building. Showing only the
+          gross would have an operator reading their revenue as 20% higher
+          than it is - a misunderstanding that surfaces at the first
+          withdrawal. */}
+      {isApartments && cell(MONEY_WIDTH,
+        <span style={cellTxt}>
+          {booking.amountCents != null ? formatMoney(booking.amountCents) : "—"}
+        </span>
+      )}
+      {isApartments && cell(MONEY_WIDTH,
+        <span style={{ ...cellTxt, color: "var(--color-text-weak)" }}>
+          {booking.amountCents != null ? formatMoney(netToBuilding(booking.amountCents)) : "—"}
+        </span>
+      )}
       {cell(STATUS_COLUMN_WIDTH, <CopyableCell value={statusBadge.label}><Badge as="span" variant={statusBadge.variant}>{statusBadge.label}</Badge></CopyableCell>, { display: "flex", alignItems: "center", justifyContent: "flex-start" })}
       {cell(NOTES_WIDTH,
         (booking.hasNote) ? (
@@ -869,7 +904,7 @@ function BookingsContent() {
                 background: "var(--color-fill-white)",
                 position: "sticky", top: 0, zIndex: 2,
               }}>
-                {COLUMNS.map((col) => (
+                {columnsFor(readVariant()).map((col) => (
                   <div key={col.label} style={{ flex: typeof col.flex === "number" ? `${col.flex} 1 0` : col.flex, minWidth: 0, maxWidth: "100%" }}>
                     <TableHeadLabel style={{
                       lineHeight: "var(--line-height-uppercase)",
@@ -893,7 +928,7 @@ function BookingsContent() {
                     padding: "0 var(--spacing-24)", height: 57,
                     borderBottom: i === 4 ? "none" : "1px solid var(--color-stroke-medium)",
                   }}>
-                    {COLUMNS.map((col) => (
+                    {columnsFor(readVariant()).map((col) => (
                       <div key={col.label} style={{ flex: typeof col.flex === "number" ? `${col.flex} 1 0` : col.flex, minWidth: 0 }}>
                         <div style={{
                           height: 14, borderRadius: 4,

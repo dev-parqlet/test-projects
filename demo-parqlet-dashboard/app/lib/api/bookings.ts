@@ -5,6 +5,10 @@ import { useState, useEffect } from "react";
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://api.parqlet.com";
 
 export interface Booking {
+  /** DEMO: gross the renter paid, in cents. Apartments only - an HOA
+   *  booking is paid for in credits, so this is null there. */
+  amountCents?: number | null;
+  commissionPct?: number | null;
   id: string;
   /** @deprecated Render via `<IdDisplay>` instead. */
   idShort: string;
