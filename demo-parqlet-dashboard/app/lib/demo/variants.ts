@@ -86,11 +86,45 @@ export const DEFAULT_VARIANT: DemoVariant = 'hoa';
 /** localStorage key holding the visitor's choice. */
 const STORAGE_KEY = 'parqlet_demo_variant';
 
+function parse(v: string | null): DemoVariant | null {
+  return v === 'apartments' || v === 'hoa' ? v : null;
+}
+
+/**
+ * The variant asked for in the URL, e.g. demo.parqlet.com/?v=apartments.
+ *
+ * This is how a link is sent to a specific prospect: an apartment operator
+ * should open the Apartments dashboard immediately, not be asked to choose
+ * between two products they have not heard of. Reading it takes precedence
+ * over whatever was stored, so a link always wins over a stale choice made
+ * on a previous visit.
+ */
+export function variantFromUrl(): DemoVariant | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return parse(new URLSearchParams(window.location.search).get('v'));
+  } catch {
+    return null;
+  }
+}
+
+/** Has the visitor chosen yet, whether by link or by the chooser screen? */
+export function hasChosenVariant(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (variantFromUrl()) return true;
+  try {
+    return parse(window.localStorage.getItem(STORAGE_KEY)) !== null;
+  } catch {
+    return false;
+  }
+}
+
 export function readVariant(): DemoVariant {
   if (typeof window === 'undefined') return DEFAULT_VARIANT;
+  const fromUrl = variantFromUrl();
+  if (fromUrl) return fromUrl;
   try {
-    const v = window.localStorage.getItem(STORAGE_KEY);
-    return v === 'apartments' || v === 'hoa' ? v : DEFAULT_VARIANT;
+    return parse(window.localStorage.getItem(STORAGE_KEY)) ?? DEFAULT_VARIANT;
   } catch {
     // Private browsing, or storage disabled. A demo must still open.
     return DEFAULT_VARIANT;
