@@ -22,7 +22,7 @@ export function DashboardShell({
     <div style={{ display: "flex", height: "100vh", width: "100%", overflow: "hidden", background: colors.white }}>
       {isDesktop && <Sidebar active={active} navItems={navItems} />}
       {!isDesktop && sidebarOpen && (
-        <Sidebar active={active} overlay onClose={closeSidebar} />
+        <Sidebar active={active} navItems={navItems} overlay onClose={closeSidebar} />
       )}
       <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, overflow: "hidden" }}>
         <Header showMenu={!isDesktop} onMenuOpen={openSidebar} />
