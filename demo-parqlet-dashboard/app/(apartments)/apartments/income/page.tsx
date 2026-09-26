@@ -15,15 +15,15 @@
 
 import React, { useMemo, useState } from "react";
 
-import { Button } from "../../components/ui/Button";
-import { Badge } from "../../components/ui/Badge";
+import { Button } from "../../../components/ui/Button";
+import { Badge } from "../../../components/ui/Badge";
 import {
   COMMISSION_PCT,
   currentPeriod,
   formatMoney,
   netToBuilding,
   recentPayouts,
-} from "../../lib/demo/apartments-data";
+} from "../../../lib/demo/apartments-data";
 
 export default function IncomePage() {
   const now = useMemo(() => new Date(), []);

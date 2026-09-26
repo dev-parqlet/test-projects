@@ -153,11 +153,12 @@ export function setVariant(v: DemoVariant): void {
   } catch {
     // Ignore — the ?v= below still carries the choice.
   }
-  // Navigate WITH the parameter rather than to a bare `/`. Two reasons: the
-  // address bar then always names what you are looking at, so the link is
-  // copy-pasteable mid-demo; and it does not depend on localStorage having
-  // worked, which it may not have in a private window.
-  window.location.href = `/?v=${v}`;
+  // Each product has its own routes, so switching has to land on the right
+  // root: HOA at `/`, Apartments at `/apartments`. Carrying `?v=` too means
+  // the address bar always names what you are looking at, the link is
+  // copy-pasteable mid-demo, and it does not depend on localStorage having
+  // worked - which it may not have in a private window.
+  window.location.href = v === "apartments" ? `/apartments?v=${v}` : `/?v=${v}`;
 }
 
 /** The other one. There are exactly two, so switching is a toggle. */

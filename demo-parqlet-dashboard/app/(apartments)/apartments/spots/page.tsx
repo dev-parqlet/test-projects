@@ -16,19 +16,19 @@
 
 import React, { useMemo, useState } from "react";
 
-import { Button } from "../../components/ui/Button";
-import { Badge } from "../../components/ui/Badge";
-import { Modal } from "../../components/ui/Modal";
-import { Input } from "../../components/ui/Input";
-import { FilterDropdown } from "../../components/ui/FilterDropdown";
-import { TableHeadLabel } from "../../components/ui/TableHeadLabel";
+import { Button } from "../../../components/ui/Button";
+import { Badge } from "../../../components/ui/Badge";
+import { Modal } from "../../../components/ui/Modal";
+import { Input } from "../../../components/ui/Input";
+import { FilterDropdown } from "../../../components/ui/FilterDropdown";
+import { TableHeadLabel } from "../../../components/ui/TableHeadLabel";
 import {
   COMMISSION_PCT,
   DEMO_SPOTS,
   formatMoney,
   netToBuilding,
   type DemoSpot,
-} from "../../lib/demo/apartments-data";
+} from "../../../lib/demo/apartments-data";
 
 type Draft = Omit<DemoSpot, "id">;
 

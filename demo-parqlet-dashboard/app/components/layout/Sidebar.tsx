@@ -4,13 +4,16 @@ import Link from "next/link";
 import { useState } from "react";
 import { colors } from "../colors";
 import { useAuth } from "../auth/auth-provider";
-import { getNavItems, NavId } from "./nav-data";
+import { getNavItems, NavId, type NavItem } from "./nav-data";
 import { IcClose } from "../icons/IcClose";
 
-export function Sidebar({ active, onClose, overlay }: { active?: NavId; onClose?: () => void; overlay?: boolean }) {
+export function Sidebar({ active, onClose, overlay, navItems }: { active?: NavId; onClose?: () => void; overlay?: boolean; navItems?: readonly NavItem[] }) {
   const [hoveredId, setHoveredId] = useState<NavId | null>(null);
   const { user } = useAuth();
-  const items = getNavItems(user?.role);
+  // `navItems` lets a route group supply its own nav - Apartments is a
+  // separate product with its own pages, not an HOA with extra rows.
+  // Omitted, the HOA/SA nav is resolved from the role exactly as before.
+  const items = navItems ?? getNavItems(user?.role);
 
   return (
     <>

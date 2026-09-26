@@ -1,0 +1,213 @@
+"use client";
+
+/**
+ * Bookings — Apartments.
+ *
+ * Its own page, not the HOA table with a flag. An Apartments booking is
+ * paid for in DOLLARS and the spot belongs to the building, so there is no
+ * spot owner to name and no credits to show; the HOA table is the mirror
+ * image and stays exactly as it is.
+ */
+
+import React, { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+
+import { useAuth } from "../../../components/auth/auth-provider";
+import { Badge } from "../../../components/ui/Badge";
+import { FilterDropdown } from "../../../components/ui/FilterDropdown";
+import { TableHeadLabel } from "../../../components/ui/TableHeadLabel";
+import { formatMoney, netToBuilding, COMMISSION_PCT } from "../../../lib/demo/apartments-data";
+
+type Row = {
+  id: string;
+  idShort: string;
+  spotNumber: string;
+  guestName: string;
+  licensePlate: string;
+  bookingStart: string;
+  bookingEnd: string;
+  status: string;
+  amountCents?: number | null;
+};
+
+const TABS = [
+  { label: "Current", value: "current" },
+  { label: "Upcoming", value: "future" },
+  { label: "Past", value: "past" },
+];
+
+const COL = ["7 1 90px", "7 1 80px", "10 1 130px", "9 1 110px", "10 1 120px", "10 1 120px", "8 1 100px", "8 1 100px", "9 1 110px"];
+
+export default function ApartmentsBookingsPage() {
+  const { user } = useAuth();
+  const buildingId = user?.buildingId ?? "";
+  const [tab, setTab] = useState("current");
+  const [status, setStatus] = useState("All");
+  const [query, setQuery] = useState("");
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["apartments", "bookings", buildingId, tab],
+    enabled: !!buildingId,
+    queryFn: async (): Promise<Row[]> => {
+      const res = await fetch(
+        `/api/bookings?buildingId=${buildingId}&tab=${tab}&pageSize=200`,
+        { cache: "no-store" },
+      );
+      return ((await res.json()) as { data: Row[] }).data ?? [];
+    },
+  });
+
+  const rows = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return (data ?? []).filter((r) => {
+      if (status !== "All" && r.status !== status) return false;
+      if (q && !`${r.spotNumber} ${r.guestName} ${r.licensePlate}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [data, status, query]);
+
+  const totals = useMemo(
+    () =>
+      rows.reduce(
+        (acc, r) => {
+          // Cancelled bookings were never paid for, so including them would
+          // overstate the period.
+          if (r.status === "Cancelled" || r.amountCents == null) return acc;
+          acc.gross += r.amountCents;
+          acc.net += netToBuilding(r.amountCents);
+          return acc;
+        },
+        { gross: 0, net: 0 },
+      ),
+    [rows],
+  );
+
+  return (
+    <div style={{ padding: "var(--spacing-24)", display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
+      <div>
+        <h1 style={st.h1}>Bookings</h1>
+        <p style={st.sub}>
+          What people have paid to park at your building. Parqlet keeps{" "}
+          {COMMISSION_PCT}%; the rest is yours.
+        </p>
+      </div>
+
+      <div style={{ display: "flex", gap: "var(--spacing-8)" }}>
+        {TABS.map((t) => (
+          <button
+            key={t.value}
+            onClick={() => setTab(t.value)}
+            style={{ ...st.tab, ...(tab === t.value ? st.tabActive : null) }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--spacing-12)", flexWrap: "wrap" }}>
+        <div style={st.search}>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by spot, guest or plate"
+            style={st.searchInput}
+          />
+        </div>
+        <FilterDropdown
+          label="Status"
+          options={["All", "Active", "Assigned", "Completed", "Cancelled"]}
+          value={status}
+          onChange={setStatus}
+        />
+      </div>
+
+      <div style={st.card}>
+        <div style={st.row}>
+          {["Booking ID", "Spot", "Guest", "Plate", "From", "Until", "Paid", "You receive", "Status"].map((h, i) => (
+            <div key={h} style={{ ...st.cell, flex: COL[i] }}>
+              <TableHeadLabel style={{ color: "var(--color-text-weak)" }}>{h}</TableHeadLabel>
+            </div>
+          ))}
+        </div>
+
+        {isLoading && <div style={{ ...st.row, ...st.empty }}>Loading…</div>}
+
+        {!isLoading && rows.map((r) => (
+          <div key={r.id} style={st.row}>
+            <div style={{ ...st.cell, flex: COL[0] }}><span style={st.txt}>{r.idShort}</span></div>
+            <div style={{ ...st.cell, flex: COL[1] }}><span style={{ ...st.txt, fontWeight: 600 }}>{r.spotNumber}</span></div>
+            <div style={{ ...st.cell, flex: COL[2] }}><span style={st.txt}>{r.guestName}</span></div>
+            <div style={{ ...st.cell, flex: COL[3] }}><span style={st.txt}>{r.licensePlate}</span></div>
+            <div style={{ ...st.cell, flex: COL[4] }}><span style={st.txt}>{r.bookingStart}</span></div>
+            <div style={{ ...st.cell, flex: COL[5] }}><span style={st.txt}>{r.bookingEnd}</span></div>
+            <div style={{ ...st.cell, flex: COL[6] }}>
+              <span style={{ ...st.txt, fontWeight: 600 }}>
+                {r.amountCents != null ? formatMoney(r.amountCents) : "—"}
+              </span>
+            </div>
+            <div style={{ ...st.cell, flex: COL[7] }}>
+              <span style={{ ...st.txt, color: "var(--color-text-weak)" }}>
+                {r.amountCents != null ? formatMoney(netToBuilding(r.amountCents)) : "—"}
+              </span>
+            </div>
+            <div style={{ ...st.cell, flex: COL[8] }}>
+              <Badge as="span" variant={badgeFor(r.status)}>{r.status}</Badge>
+            </div>
+          </div>
+        ))}
+
+        {!isLoading && rows.length === 0 && (
+          <div style={{ ...st.row, ...st.empty }}>No bookings here.</div>
+        )}
+      </div>
+
+      <span style={{ fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)" }}>
+        {rows.length} booking{rows.length === 1 ? "" : "s"} · collected{" "}
+        {formatMoney(totals.gross)} · you receive <strong>{formatMoney(totals.net)}</strong>
+      </span>
+    </div>
+  );
+}
+
+function badgeFor(status: string): string {
+  if (status === "Active") return "active";
+  if (status === "Assigned") return "upcoming";
+  if (status === "Cancelled") return "expired";
+  if (status === "Completed") return "inactive";
+  return "pending";
+}
+
+const st: Record<string, React.CSSProperties> = {
+  h1: { margin: 0, fontSize: "var(--font-size-heading-3)", fontWeight: 600, color: "var(--color-text-strong)" },
+  sub: { margin: "var(--spacing-4) 0 0", fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)" },
+  tab: {
+    padding: "8px 14px", borderRadius: "var(--radius-8)",
+    border: "1px solid var(--color-stroke-medium)", background: "var(--color-fill-white)",
+    color: "var(--color-text-weak)", fontSize: "var(--font-size-tiny)",
+    fontFamily: "var(--font-family-body)", cursor: "pointer",
+  },
+  tabActive: { background: "var(--color-fill-weak)", color: "var(--color-text-strong)", fontWeight: 600 },
+  search: {
+    display: "flex", alignItems: "center", gap: 10,
+    background: "var(--color-fill-white)", border: "1px solid var(--color-stroke-medium)",
+    borderRadius: "var(--radius-8)", padding: "0 10px", height: 40,
+    flex: "1 0 240px", maxWidth: 420,
+  },
+  searchInput: {
+    border: "none", outline: "none", background: "transparent",
+    fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)",
+    fontFamily: "var(--font-family-body)", width: "100%",
+  },
+  card: {
+    border: "1px solid var(--color-stroke-medium)", borderRadius: "var(--radius-12)",
+    background: "var(--color-fill-white)", overflow: "hidden",
+  },
+  row: {
+    display: "flex", alignItems: "center", gap: "var(--spacing-8)",
+    padding: "0 var(--spacing-24)", minHeight: 48,
+    borderBottom: "1px solid var(--color-stroke-medium)",
+  },
+  cell: { display: "flex", alignItems: "center", minWidth: 0 },
+  txt: { fontSize: "var(--font-size-tiny)", color: "var(--color-text-strong)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+  empty: { color: "var(--color-text-weak)", fontSize: "var(--font-size-tiny)" },
+};

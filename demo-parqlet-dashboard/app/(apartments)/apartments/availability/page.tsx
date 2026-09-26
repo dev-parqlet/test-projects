@@ -15,16 +15,16 @@
 
 import React, { useMemo, useState } from "react";
 
-import { Button } from "../../components/ui/Button";
-import { Badge } from "../../components/ui/Badge";
-import { Modal } from "../../components/ui/Modal";
-import { Input } from "../../components/ui/Input";
+import { Button } from "../../../components/ui/Button";
+import { Badge } from "../../../components/ui/Badge";
+import { Modal } from "../../../components/ui/Modal";
+import { Input } from "../../../components/ui/Input";
 import {
   COMMISSION_PCT,
   DEMO_SPOTS,
   formatMoney,
   netToBuilding,
-} from "../../lib/demo/apartments-data";
+} from "../../../lib/demo/apartments-data";
 
 type Window = {
   id: string;

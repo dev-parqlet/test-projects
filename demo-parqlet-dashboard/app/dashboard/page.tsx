@@ -12,8 +12,6 @@ import {
   TopGuestParkingBookersCard,
   DocumentModal,
 } from "../components/hoa";
-import { readVariant } from "../lib/demo/variants";
-import { TopEarningSpotsCard } from "../components/demo/TopEarningSpotsCard";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -82,15 +80,7 @@ export default function DashboardPage() {
 
           {/* Top Contributors + Top Guest Parking Bookers */}
           <div style={{ display: "flex", flexDirection: isDesktop ? "row" : "column", gap: 16, alignItems: isDesktop ? "stretch" : undefined }}>
-            {/* "Top Contributors" ranks residents by credits earned from
-                sharing their own spots. An Apartments building owns every
-                spot, so there are no contributors to rank - the equivalent
-                question is which spots earn their keep. */}
-            {readVariant() === "apartments" ? (
-              <TopEarningSpotsCard buildingId={buildingId} />
-            ) : (
-              <TopContributorsCard buildingId={buildingId} />
-            )}
+            <TopContributorsCard buildingId={buildingId} />
             <TopGuestParkingBookersCard buildingId={buildingId} />
           </div>
 
