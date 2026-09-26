@@ -17,6 +17,8 @@ import React, { useMemo, useState } from "react";
 
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
+import { Modal } from "../../components/ui/Modal";
+import { Input } from "../../components/ui/Input";
 import {
   COMMISSION_PCT,
   DEMO_SPOTS,
@@ -175,10 +177,8 @@ function AddWindowModal({
   const invalid = new Date(endsAt) <= new Date(startsAt);
 
   return (
-    <div style={st.backdrop} onClick={onCancel}>
-      <div style={st.modal} onClick={(e) => e.stopPropagation()}>
-        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Add availability</h2>
-
+    <Modal open onClose={onCancel} title="Add availability" size="small">
+      <div style={st.form}>
         <label style={st.field}>
           <span style={st.fieldLabel}>Spot</span>
           <select
@@ -198,18 +198,9 @@ function AddWindowModal({
           </select>
         </label>
 
-        <label style={st.field}>
-          <span style={st.fieldLabel}>From</span>
-          <input style={st.input} type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
-        </label>
-        <label style={st.field}>
-          <span style={st.fieldLabel}>Until</span>
-          <input style={st.input} type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
-        </label>
-        <label style={st.field}>
-          <span style={st.fieldLabel}>Price per day (USD)</span>
-          <input style={st.input} inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} />
-        </label>
+        <Input label="From" type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
+        <Input label="Until" type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
+        <Input label="Price per day (USD)" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} />
 
         <span style={{ fontSize: 12, color: "var(--color-text-weak)" }}>
           You receive{" "}
@@ -225,7 +216,7 @@ function AddWindowModal({
           </span>
         )}
 
-        <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 8 }}>
+        <div style={st.actions}>
           <Button variant="secondary" onClick={onCancel}>Cancel</Button>
           <Button
             variant="primary"
@@ -245,7 +236,7 @@ function AddWindowModal({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -257,9 +248,9 @@ const st: Record<string, React.CSSProperties> = {
   th: { textAlign: "left", fontSize: 12, fontWeight: 500, color: "var(--color-text-weak)", padding: "8px 12px 8px 0", borderBottom: "1px solid var(--color-stroke-medium)", whiteSpace: "nowrap" },
   td: { fontSize: 14, color: "var(--color-text-strong)", padding: "12px 12px 12px 0", borderBottom: "1px solid var(--color-stroke-medium)" },
   link: { background: "none", border: "none", cursor: "pointer", fontSize: 13, textDecoration: "underline", fontFamily: "inherit" },
-  backdrop: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 24 },
-  modal: { width: "100%", maxWidth: 420, background: "var(--color-fill-white)", borderRadius: 16, padding: 24, display: "flex", flexDirection: "column", gap: 14 },
+  form: { display: "flex", flexDirection: "column", gap: "var(--spacing-12)" },
+  actions: { display: "flex", gap: "var(--spacing-12)", justifyContent: "flex-end", marginTop: "var(--spacing-8)" },
   field: { display: "flex", flexDirection: "column", gap: 6 },
-  fieldLabel: { fontSize: 12, color: "var(--color-text-weak)" },
+  fieldLabel: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },
   input: { padding: "10px 12px", borderRadius: 8, border: "1px solid var(--color-stroke-medium)", fontSize: 14, fontFamily: "inherit", background: "var(--color-fill-white)", color: "var(--color-text-strong)" },
 };
