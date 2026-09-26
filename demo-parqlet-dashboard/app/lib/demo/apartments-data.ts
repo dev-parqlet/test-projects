@@ -6,9 +6,23 @@
  * building that apparently stopped trading in August.
  */
 
-/** Parqlet's cut of every booking. One constant so a pricing change is one
- *  edit, and so the Income page and the bookings list can never disagree. */
-export const COMMISSION_PCT = 15;
+/**
+ * Parqlet's cut of every booking.
+ *
+ * Worked example the product is specified against: a renter pays $15, the
+ * building receives $12, we keep $3. One constant so a pricing change is a
+ * single edit and no two screens can disagree about the split.
+ */
+export const COMMISSION_PCT = 20;
+
+/** What the building actually receives for a spot priced at `cents`. */
+export function netToBuilding(cents: number): number {
+  return cents - commissionOn(cents);
+}
+
+export function commissionOn(cents: number): number {
+  return Math.round((cents * COMMISSION_PCT) / 100);
+}
 
 export type DemoSpot = {
   id: string;
@@ -36,14 +50,48 @@ export type DemoPayout = {
 
 const money = (dollars: number) => Math.round(dollars * 100);
 
-export const DEMO_SPOTS: DemoSpot[] = [
-  { id: 's1', number: 'C1',  level: 'P1', type: 'Standard',  covered: true,  evCharger: true,  priceCents: money(24), status: 'Listed' },
-  { id: 's2', number: 'C2',  level: 'P1', type: 'Standard',  covered: true,  evCharger: false, priceCents: money(22), status: 'Listed' },
-  { id: 's3', number: 'C4',  level: 'P1', type: 'Large SUV', covered: true,  evCharger: false, priceCents: money(28), status: 'Listed' },
-  { id: 's4', number: 'B7',  level: 'P2', type: 'Standard',  covered: true,  evCharger: false, priceCents: money(18), status: 'Listed' },
-  { id: 's5', number: 'B11', level: 'P2', type: 'Compact',   covered: true,  evCharger: false, priceCents: money(14), status: 'Listed' },
-  { id: 's6', number: 'R3',  level: 'Roof', type: 'Standard', covered: false, evCharger: false, priceCents: money(12), status: 'Unlisted' },
-];
+/**
+ * Spots are NUMBERED, not lettered, because the building prices them in
+ * ranges - "1 to 100 at this rate, 200 to 300 at that one". A scheme like
+ * C1 / B7 / R3 cannot express that.
+ *
+ * Three blocks with deliberate gaps between them, so a range like 200-300
+ * selects exactly the second block and a demo of the bulk pricing tool has
+ * something visible to do.
+ */
+function buildSpots(): DemoSpot[] {
+  const out: DemoSpot[] = [];
+  const block = (
+    from: number,
+    count: number,
+    level: string,
+    covered: boolean,
+    price: number,
+  ) => {
+    for (let n = 0; n < count; n++) {
+      const number = from + n;
+      out.push({
+        id: `s${number}`,
+        number: String(number),
+        level,
+        type: n % 7 === 0 ? 'Large SUV' : n % 3 === 0 ? 'Compact' : 'Standard',
+        covered,
+        evCharger: n % 6 === 0,
+        priceCents: money(price),
+        status: n % 11 === 0 ? 'Unlisted' : 'Listed',
+      });
+    }
+  };
+  // Level 1 - covered and closest to the lifts, so the most valuable.
+  block(1, 40, 'P1', true, 15);
+  // Level 2 - covered, further down.
+  block(201, 30, 'P2', true, 12);
+  // Roof - uncovered.
+  block(301, 20, 'Roof', false, 9);
+  return out;
+}
+
+export const DEMO_SPOTS: DemoSpot[] = buildSpots();
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',

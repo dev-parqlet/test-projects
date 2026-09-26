@@ -18,8 +18,10 @@ import React, { useMemo, useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import {
+  COMMISSION_PCT,
   DEMO_SPOTS,
   formatMoney,
+  netToBuilding,
 } from "../../lib/demo/apartments-data";
 
 type Window = {
@@ -84,7 +86,7 @@ export default function AvailabilityPage() {
         <table style={st.table}>
           <thead>
             <tr>
-              {["Spot", "From", "Until", "Price / day", "Status", ""].map((h) => (
+              {["Spot", "From", "Until", "Price / day", "You receive", "Status", ""].map((h) => (
                 <th key={h} style={st.th}>{h}</th>
               ))}
             </tr>
@@ -96,6 +98,9 @@ export default function AvailabilityPage() {
                 <td style={st.td}>{fmt(w.startsAt)}</td>
                 <td style={st.td}>{fmt(w.endsAt)}</td>
                 <td style={{ ...st.td, fontWeight: 600 }}>{formatMoney(w.priceCents)}</td>
+                <td style={{ ...st.td, color: "var(--color-text-weak)" }}>
+                  {formatMoney(netToBuilding(w.priceCents))}
+                </td>
                 <td style={st.td}>
                   <Badge variant={w.booked ? "upcoming" : "active"}>
                     {w.booked ? "Booked" : "Open"}
@@ -123,7 +128,7 @@ export default function AvailabilityPage() {
             ))}
             {windows.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ ...st.td, color: "var(--color-text-weak)" }}>
+                <td colSpan={7} style={{ ...st.td, color: "var(--color-text-weak)" }}>
                   No availability yet. Add a window so renters can book.
                 </td>
               </tr>
@@ -205,6 +210,14 @@ function AddWindowModal({
           <span style={st.fieldLabel}>Price per day (USD)</span>
           <input style={st.input} inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} />
         </label>
+
+        <span style={{ fontSize: 12, color: "var(--color-text-weak)" }}>
+          You receive{" "}
+          <strong>
+            {formatMoney(netToBuilding(Math.round(Number(price) * 100) || 0))}
+          </strong>{" "}
+          per day, after our {COMMISSION_PCT}% commission.
+        </span>
 
         {invalid && (
           <span style={{ fontSize: 12, color: "var(--color-tag-text-expired)" }}>

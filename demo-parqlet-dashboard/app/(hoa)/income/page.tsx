@@ -21,6 +21,7 @@ import {
   COMMISSION_PCT,
   currentPeriod,
   formatMoney,
+  netToBuilding,
   recentPayouts,
 } from "../../lib/demo/apartments-data";
 
@@ -48,8 +49,10 @@ export default function IncomePage() {
       <div>
         <h1 style={s.h1}>Income</h1>
         <p style={s.sub}>
-          What residents of the Parqlet app have paid for parking at your
-          building, less our {COMMISSION_PCT}% commission.
+          What people have paid to park at your building, less our{" "}
+          {COMMISSION_PCT}% commission. On a {formatMoney(1500)} booking you
+          receive <strong>{formatMoney(netToBuilding(1500))}</strong> and we
+          keep {formatMoney(1500 - netToBuilding(1500))}.
         </p>
       </div>
 

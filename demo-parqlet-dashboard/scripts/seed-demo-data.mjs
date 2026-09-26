@@ -113,7 +113,9 @@ function makeBookings(buildingId, counts, spots, owned, startIndex) {
   return rows.map(({ i: _i, ...r }) => r);
 }
 
-const APARTMENT_SPOTS = ["C1", "C2", "C4", "B7", "B11", "R3"];
+// Must line up with the numbered blocks in app/lib/demo/apartments-data.ts,
+// or a booking cites a spot the Parking Spots page does not list.
+const APARTMENT_SPOTS = ["4", "11", "23", "38", "204", "217", "228", "305", "312"];
 const HOA_SPOTS = ["419", "251", "222", "519", "108", "330"];
 
 const data = [
