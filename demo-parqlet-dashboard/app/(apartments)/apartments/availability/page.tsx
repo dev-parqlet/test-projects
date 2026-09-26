@@ -79,9 +79,11 @@ export default function AvailabilityPage() {
             own rate and can be overridden for a single window.
           </p>
         </div>
-        <Button variant="primary" onClick={() => setAdding(true)}>
-          Add availability
-        </Button>
+        <div style={{ flexShrink: 0 }}>
+          <Button variant="primary" size="small" style={{ width: "auto", whiteSpace: "nowrap" }} onClick={() => setAdding(true)}>
+            Add availability
+          </Button>
+        </div>
       </div>
 
       <div style={st.card}>
@@ -217,9 +219,11 @@ function AddWindowModal({
         )}
 
         <div style={st.actions}>
-          <Button variant="secondary" onClick={onCancel}>Cancel</Button>
+          <Button variant="secondary" size="small" style={{ width: "auto" }} onClick={onCancel}>Cancel</Button>
           <Button
             variant="primary"
+            size="small"
+            style={{ width: "auto" }}
             disabled={invalid}
             onClick={() =>
               onAdd({

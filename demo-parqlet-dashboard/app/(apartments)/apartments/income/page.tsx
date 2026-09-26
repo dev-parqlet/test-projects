@@ -76,6 +76,8 @@ export default function IncomePage() {
         <div style={s.withdrawRow}>
           <Button
             variant="primary"
+            size="small"
+            style={{ width: "auto", whiteSpace: "nowrap" }}
             disabled={!canWithdraw}
             onClick={() => setRequested(true)}
           >

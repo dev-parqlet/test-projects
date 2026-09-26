@@ -147,10 +147,10 @@ export default function SpotsPage() {
           </p>
         </div>
         <div style={{ display: "flex", gap: "var(--spacing-8)", flexShrink: 0 }}>
-          <Button variant="secondary" onClick={() => setPricingRange(true)}>
+          <Button variant="secondary" size="small" style={{ width: "auto", whiteSpace: "nowrap" }} onClick={() => setPricingRange(true)}>
             Set prices by range
           </Button>
-          <Button variant="primary" onClick={() => setCreating(true)}>
+          <Button variant="primary" size="small" style={{ width: "auto", whiteSpace: "nowrap" }} onClick={() => setCreating(true)}>
             Add spot
           </Button>
         </div>
@@ -298,8 +298,8 @@ function RangePriceModal({
         )}
 
         <div style={st.actions}>
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" disabled={!valid} onClick={() => onApply(Number(from), Number(to), priceCents)}>
+          <Button variant="secondary" size="small" style={{ width: "auto" }} onClick={onClose}>Cancel</Button>
+          <Button variant="primary" size="small" style={{ width: "auto" }} disabled={!valid} onClick={() => onApply(Number(from), Number(to), priceCents)}>
             Apply
           </Button>
         </div>
@@ -378,8 +378,8 @@ function SpotModal({
         </label>
 
         <div style={st.actions}>
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" onClick={() => onSave({ ...d, priceCents })}>Save</Button>
+          <Button variant="secondary" size="small" style={{ width: "auto" }} onClick={onClose}>Cancel</Button>
+          <Button variant="primary" size="small" style={{ width: "auto" }} onClick={() => onSave({ ...d, priceCents })}>Save</Button>
         </div>
       </div>
     </Modal>
