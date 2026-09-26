@@ -1,0 +1,20 @@
+# Production compose — loads .env.production
+# Usage: docker compose -f docker-compose.prod.yml up -d
+#
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.parqlet.com}
+    container_name: parqlet-admin-dashboard
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.parqlet.com}
+    env_file:
+      - path: .env.local
+        required: true

@@ -1,0 +1,18 @@
+#!/bin/sh
+# Pre-commit hook: fast TypeScript check before committing.
+# Full build is deferred to pre-push to keep commits snappy.
+
+echo "Running pre-commit checks..."
+
+cd "$(git rev-parse --show-toplevel)"
+
+echo "[1/1] Running TypeScript check..."
+npm run typecheck
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "✖  TypeScript check failed. Fix errors before committing."
+  exit 1
+fi
+
+echo "✔  Pre-commit checks passed."
+exit 0

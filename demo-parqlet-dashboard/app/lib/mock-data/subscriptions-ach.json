@@ -1,0 +1,7 @@
+{
+  "subscriptionId": "sub_ach_mock_a1b2c3d4",
+  "status": "Active",
+  "achPaymentStatus": "pending_review",
+  "achRemittanceReference": "ACH-20260723-AB12CD34EF12",
+  "mock": true
+}

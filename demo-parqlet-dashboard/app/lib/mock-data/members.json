@@ -1,0 +1,72 @@
+{
+  "data": [
+    {
+      "id": "dc39c960-4c82-4287-80ab-00bef65732f9",
+      "buildingId": "60808600-ad82-4202-a2ca-3b24ae87ee5e",
+      "userId": "bf88f7f8-7762-469c-9737-a48409c3e7ee",
+      "name": "Margo",
+      "email": "margo@parqlet.com",
+      "role": "Admin",
+      "status": "Registered",
+      "invited": "May 15, 2026",
+      "lastActive": "May 18, 2026",
+      "avatarUrl": null
+    },
+    {
+      "id": "37c58394-78eb-4fd1-9650-908ac1abf169",
+      "buildingId": "80f9ac2e-b884-4634-ac02-0682a9a12662",
+      "userId": "de7283be-4e31-43ce-af16-b055a006dd21",
+      "name": "Yaroslav",
+      "email": "yaroslav@parqlet.com",
+      "role": "Admin",
+      "status": "Registered",
+      "invited": "May 15, 2026",
+      "lastActive": "May 18, 2026",
+      "avatarUrl": null
+    },
+    {
+      "id": "member-1779180021996",
+      "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
+      "userId": null,
+      "name": "Test Designer",
+      "email": "newdesigner@test.com",
+      "role": "Admin",
+      "status": "Pending",
+      "invited": "May 19, 2026",
+      "lastActive": null,
+      "avatarUrl": null,
+      "enrollmentToken": "86d27a6e-85b7-4075-99ee-a71b0285095e",
+      "buildingName": "44 East Avenue"
+    },
+    {
+      "id": "member-1779181019440",
+      "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
+      "userId": null,
+      "name": "Alice Chen",
+      "email": "alice@test.com",
+      "role": "Lead Concierge",
+      "status": "Pending",
+      "invited": "May 19, 2026",
+      "lastActive": null,
+      "avatarUrl": null,
+      "enrollmentToken": "acb11c6f-3acb-414a-97c4-4c76e2600056"
+    },
+    {
+      "id": "member-parkview-pending-team",
+      "buildingId": "60808600-ad82-4202-a2ca-3b24ae87ee5e",
+      "userId": null,
+      "name": "Jordan Riley",
+      "email": "jordan.riley@parkviewcondos.com",
+      "role": "Lead Concierge",
+      "status": "Pending",
+      "invited": "July 24, 2026",
+      "lastActive": null,
+      "avatarUrl": null,
+      "enrollmentToken": "parkview-pending-team-member-token",
+      "buildingName": "Parkview Condos"
+    }
+  ],
+  "total": 5,
+  "page": 1,
+  "pageSize": 20
+}

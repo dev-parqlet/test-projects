@@ -1,0 +1,25 @@
+{
+  "fileName": "residents-sample.csv",
+  "fileSize": 312,
+  "totalSheets": 1,
+  "totalRows": 3,
+  "sheets": [
+    {
+      "sheetName": "Residents",
+      "guessedEntity": "resident",
+      "rowCount": 3,
+      "headers": ["name", "email", "unit", "phone"],
+      "sample": [
+        { "name": "Jane Doe", "email": "jane.doe@example.com", "unit": "12B", "phone": "+15555550101" },
+        { "name": "John Smith", "email": "john.smith@example.com", "unit": "7A", "phone": "+15555550102" },
+        { "name": "Alex Rivera", "email": "alex.rivera@example.com", "unit": "3C", "phone": "+15555550103" }
+      ],
+      "rows": [
+        { "name": "Jane Doe", "email": "jane.doe@example.com", "unit": "12B", "phone": "+15555550101" },
+        { "name": "John Smith", "email": "john.smith@example.com", "unit": "7A", "phone": "+15555550102" },
+        { "name": "Alex Rivera", "email": "alex.rivera@example.com", "unit": "3C", "phone": "+15555550103" }
+      ]
+    }
+  ],
+  "detectedEntities": ["resident"]
+}

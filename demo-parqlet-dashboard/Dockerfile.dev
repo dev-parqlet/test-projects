@@ -1,0 +1,29 @@
+# ── Dev image ─────────────────────────────────────────────────────────────────
+# Note: uses Debian-based node:24 (not Alpine) because Next.js Turbopack
+# requires native glibc bindings that are not available in Alpine's musl libc.
+
+FROM node:24
+
+WORKDIR /app
+
+# Install all dependencies first (cached as a separate layer).
+# package.json + package-lock.json are enough to invalidate this layer.
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copy everything else. Overwritten at runtime by a volume mount.
+COPY . .
+
+# Expose Next.js dev server port (override with PORT env var if needed).
+EXPOSE 3000
+
+# turbopack is enabled by default in Next.js 16+.
+# CHOKIDAR_USEPOLLING=1 improves file-watch reliability inside containers,
+# especially in environments where inotify events don't propagate to volumes.
+ENV CHOKIDAR_USEPOLLING=true
+ENV NODE_ENV=development
+ENV PORT=3000
+ENV NEXT_PUBLIC_API_URL=http://host.docker.internal:3002
+ENV TURBOPACK=0
+
+CMD ["npm", "run", "dev", "--", "--no-turbopack"]

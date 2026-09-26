@@ -1,0 +1,203 @@
+/*
+ * Parqlet Design Tokens
+ * Source: Figma — Parqlet Library (6U0vAYRYm2H2mjDUWoFidb)
+ * Auto-generated from Figma variables — do not edit manually.
+ * To update: pull from Figma and regenerate this file.
+ */
+
+:root {
+  color-scheme: light only;
+
+  /* ─────────────────────────────────────────────
+   * SEMANTIC COLORS
+   * Use these in all components.
+   * ───────────────────────────────────────────── */
+
+  /* Text */
+  --color-text-strong: #222222;
+  --color-text-weak: #504f4d;
+  --color-text-weaker: #a7a7a7;
+  --color-text-disabled: #959595;
+  --color-text-white: #ffffff;
+  --color-text-accent: #c7e51f;
+  --color-text-error: #c73a3a;
+  --color-text-link: #222222;
+  --color-text-active-tag: #69be38;
+
+  /* Icons */
+  --color-icon-strong: #222222;
+  --color-icon-weak: #504f4d;
+  --color-icon-weak-extra: #a7a7a7;
+  --color-icon-disabled: #959595;
+  --color-icon-inverse: #ffffff;
+  --color-icon-success: #69be38;
+  --color-icon-error: #c73a3a;
+
+  /* Fill */
+  --color-fill-strong: #222222;
+  --color-fill-weak: #f8f6f2;
+  --color-fill-white: #ffffff;
+  --color-fill-accent: #c7e51f;
+  --color-fill-error: #c73a3a;
+  --color-fill-success: #69be38;
+  --color-fill-warning: #bda12e;
+
+  /* Stroke */
+  --color-stroke-strong: #959595;
+  --color-stroke-medium: #e7e4e0;
+  --color-stroke-weak: #f1eee9;
+  --color-stroke-accent: #c7e51f;
+  --color-stroke-unselected: #3d3d3d;
+  --color-stroke-active-tag: #69be38;
+
+  /* Screen Background */
+  --color-screen-bg-strong: #222222;
+  --color-screen-bg-weak: #ffffff;
+
+  /* Divider */
+  --color-divider-accent: #c7e51f;
+  --color-divider-neutral: #e7e4e0;
+
+  /* Button */
+  --color-button-primary: #c7e51f;
+  --color-button-secondary: #ffffff;
+  --color-button-neutral: #222222;
+
+  /* Tags / Status chips — backgrounds */
+  --color-tag-active: #d2ebc3;
+  --color-tag-upcoming: #c0e2f2;
+  --color-tag-pending: #e5d9ab;
+  --color-tag-expired: #f4d8d8;
+  --color-tag-parking-spot: #222222;
+  --color-tag-stats: #f8f6f2;
+
+  /* Tags / Status chips — text colors */
+  --color-tag-text-active: #457d25;
+  --color-tag-text-upcoming: #417893;
+  --color-tag-text-pending: #69644f;
+  --color-tag-text-expired: #c73a3a;
+
+  /* ─────────────────────────────────────────────
+   * RAW PALETTE — Primary Accent (Lime Green)
+   * ───────────────────────────────────────────── */
+  --color-accent-1200: #b8d41b;
+  --color-accent-1000: #c7e51f;
+  --color-accent-800: #d2ea4c;
+  --color-accent-600: #ddef79;
+  --color-accent-400: #e9f5a5;
+  --color-accent-150: #eef7bc;
+  --color-accent-100: #f4fad2;
+  --color-accent-50: #f9fce9;
+
+  /* RAW PALETTE — Gray */
+  --color-gray-100: #292929;
+  --color-gray-90: #3d3d3d;
+  --color-gray-80: #504f4d;
+  --color-gray-60: #959595;
+  --color-gray-40: #a7a7a7;
+  --color-gray-30: #e7e4e0;
+  --color-gray-20: #f1eee9;
+  --color-gray-15: #f3f1ed;
+  --color-gray-5: #f8f7f4;
+  --color-gray-2: #f4f4f4;
+  --color-primary-strong: #222222;
+
+  /* RAW PALETTE — Green */
+  --color-green-1000: #69be38;
+  --color-green-800: #87cb60;
+  --color-green-600: #a5d888;
+  --color-green-400: #c3e5af;
+  --color-green-150: #d2ebc3;
+  --color-green-100: #e1f2d7;
+  --color-green-50: #f0f8eb;
+
+  /* RAW PALETTE — Blue */
+  --color-blue-1000: #62b6de;
+  --color-blue-800: #81c5e5;
+  --color-blue-600: #a1d3eb;
+  --color-blue-400: #c0e2f2;
+  --color-blue-150: #d0e9f5;
+  --color-blue-100: #e0f0f8;
+  --color-blue-50: #eff8fc;
+
+  /* RAW PALETTE — Red */
+  --color-red-1000: #c73a3a;
+  --color-red-800: #d26161;
+  --color-red-600: #dd8989;
+  --color-red-400: #e9b0b0;
+  --color-red-150: #eec4c4;
+  --color-red-100: #f4d8d8;
+  --color-red-50: #f9ebeb;
+
+  /* RAW PALETTE — Mustard */
+  --color-mustard-1000: #bda12e;
+  --color-mustard-800: #cab458;
+  --color-mustard-600: #d7c782;
+  --color-mustard-400: #e5d9ab;
+  --color-mustard-150: #ebe3c0;
+  --color-mustard-100: #f2ecd5;
+  --color-mustard-50: #f8f6ea;
+
+  /* ─────────────────────────────────────────────
+   * TYPOGRAPHY
+   * ───────────────────────────────────────────── */
+
+  --font-family-body: 'Rubik', sans-serif;
+  --font-family-heading: 'Rubik', sans-serif;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  --font-size-heading-1: 32px;
+  --font-size-heading-2: 24px;
+  --font-size-heading-3: 18px;
+  --font-size-body: 16px;
+  --font-size-tiny: 14px;
+  --font-size-uppercase: 12px;
+  --font-size-extra-tiny: 12px;
+
+  --line-height-heading-1: 36px;
+  --line-height-heading-2: 28px;
+  --line-height-heading-3: 24px;
+  --line-height-body: 20px;
+  --line-height-tiny: 16px;
+  --line-height-uppercase: 16px;
+  --line-height-extra-tiny: 16px;
+
+  /* ─────────────────────────────────────────────
+   * SPACING
+   * ───────────────────────────────────────────── */
+  --spacing-0: 0px;
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  --spacing-56: 56px;
+  --spacing-64: 64px;
+  --spacing-80: 80px;
+  --spacing-96: 96px;
+  --spacing-128: 128px;
+  --spacing-192: 192px;
+  --spacing-256: 256px;
+
+  /* ─────────────────────────────────────────────
+   * CORNER RADIUS
+   * ───────────────────────────────────────────── */
+  --radius-0: 0px;
+  --radius-4: 4px;
+  --radius-5: 5px;
+  --radius-8: 8px;
+  --radius-12: 12px;
+  --radius-16: 16px;
+  --radius-20: 20px;
+  --radius-24: 24px;
+  --radius-32: 32px;
+  --radius-48: 48px;
+  --radius-pill: 9999px;
+}

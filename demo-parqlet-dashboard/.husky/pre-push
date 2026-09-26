@@ -1,0 +1,29 @@
+#!/bin/sh
+# Pre-push hook: runs TypeScript check and full build before allowing push.
+# Failures block the push. Use --no-verify to bypass (rare, intentional cases only).
+
+echo "Running pre-push checks..."
+
+cd "$(git rev-parse --show-toplevel)"
+
+echo "[1/2] Running TypeScript check..."
+npm run typecheck
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "✖  TypeScript check failed. Fix errors before pushing."
+  echo "   Bypass with: git push --no-verify"
+  exit 1
+fi
+
+echo "[2/2] Running production build..."
+npm run build
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "✖  Build failed. Fix errors before pushing."
+  echo "   Bypass with: git push --no-verify"
+  exit 1
+fi
+
+echo ""
+echo "✔  Pre-push checks passed."
+exit 0

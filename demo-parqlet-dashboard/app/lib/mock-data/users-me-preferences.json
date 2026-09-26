@@ -1,0 +1,63 @@
+{
+  "timezone": "America/Chicago (CT)",
+  "timeFormat": "12h",
+  "twoFactorEnabled": false,
+  "autoInviteEnabled": false,
+  "adminNotificationEmail": "margo@parqlet.com",
+  "notificationPreferences": {
+    "res-invite": {
+      "email": true,
+      "web": false
+    },
+    "res-updated": {
+      "email": true,
+      "web": false
+    },
+    "res-removed": {
+      "email": true,
+      "web": false
+    },
+    "staff-invite": {
+      "email": false,
+      "web": false
+    },
+    "new-admin": {
+      "email": false,
+      "web": false
+    },
+    "book-new": {
+      "email": true,
+      "web": false
+    },
+    "book-cancel": {
+      "email": true,
+      "web": false
+    },
+    "book-issue": {
+      "email": true,
+      "web": false
+    },
+    "sync-ok": {
+      "email": false,
+      "web": false
+    },
+    "sync-error": {
+      "email": false,
+      "web": false
+    }
+  },
+  "alertSeverityPreferences": {
+    "critical": {
+      "email": true,
+      "web": true
+    },
+    "warning": {
+      "email": true,
+      "web": true
+    },
+    "info": {
+      "email": false,
+      "web": true
+    }
+  }
+}

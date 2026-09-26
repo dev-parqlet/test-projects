@@ -1,0 +1,42 @@
+language: "en-US"
+
+reviews:
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+      - "dev"
+    ignore_title_keywords:
+      - "wip"
+      - "draft"
+      - "chore(release)"
+      - "ci:"
+
+  path_filters:
+    - "!**/pnpm-lock.yaml"
+    - "!**/package-lock.json"
+    - "!**/yarn.lock"
+    - "!.next/**"
+    - "!node_modules/**"
+    - "!**/coverage/**"
+
+  path_instructions:
+    - path: "app/**/*.{ts,tsx}"
+      instructions: |
+        Prefer Server Components and Server Actions over Route Handlers for mutations.
+        Use TanStack Query only for genuinely client-driven state, never to bypass server-owned data fetching.
+    - path: "**/*.{ts,tsx,js,jsx}"
+      instructions: |
+        Never commit Stripe live keys (sk_live_*, pk_live_*) or webhook signing secrets.
+        Test keys belong in .env.local (gitignored).
+
+  tools:
+    eslint:
+      enabled: true
+    gitleaks:
+      enabled: true
+
+knowledge_base:
+  code_guidelines:
+    enabled: true

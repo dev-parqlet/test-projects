@@ -1,0 +1,17 @@
+export const colors = {
+  sidebarBg:         "var(--color-primary-strong)",
+  sidebarBorder:     "var(--color-gray-90)",
+  sidebarItemActive: "var(--color-gray-90)",
+  sidebarTextActive: "var(--color-text-accent)",
+  sidebarText:       "var(--color-text-weaker)",
+  mainBg:            "var(--color-fill-weak)",
+  white:             "var(--color-fill-white)",
+  border:            "var(--color-stroke-medium)",
+  textStrong:        "var(--color-text-strong)",
+  textWeak:          "var(--color-text-weak)",
+  tagBg:             "var(--color-fill-weak)",
+  tagActive:         "var(--color-tag-active)",
+  tagUpcoming:       "var(--color-tag-upcoming)",
+  chartBar:          "var(--color-accent-1000)",
+  headerBorder:      "var(--color-stroke-medium)",
+};

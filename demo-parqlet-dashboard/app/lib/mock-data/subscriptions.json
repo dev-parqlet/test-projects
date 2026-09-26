@@ -1,0 +1,94 @@
+{
+  "data": [
+    {
+      "id": "04734ece-8fe3-4bec-bc90-37b23920b55b",
+      "building_id": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
+      "plan_name": "Starter",
+      "status": "Active",
+      "mrr": 49900,
+      "next_renewal_date": "2026-06-15T06:55:06.110Z",
+      "created_at": "2026-05-15T06:55:06.113Z",
+      "updated_at": "2026-05-15T06:55:06.113Z",
+      "cancelled_at": null,
+      "payment_method_type": "credit_card",
+      "payment_method": {
+        "last4": "4242",
+        "brand": "visa",
+        "expiry": "12 / 28"
+      },
+      "billing_address": {
+        "company": "44 East Avenue Homeowners Association, Inc.",
+        "email": "billing@44east-hoa.com",
+        "tax_id": "47-3829104"
+      },
+      "invoice_notifications": {
+        "on_renewal": true,
+        "copy_to_billing_contact": false,
+        "renewal_reminder_7_days": false,
+        "failed_payment_alert": true
+      },
+      "additional_invoice_emails": []
+    },
+    {
+      "id": "8c865926-3da2-4067-9109-93cd98afdd5b",
+      "building_id": "80f9ac2e-b884-4634-ac02-0682a9a12662",
+      "plan_name": "Growth",
+      "status": "Active",
+      "mrr": 99900,
+      "next_renewal_date": "2026-06-15T06:55:06.121Z",
+      "created_at": "2026-05-15T06:55:06.122Z",
+      "updated_at": "2026-05-15T06:55:06.122Z",
+      "cancelled_at": null,
+      "payment_method_type": "credit_card",
+      "payment_method": {
+        "last4": "1881",
+        "brand": "mastercard",
+        "expiry": "08 / 27"
+      },
+      "billing_address": {
+        "company": "Riverside Towers Condominium Association",
+        "email": "finance@riversidetowers.org",
+        "tax_id": ""
+      },
+      "invoice_notifications": {
+        "on_renewal": true,
+        "copy_to_billing_contact": false,
+        "renewal_reminder_7_days": false,
+        "failed_payment_alert": true
+      },
+      "additional_invoice_emails": []
+    },
+    {
+      "id": "a5d3c611-88d0-431f-951b-cb82448be2ae",
+      "building_id": "60808600-ad82-4202-a2ca-3b24ae87ee5e",
+      "plan_name": "Enterprise",
+      "status": "Past Due",
+      "mrr": 199900,
+      "next_renewal_date": "2026-06-15T06:55:06.127Z",
+      "created_at": "2026-05-15T06:55:06.128Z",
+      "updated_at": "2026-05-15T06:55:06.128Z",
+      "cancelled_at": null,
+      "payment_method_type": "credit_card",
+      "payment_method": {
+        "last4": "0005",
+        "brand": "amex",
+        "expiry": "03 / 26"
+      },
+      "billing_address": {
+        "company": "Parkview Condos Owners Association",
+        "email": "accounts@parkviewcondos.com",
+        "tax_id": "84-2238471"
+      },
+      "invoice_notifications": {
+        "on_renewal": true,
+        "copy_to_billing_contact": false,
+        "renewal_reminder_7_days": false,
+        "failed_payment_alert": true
+      },
+      "additional_invoice_emails": []
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "pageSize": 3
+}

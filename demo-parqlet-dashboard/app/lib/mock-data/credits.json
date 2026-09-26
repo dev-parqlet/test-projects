@@ -1,0 +1,23 @@
+[
+  {
+    "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
+    "creditsInCirculation": 12500,
+    "creditsEarnedThisMonth": 3200,
+    "creditsSpentThisMonth": 1800,
+    "residentsAtThreshold": 12
+  },
+  {
+    "buildingId": "60808600-ad82-4202-a2ca-3b24ae87ee5e",
+    "creditsInCirculation": 8700,
+    "creditsEarnedThisMonth": 2100,
+    "creditsSpentThisMonth": 950,
+    "residentsAtThreshold": 8
+  },
+  {
+    "buildingId": "80f9ac2e-b884-4634-ac02-0682a9a12662",
+    "creditsInCirculation": 15200,
+    "creditsEarnedThisMonth": 4100,
+    "creditsSpentThisMonth": 2200,
+    "residentsAtThreshold": 15
+  }
+]

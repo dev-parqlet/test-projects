@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "id": "tpl_on_renewal",
+      "label": "Send invoice on renewal",
+      "description": "Receive a PDF invoice each billing cycle",
+      "default_enabled": true
+    },
+    {
+      "id": "tpl_copy_billing",
+      "label": "Send invoice copy to billing contact",
+      "description": "CC the billing contact on every invoice",
+      "default_enabled": false
+    },
+    {
+      "id": "tpl_reminder_7d",
+      "label": "Send renewal reminder 7 days before",
+      "description": "Heads-up email 7 days before auto-renewal",
+      "default_enabled": false
+    },
+    {
+      "id": "tpl_failed_pay",
+      "label": "Send failed payment alert immediately",
+      "description": "Critical alert when a charge fails",
+      "default_enabled": true
+    }
+  ]
+}

@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&display=swap');
+@import "tailwindcss";
+@import "./tokens.css";
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background: var(--color-fill-white);
+  color: var(--color-text-strong);
+}
+
+/* The pre-auth "logo-dark.svg" mark (sign-in, reset-password, onboarding) is
+ * dark-colored by design for a light background — invisible against the
+ * dark-mode background those same pages use. Applied via a CSS var (not a
+ * hardcoded filter on the <img>) so it automatically flips with the theme,
+ * same pattern as the --color-* tokens below. */
+:root {
+  --logo-dark-filter: none;
+}
+
+body {
+  font-family: var(--font-family-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Override browser autofill background on all inputs — CSS vars don't work inside :-webkit-autofill */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #222222 !important;
+  caret-color: #222222;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+input:disabled:-webkit-autofill,
+input:disabled:-webkit-autofill:hover,
+input:disabled:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #f8f7f4 inset !important;
+  box-shadow: 0 0 0 1000px #f8f7f4 inset !important;
+  -webkit-text-fill-color: #959595 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * DARK MODE
+ * Redefines every color token from tokens.css under html[data-theme="dark"].
+ * Higher specificity than tokens.css's plain `:root` so it always wins
+ * regardless of stylesheet order, and because these are inherited custom
+ * properties, defining them once here on <html> cascades to every
+ * descendant automatically — no component styles need to change, since
+ * they already read colors via var(--color-*).
+ * ───────────────────────────────────────────────────────────────────────── */
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --logo-dark-filter: brightness(700%);
+
+  /* Text */
+  --color-text-strong: #ececec;
+  --color-text-weak: #b8b6b3;
+  --color-text-weaker: #8a8a8a;
+  --color-text-disabled: #6b6b6b;
+  --color-text-white: #ffffff;
+  --color-text-accent: #d5ef4d;
+  --color-text-error: #e57373;
+  --color-text-link: #ececec;
+  --color-text-active-tag: #8fd66c;
+
+  /* Icons */
+  --color-icon-strong: #ececec;
+  --color-icon-weak: #b8b6b3;
+  --color-icon-weak-extra: #8a8a8a;
+  --color-icon-disabled: #6b6b6b;
+  --color-icon-inverse: #ffffff;
+  --color-icon-success: #7ecb4a;
+  --color-icon-error: #e57373;
+
+  /* Fill */
+  --color-fill-strong: #3a3a3d;
+  --color-fill-weak: #17171a;
+  --color-fill-white: #232326;
+  --color-fill-accent: #c7e51f;
+  --color-fill-error: #d9534f;
+  --color-fill-success: #7ecb4a;
+  --color-fill-warning: #cfae3e;
+
+  /* Stroke */
+  --color-stroke-strong: #6a6a6a;
+  --color-stroke-medium: #3a3a3d;
+  --color-stroke-weak: #2c2c2f;
+  --color-stroke-accent: #c7e51f;
+  --color-stroke-unselected: #6a6a6a;
+  --color-stroke-active-tag: #7ecb4a;
+
+  /* Screen Background */
+  --color-screen-bg-strong: #17171a;
+  --color-screen-bg-weak: #17171a;
+
+  /* Divider */
+  --color-divider-accent: #c7e51f;
+  --color-divider-neutral: #3a3a3d;
+
+  /* Button */
+  --color-button-primary: #c7e51f;
+  --color-button-secondary: #2a2a2d;
+  --color-button-neutral: #3a3a3d;
+
+  /* Tags / Status chips — backgrounds */
+  --color-tag-active: #1f3a17;
+  --color-tag-upcoming: #16323f;
+  --color-tag-pending: #3a3016;
+  --color-tag-expired: #3d1f1f;
+  --color-tag-parking-spot: #3a3a3d;
+  --color-tag-stats: #2a2a2d;
+
+  /* Tags / Status chips — text colors */
+  --color-tag-text-active: #8fd66c;
+  --color-tag-text-upcoming: #7ec9e8;
+  --color-tag-text-pending: #d9c98a;
+  --color-tag-text-expired: #e88888;
+
+  /* Raw palette — gray (the one most directly used for neutral
+     surfaces/borders throughout the app) is inverted; brand/status hues
+     below are kept close to their light values since they're mostly used
+     as small saturated accents (badges, dots, icons) that read fine
+     against a dark surface without inverting. */
+  --color-gray-100: #f1f1f1;
+  --color-gray-90: #2c2c2f;
+  --color-gray-80: #b8b6b3;
+  --color-gray-60: #8a8a8a;
+  --color-gray-40: #6b6b6b;
+  --color-gray-30: #3a3a3d;
+  --color-gray-20: #2c2c2f;
+  --color-gray-15: #272729;
+  --color-gray-5: #232326;
+  --color-gray-2: #1d1d1f;
+  --color-primary-strong: #17171a;
+
+  /* Raw palette — Green / Blue / Red / Mustard: mid/high saturation steps
+     (400-1200) are unchanged from tokens.css — those are used for small
+     saturated accents (dots, icons, chart bars) that read fine on a dark
+     surface as-is. The palest steps (50/100/150) are also used directly as
+     large "selected state" card/row background fills (e.g. a chosen radio
+     option) — those DO need a dark equivalent, since a pale light-mode tint
+     used at full size looks like a glowing, low-contrast patch on a dark
+     page otherwise. */
+  --color-accent-50: #2a2e14;
+  --color-accent-100: #313519;
+  --color-accent-150: #383d1e;
+  --color-green-50: #16220f;
+  --color-green-100: #1c2b14;
+  --color-green-150: #1f3a17;
+  --color-blue-50: #101f26;
+  --color-blue-100: #16323f;
+  --color-blue-150: #1a3947;
+  --color-red-50: #2a1616;
+  --color-red-100: #3d1f1f;
+  --color-red-150: #452525;
+  --color-mustard-50: #2a2614;
+  --color-mustard-100: #3a3016;
+  --color-mustard-150: #443a1c;
+}
+
+/* :-webkit-autofill can't read CSS custom properties, so it needs its own
+   literal-color override under dark mode too (mirrors the light-mode rule
+   above using dark equivalents of --color-fill-white / --color-text-strong). */
+html[data-theme="dark"] input:-webkit-autofill,
+html[data-theme="dark"] input:-webkit-autofill:hover,
+html[data-theme="dark"] input:-webkit-autofill:focus,
+html[data-theme="dark"] input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #232326 inset !important;
+  box-shadow: 0 0 0 1000px #232326 inset !important;
+  -webkit-text-fill-color: #ececec !important;
+  caret-color: #ececec;
+}
+
+html[data-theme="dark"] input:disabled:-webkit-autofill,
+html[data-theme="dark"] input:disabled:-webkit-autofill:hover,
+html[data-theme="dark"] input:disabled:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #1d1d1f inset !important;
+  box-shadow: 0 0 0 1000px #1d1d1f inset !important;
+  -webkit-text-fill-color: #6b6b6b !important;
+}
+
+/* Mobile table body text: every table-cell wraps its content in
+   CopyableCell (see app/components/ui/CopyableCell.tsx), which tags it with
+   this class. Each cell also sets its own inline font-size, which normally
+   beats anything set on an ancestor — !important is what lets this reach
+   past that on narrow screens, matching the smaller mobile size already
+   used for table header labels (see TableHeadLabel.tsx). */
+@media (max-width: 640px) {
+  .copyable-cell-body,
+  .copyable-cell-body * {
+    font-size: 12px !important;
+    line-height: 16px !important;
+  }
+}

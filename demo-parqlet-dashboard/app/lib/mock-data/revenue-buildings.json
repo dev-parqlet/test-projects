@@ -1,0 +1,34 @@
+{
+  "data": [
+    {
+      "buildingId": "016c19cc-6ed3-4b22-80eb-890054263794",
+      "buildingName": "Parkview Condos",
+      "mrr": 1999,
+      "status": "Past Due",
+      "lastPayment": null,
+      "nextRenewal": "2026-06-15T06:42:33.065Z",
+      "contractExpiry": "2026-06-15T06:42:33.065Z"
+    },
+    {
+      "buildingId": "c3de2ba5-3c7c-4b29-9f43-390039765f45",
+      "buildingName": "Riverside Towers",
+      "mrr": 999,
+      "status": "Active",
+      "lastPayment": null,
+      "nextRenewal": "2026-06-15T06:42:33.060Z",
+      "contractExpiry": "2026-06-15T06:42:33.060Z"
+    },
+    {
+      "buildingId": "adefd306-a109-478b-a473-59cebcab72cd",
+      "buildingName": "44 East Avenue",
+      "mrr": 499,
+      "status": "Active",
+      "lastPayment": null,
+      "nextRenewal": "2026-06-15T06:42:33.041Z",
+      "contractExpiry": "2026-06-15T06:42:33.041Z"
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "pageSize": 20
+}

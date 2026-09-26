@@ -1,0 +1,57 @@
+{
+  "data": [
+    {
+      "id": "a2306fd5-0ab8-4abc-bfb6-5070c491ef55",
+      "severity": "Critical",
+      "buildingId": "80f9ac2e-b884-4634-ac02-0682a9a12662",
+      "type": "Data Sync Error",
+      "description": "Yardi sync returned malformed response",
+      "acknowledged": false,
+      "timestamp": "2026-05-18T08:20:13.113Z",
+      "buildingName": "Riverside Towers"
+    },
+    {
+      "id": "c9704d9f-ca5c-45f2-9776-c5865e9dc79b",
+      "severity": "Warning",
+      "buildingId": "60808600-ad82-4202-a2ca-3b24ae87ee5e",
+      "type": "Low Adoption",
+      "description": "Parkview Condos adoption is at 18%",
+      "acknowledged": true,
+      "timestamp": "2026-05-18T08:20:13.112Z",
+      "buildingName": "Parkview Condos"
+    },
+    {
+      "id": "25d3fef1-b125-46d7-a490-d825c8ab21e3",
+      "severity": "Info",
+      "buildingId": "60808600-ad82-4202-a2ca-3b24ae87ee5e",
+      "type": "New Registration",
+      "description": "5 new residents registered this week",
+      "acknowledged": true,
+      "timestamp": "2026-05-18T08:20:13.111Z",
+      "buildingName": "Parkview Condos"
+    },
+    {
+      "id": "1d8cb8ff-5cfd-4a7d-a69c-ca7c35737885",
+      "severity": "Warning",
+      "buildingId": "80f9ac2e-b884-4634-ac02-0682a9a12662",
+      "type": "Subscription Overdue",
+      "description": "Invoice #INV-0034 is 15 days overdue",
+      "acknowledged": true,
+      "timestamp": "2026-05-18T08:20:13.110Z",
+      "buildingName": "Riverside Towers"
+    },
+    {
+      "id": "6a993f31-ee24-4922-824e-08a5e733d577",
+      "severity": "Critical",
+      "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
+      "type": "Sync Failure",
+      "description": "BuildingLink sync failed: invalid credentials",
+      "acknowledged": false,
+      "timestamp": "2026-05-18T08:20:13.108Z",
+      "buildingName": "44 East Avenue"
+    }
+  ],
+  "total": 5,
+  "page": 1,
+  "pageSize": 20
+}
