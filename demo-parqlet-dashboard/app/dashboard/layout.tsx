@@ -21,16 +21,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const router = useRouter();
 
-  // /dashboard is the HOA-admin building dashboard. Super admins have their own
-  // aggregate overview at /super-admin — bounce them there instead of rendering
-  // building-scoped HOA content inside the super-admin shell.
-  useEffect(() => {
-    if (user?.role === "super_admin") {
-      router.replace("/super-admin");
-    }
-  }, [user?.role, router]);
-
-  if (user?.role === "super_admin") return null;
+  // The demo has no super-admin identity and no /super-admin routes - the
+  // real dashboard bounces super admins to their aggregate overview here,
+  // which would be a redirect to a 404.
 
   const active = pathnameToNavId(pathname);
   return (

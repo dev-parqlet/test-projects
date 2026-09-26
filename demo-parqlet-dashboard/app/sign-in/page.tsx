@@ -4,7 +4,6 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { defaultLandingFor, readCallbackUrl } from "../lib/callback-url";
 import { useAuth } from "../components/auth/auth-provider";
-import { DEV_SIGNED_OUT } from "../lib/dev-auth";
 
 /**
  * Resolve an existing session from dev localStorage (localhost) or by calling
@@ -23,29 +22,10 @@ async function readExistingSession(): Promise<{ role: string } | null> {
   // submitting the form — we only suppress the auto-redirect.
   if (wasJustSignedOut()) return null;
 
-  // Localhost: check dev localStorage first. This MUST match AuthProvider's
-  // fetchMe (which always reads localStorage on localhost) — otherwise the
-  // sign-in page and the dashboard's AuthGuard can disagree about whether
-  // the user is signed in, and bounce the visitor in a
-  // /sign-in?callbackUrl=… <-> /dashboard loop. The `isDevAuthEnabled()` gate
-  // here only changes the *fallback* below, never the localStorage short-
-  // circuit: a signed-out sentinel or a stale user in localStorage must beat
-  // any still-valid cookie so the loop is broken even when the sign-out
-  // fetch failed to clear the cookie server-side.
-  if (window.location.hostname === "localhost") {
-    try {
-      const raw = window.localStorage.getItem("dev_mock_user");
-      if (raw === DEV_SIGNED_OUT) return null;
-      if (raw) {
-        const parsed = JSON.parse(raw) as { role?: string };
-        if (parsed.role) return { role: parsed.role };
-      }
-      // localStorage is empty — fall through to the cookie check below so
-      // real-auth mode (no dev switcher) still works.
-    } catch {
-      // fall through
-    }
-  }
+  // DEMO: the dev-switcher localStorage short-circuit that used to live here
+  // is gone along with the switcher itself. Leaving it would let a
+  // `dev_mock_user` key stored on a previous visit - possibly a super admin -
+  // resurrect a session this build has no route for.
 
   // Cookie session: fetch /api/auth/me directly. AuthProvider's meQuery is
   // disabled on /sign-in (intentional — it loops with the sign-in submit

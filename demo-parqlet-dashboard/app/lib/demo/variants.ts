@@ -86,8 +86,17 @@ export const DEFAULT_VARIANT: DemoVariant = 'hoa';
 /** localStorage key holding the visitor's choice. */
 const STORAGE_KEY = 'parqlet_demo_variant';
 
+/**
+ * Accepts the obvious spellings rather than one exact string. A link is
+ * typed by a human into an email as often as it is copied, and `?v=apartment`
+ * silently falling back to the HOA dashboard is the kind of thing nobody
+ * notices until a prospect is already looking at the wrong product.
+ */
 function parse(v: string | null): DemoVariant | null {
-  return v === 'apartments' || v === 'hoa' ? v : null;
+  const k = (v ?? '').trim().toLowerCase();
+  if (k === 'apartments' || k === 'apartment' || k === 'apt') return 'apartments';
+  if (k === 'hoa') return 'hoa';
+  return null;
 }
 
 /**
@@ -142,9 +151,18 @@ export function setVariant(v: DemoVariant): void {
   try {
     window.localStorage.setItem(STORAGE_KEY, v);
   } catch {
-    // Ignore — the reload below still lands on the default.
+    // Ignore — the ?v= below still carries the choice.
   }
-  window.location.href = '/';
+  // Navigate WITH the parameter rather than to a bare `/`. Two reasons: the
+  // address bar then always names what you are looking at, so the link is
+  // copy-pasteable mid-demo; and it does not depend on localStorage having
+  // worked, which it may not have in a private window.
+  window.location.href = `/?v=${v}`;
+}
+
+/** The other one. There are exactly two, so switching is a toggle. */
+export function otherVariant(v: DemoVariant): DemoVariant {
+  return v === 'hoa' ? 'apartments' : 'hoa';
 }
 
 export function currentIdentity(): DemoIdentity {

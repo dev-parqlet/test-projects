@@ -2,7 +2,6 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { DEV_SIGNED_OUT, isDevAuthEnabled } from "../../lib/dev-auth";
 import { currentIdentity } from "../../lib/demo/variants";
 
 export interface SessionUser {
@@ -87,38 +86,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     retry: false,
   });
 
-  // Dev switcher can swap the user without going through /api/auth/me — keep
-  // the cache in sync so every consumer (sidebar, dropdowns, layout) reflects it.
-  useEffect(() => {
-    if (!isDevAuthEnabled()) return;
-
-    const handleMockUser = (e: Event) => {
-      const ce = e as CustomEvent;
-      const mockUser = ce.detail;
-      if (mockUser) {
-        const sessionUser: SessionUser = {
-          id: mockUser.id,
-          email: mockUser.email,
-          name: mockUser.name,
-          role: mockUser.role,
-          buildingId: mockUser.buildingId,
-          buildingIds: mockUser.role === "super_admin" ? [] : mockUser.buildingId ? [mockUser.buildingId] : [],
-          buildings: mockUser.buildingName && mockUser.buildingId
-            ? [{ id: mockUser.buildingId, name: mockUser.buildingName }]
-            : [],
-        };
-        queryClient.setQueryData(authKeys.me, sessionUser);
-      } else {
-        // Dev switcher signed out — clear the session so consumers (sidebar,
-        // guards, layouts) reflect the signed-out state and we don't loop on /sign-in.
-        queryClient.setQueryData(authKeys.me, null);
-      }
-    };
-    window.addEventListener("dev_mock_user_changed", handleMockUser as EventListener);
-    return () => {
-      window.removeEventListener("dev_mock_user_changed", handleMockUser as EventListener);
-    };
-  }, [queryClient]);
 
   const signOutMutation = useMutation({
     mutationFn: async () => {
@@ -137,12 +104,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSettled: () => {
       queryClient.setQueryData(authKeys.me, null);
       if (typeof window !== "undefined") {
-        // On localhost the DevAuthSwitcher would otherwise re-authenticate us on the
-        // next load and bounce us off /sign-in. Persist a signed-out sentinel so it
-        // stays signed out until a user is picked again.
-        if (window.location.hostname === "localhost") {
-          localStorage.setItem("dev_mock_user", DEV_SIGNED_OUT);
-        }
         // Stash a "just signed out" timestamp so /sign-in's readExistingSession
         // can refuse to auto-redirect during the race between the (cleared) cookie
         // state and any in-flight /api/auth/me response. Without this, a slow or

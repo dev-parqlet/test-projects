@@ -8,6 +8,9 @@ import { IcSettings } from "../icons/IcSettings";
 import { IcPerson } from "../icons/IcPerson";
 import { IcNotification } from "../icons/IcNotification";
 import { IcGiftCard } from "../icons/IcGiftCard";
+import { IcCredit } from "../icons/IcCredit";
+import { IcParking } from "../icons/IcParking";
+import { readVariant } from "../../lib/demo/variants";
 
 export type NavId =
   | "dashboard"
@@ -20,6 +23,9 @@ export type NavId =
   | "profile"
   | "notifications"
   | "gift-cards"
+  | "spots"
+  | "availability"
+  | "income"
   | "none";
 
 export interface NavItem {
@@ -35,6 +41,10 @@ export interface NavItem {
    *  permission would be the wrong tool, since this is not about who
    *  the user is. */
   enabled?: boolean;
+  /** Which demo product this item belongs to. Omitted means both.
+   *  An Apartments building owns its spots and is paid in dollars; an
+   *  HOA does neither, so the two nav sets genuinely differ. */
+  variants?: readonly ("hoa" | "apartments")[];
 }
 
 /**
@@ -60,6 +70,14 @@ export const navItems: readonly NavItem[] = [
   { id: "profile",       label: "Profile",            Icon: IcPerson,       href: "/profile" },
   { id: "notifications", label: "Notifications",      Icon: IcNotification, href: "/notifications" },
   { id: "gift-cards",    label: "Gift Cards",         Icon: IcGiftCard,     href: "/gift-cards", enabled: HOA_GIFT_CARDS_VISIBLE },
+
+  // ── Apartments only ────────────────────────────────────────────────────
+  // The building owns the spots, sets a price on each one, and is paid in
+  // dollars. None of that exists for an HOA, where residents own the spots
+  // and guests are paid for in credits.
+  { id: "spots",         label: "Parking Spots",      Icon: IcParking,      href: "/spots",        variants: ["apartments"] },
+  { id: "availability",  label: "Availability",       Icon: IcBookings,     href: "/availability", variants: ["apartments"] },
+  { id: "income",        label: "Income",             Icon: IcCredit,      href: "/income",       variants: ["apartments"] },
 ] as const;
 
 /**
@@ -69,9 +87,14 @@ export const navItems: readonly NavItem[] = [
  * null/undefined roles, so no special-casing is needed here.
  */
 export function getNavItems(role: string | undefined | null): NavItem[] {
+  // DEMO: the visitor's chosen product decides which nav they see. In the
+  // real dashboard this would come from the building's type rather than
+  // from a browser choice.
+  const variant = readVariant();
   return navItems.filter(
     (item) =>
       item.enabled !== false &&
+      (!item.variants || item.variants.includes(variant)) &&
       (!item.requiredAction || can(role, item.requiredAction)),
   );
 }

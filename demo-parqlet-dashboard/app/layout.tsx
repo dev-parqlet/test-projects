@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./components/providers";
-import { DevAuthSwitcher } from "./components/dev/DevAuthSwitcher";
 
 export const metadata: Metadata = {
   title: "Parqlet HOA Platform",
@@ -28,7 +27,6 @@ export default function RootLayout({
       </head>
       <body className="h-full">
         <Providers>{children}</Providers>
-        <DevAuthSwitcher />
       </body>
     </html>
   );

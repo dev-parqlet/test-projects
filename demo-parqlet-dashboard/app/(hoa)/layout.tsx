@@ -19,6 +19,9 @@ function pathnameToNavId(pathname: string): NavId {
   if (pathname === "/profile")                                     return "profile";
   if (pathname === "/notifications")                               return "notifications";
   if (pathname === "/gift-cards")                                  return "gift-cards";
+  if (pathname === "/spots")                                       return "spots";
+  if (pathname === "/availability")                                return "availability";
+  if (pathname === "/income")                                      return "income";
   return "none";
 }
 
