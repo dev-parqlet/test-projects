@@ -51,9 +51,30 @@ export const monthData: ChartPoint[] = [
 
 // --- Chart helpers ---------------------------------------------------------
 
+/**
+ * Axis labels that fit the data, top down.
+ *
+ * The step used to start at 20 whatever the numbers were, which suited the
+ * mock series this was written against (12 to 50) and nothing else: a week
+ * whose busiest day saw 7 bookings got an axis running to 20, so the
+ * tallest bar reached a third of the height and the chart read as a flat
+ * line under a lot of white.
+ *
+ * So the step is chosen from a ladder of round numbers - the smallest that
+ * keeps the axis to about four intervals. A quiet week now fills the chart
+ * the same way a busy one does, and the labels stay numbers a person would
+ * have picked.
+ */
+const AXIS_STEPS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000];
+const AXIS_INTERVALS = 4;
+
 export function computeYLabels(maxVal: number): number[] {
-  const step = maxVal <= 80 ? 20 : maxVal <= 200 ? 50 : 100;
-  const top = Math.ceil(maxVal / step) * step;
+  // An all-zero series still needs an axis, or the bars divide by zero.
+  const safeMax = Math.max(1, Math.ceil(maxVal));
+  const step =
+    AXIS_STEPS.find((s) => safeMax / s <= AXIS_INTERVALS) ??
+    Math.ceil(safeMax / AXIS_INTERVALS);
+  const top = Math.ceil(safeMax / step) * step;
   const labels: number[] = [];
   for (let v = top; v >= 0; v -= step) labels.push(v);
   return labels;

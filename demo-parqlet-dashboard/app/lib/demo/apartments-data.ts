@@ -174,15 +174,19 @@ export function currentPeriodLabel(now = new Date()): string {
 /**
  * Earnings so far in the current, still-open month.
  *
- * About $31 a day taken at the till, which lands the month near $670 after
- * our commission and the card fees - roughly a hundred bookings on a
- * building of this size, against a $500 subscription it therefore clears
- * with something left to withdraw. The figure was four times that, which
- * made every screen quoting it read as a much bigger building than the 125
- * spots the Parking Spots page lists.
+ * About $20 a day taken at the till, which lands the month near $430 after
+ * our commission and the card fees - deliberately SHORT of the $500
+ * subscription. A month that clears its bill exactly draws a full bar and
+ * a $0.00 invoice, which shows the mechanic at its least legible: the
+ * whole point of the card is that earnings eat the bill, and a bar you can
+ * see the end of says that where a full one does not.
+ *
+ * The cost of that choice: with nothing over the subscription there is no
+ * surplus, so the Apartment demo shows no payout and no "connect a bank
+ * account" banner. Raise this above ~$23/day to get them back.
  */
 export function currentPeriod(now = new Date()) {
-  const grossCents = money(31 * now.getDate());
+  const grossCents = money(20 * now.getDate());
   const netCents = netToBuilding(grossCents);
   return {
     period: `${MONTHS[now.getMonth()]} ${now.getFullYear()}`,

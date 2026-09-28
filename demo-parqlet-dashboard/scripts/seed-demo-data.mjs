@@ -20,6 +20,32 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const FILE = path.join(ROOT, "app/lib/mock-data/bookings.json");
+const RESIDENTS_FILE = path.join(ROOT, "app/lib/mock-data/residents.json");
+
+/**
+ * Spot owners are drawn from the building's REAL residents.
+ *
+ * They used to be generated from the same name pools as everyone else, so
+ * a booking could name a spot owner who appears nowhere in the Resident
+ * Directory - and Top Contributors, which joins the two on name, credited
+ * people who do not exist and showed their unit as a dash.
+ */
+function residentsByBuilding() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(RESIDENTS_FILE, "utf-8"));
+    const rows = (Array.isArray(raw) ? raw : raw.data) ?? [];
+    const out = new Map();
+    for (const r of rows) {
+      if (!r?.name || !r?.buildingId) continue;
+      if (!out.has(r.buildingId)) out.set(r.buildingId, []);
+      out.get(r.buildingId).push(r.name);
+    }
+    return out;
+  } catch {
+    return new Map();
+  }
+}
+const RESIDENT_NAMES = residentsByBuilding();
 
 const HOA = "e6565d1b-1f25-4c51-bfa6-7db4932702cd";        // The Meridian
 const APARTMENTS = "80f9ac2e-b884-4634-ac02-0682a9a12662"; // Oakline Park
@@ -71,6 +97,24 @@ function uuid(seed) {
  *                   has one. Pass nothing for an HOA, where every spot is
  *                   a resident's.
  */
+/**
+ * A real resident of this building, picked deterministically.
+ *
+ * Concentrated on a handful of them on purpose. Spreading shares evenly
+ * across all 38 residents gave every contributor exactly one share, and a
+ * leaderboard where everybody ties is not a leaderboard. In a real
+ * building a few people share constantly and most never do, so the
+ * pattern below leans on the first few and tapers.
+ */
+const SHARER_PATTERN = [0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 0, 1, 4, 2, 5, 0];
+
+function spotOwner(buildingId, i) {
+  const pool = RESIDENT_NAMES.get(buildingId);
+  if (!pool || pool.length === 0) return name(i * 5 + 2);
+  const active = Math.min(6, pool.length);
+  return pool[SHARER_PATTERN[i % SHARER_PATTERN.length] % active];
+}
+
 function makeBookings(buildingId, counts, spots, owned, startIndex, sharedSpots = []) {
   const now = new Date();
   const rows = [];
@@ -140,7 +184,7 @@ function makeBookings(buildingId, counts, spots, owned, startIndex, sharedSpots 
       notes: [],
       unitNumber: `${1 + (i % 9)}${unitLetter}`,
       spotNumber: pick(spotList, i),
-      spotOwnerName: shared ? name(i * 5 + 2) : null,
+      spotOwnerName: shared ? spotOwner(buildingId, i) : null,
       spotOwnerPhone: shared ? `(555) 10${i % 10}-${1000 + ((i * 17) % 9000)}` : null,
       i,
     });
