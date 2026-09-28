@@ -14,6 +14,12 @@ type TabOption = "Week" | "Month" | "Custom";
 const BACKEND = BACKEND_URL;
 
 interface RecentActivityCardProps {
+  /**
+   * Split each bar into the building's own spots and the ones residents
+   * lent. Off for a Condo, where every spot is a resident's and the split
+   * would be one colour with a legend explaining nothing.
+   */
+  splitBySpotKind?: boolean;
   buildingId: string | null;
 }
 
@@ -31,7 +37,7 @@ async function fetchBookings(buildingId: string): Promise<ApiBooking[]> {
   return d.data ?? [];
 }
 
-export function RecentActivityCard({ buildingId }: RecentActivityCardProps) {
+export function RecentActivityCard({ buildingId, splitBySpotKind = false }: RecentActivityCardProps) {
   const [activeTab, setActiveTab] = useState<TabOption>("Week");
   const [visible, setVisible] = useState(false);
   const [fromDate, setFromDate] = useState(defaultFrom);
@@ -57,11 +63,15 @@ export function RecentActivityCard({ buildingId }: RecentActivityCardProps) {
       const dayDate = new Date(weekStart);
       dayDate.setDate(weekStart.getDate() + i);
       const label = DAY_NAMES[dayDate.getDay()];
-      const count = bookings.filter((b) => {
+      const onDay = bookings.filter((b) => {
         const d = new Date(b.bookingStartIso);
         return !isNaN(d.getTime()) && d.toDateString() === dayDate.toDateString();
-      }).length;
-      return { day: label, value: count };
+      });
+      return {
+        day: label,
+        value: onDay.length,
+        neighbor: splitBySpotKind ? onDay.filter((b) => b.spotOwnerName).length : undefined,
+      };
     });
 
     const monthly = Array.from({ length: 5 }, (_, i) => {
@@ -69,12 +79,14 @@ export function RecentActivityCard({ buildingId }: RecentActivityCardProps) {
       wStart.setDate(now.getDate() - (6 - i) * 7);
       const wEnd = new Date(wStart);
       wEnd.setDate(wStart.getDate() + 6);
+      const inWeek = bookings.filter((b) => {
+        const bd = new Date(b.bookingStartIso);
+        return !isNaN(bd.getTime()) && bd >= wStart && bd <= wEnd;
+      });
       return {
         day: `W${i + 1}`,
-        value: bookings.filter((b) => {
-          const bd = new Date(b.bookingStartIso);
-          return !isNaN(bd.getTime()) && bd >= wStart && bd <= wEnd;
-        }).length,
+        value: inWeek.length,
+        neighbor: splitBySpotKind ? inWeek.filter((b) => b.spotOwnerName).length : undefined,
       };
     });
 
@@ -85,7 +97,7 @@ export function RecentActivityCard({ buildingId }: RecentActivityCardProps) {
     setTimeout(() => setVisible(true), 50);
 
     return { weekly, monthly, weekAvg, monthAvg };
-  }, [bookings]);
+  }, [bookings, splitBySpotKind]);
 
   // Trigger visible after first data
   if (visible === false && !isLoading && bookings.length > 0) {
@@ -263,7 +275,22 @@ export function RecentActivityCard({ buildingId }: RecentActivityCardProps) {
             Loading…
           </div>
         ) : chartData.length > 0 ? (
-          <BarChart data={chartData} />
+          <>
+            {splitBySpotKind && (
+              <div style={{ display: "flex", gap: 20, marginBottom: 12, fontSize: 13, color: "var(--color-text-strong)" }}>
+                {([
+                  ["Community Spots", "var(--color-spot-community)"],
+                  ["Neighbor spots", "var(--color-spot-neighbor)"],
+                ] as const).map(([label, colour]) => (
+                  <span key={label} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ width: 12, height: 12, borderRadius: 3, background: colour, flex: "none" }} />
+                    {label}
+                  </span>
+                ))}
+              </div>
+            )}
+            <BarChart data={chartData} />
+          </>
         ) : (
           <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-weaker)", fontSize: 14 }}>
             No bookings yet

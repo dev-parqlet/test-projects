@@ -22,6 +22,13 @@ export const colors = {
 export interface ChartPoint {
   day: string;
   value: number;
+  /**
+   * Of `value`, how many were on a spot a RESIDENT lent. Drawn as the
+   * lower, darker part of the bar. Undefined where the split means
+   * nothing - a Condo's residents own every spot - and the bar is then a
+   * single colour.
+   */
+  neighbor?: number;
 }
 
 export const weekData: ChartPoint[] = [

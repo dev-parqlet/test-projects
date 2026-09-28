@@ -49,7 +49,7 @@ export function BarChart({ data }: BarChartProps) {
             position: "relative",
           }}
         >
-          {data.map(({ day, value }) => {
+          {data.map(({ day, value, neighbor }) => {
             const heightPct = (value / chartMax) * 100;
             const isHovered = hoveredDay === day;
             return (
@@ -127,8 +127,26 @@ export function BarChart({ data }: BarChartProps) {
                     position: "relative",
                     zIndex: 1,
                     transition: "background 0.15s ease",
+                    // A split bar is two stacked shares of the same total,
+                    // neighbour spots at the bottom. Drawn INSIDE the bar
+                    // rather than as two bars so the column still reads as
+                    // one day's height.
+                    display: neighbor == null ? undefined : "flex",
+                    flexDirection: "column",
+                    justifyContent: "flex-end",
+                    overflow: "hidden",
                   }}
-                />
+                >
+                  {neighbor != null && value > 0 && (
+                    <div
+                      style={{
+                        height: `${(neighbor / value) * 100}%`,
+                        background: "var(--color-spot-neighbor)",
+                        borderTop: neighbor > 0 && neighbor < value ? "2px solid #fff" : undefined,
+                      }}
+                    />
+                  )}
+                </div>
               </div>
             );
           })}

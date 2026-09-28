@@ -13,7 +13,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { useAuth } from "../../components/auth/auth-provider";
 import { CurrentBookingsCard } from "../../components/hoa/CurrentBookingsCard";
+import { RecentActivityCard } from "../../components/hoa/RecentActivityCard";
 import { StatCard } from "../../components/hoa/StatCard";
+import { TopContributorsCard } from "../../components/hoa/TopContributorsCard";
+import { useWindowWidth } from "../../components/hooks/useWindowSize";
 import { TopEarningSpotsCard } from "../../components/demo/TopEarningSpotsCard";
 import { CreditPriceCard, type PriceRow } from "../../components/pricing/CreditPriceCard";
 import { EarningsProgressCard } from "../../components/revenue/EarningsProgressCard";
@@ -44,6 +47,16 @@ type Booking = {
 export default function ApartmentsDashboardPage() {
   const { user } = useAuth();
   const buildingId = user?.buildingId ?? "";
+  // The paired cards below sit side by side only where there is room for
+  // two readable columns; under that they stack, because a half-width bar
+  // chart with seven days on it is unreadable rather than merely small.
+  const isDesktop = useWindowWidth() >= 1024;
+  const pairStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: isDesktop ? "row" : "column",
+    gap: "var(--spacing-16)",
+    alignItems: isDesktop ? "stretch" : undefined,
+  };
   const period = useMemo(() => currentPeriod(), []);
 
   const { data } = useQuery({
@@ -146,17 +159,19 @@ export default function ApartmentsDashboardPage() {
       </div>
 
       <div style={st.stats}>
-        <StatCard label="Bookings today" value={stats.today} tag="today" />
-        <StatCard label="Bookings this month" value={stats.month} tag="this month" />
+        <StatCard variant="apartment" label="Bookings today" value={stats.today} tag="today" />
+        <StatCard variant="apartment" label="Bookings this month" value={stats.month} tag="this month" />
         {/* The split only means something where the building owns spots of
             its own, which is why a Condo never shows this card. */}
         <StatCard
+          variant="apartment"
           label="Bookings by spot type"
           value={`${stats.community} Comm · ${stats.neighbor} Res`}
           tag="this month"
           split={{ primary: stats.community, secondary: stats.neighbor }}
         />
         <StatCard
+          variant="apartment"
           label="Avg. earned per community spot"
           value={formatMoney(stats.avgPerCommunitySpot)}
           tag="this month"
@@ -172,15 +187,22 @@ export default function ApartmentsDashboardPage() {
         revenueHref="/apartment/revenue"
       />
 
+      {/* Activity against the bookings that produced it */}
+      <div style={pairStyle}>
+        <RecentActivityCard buildingId={buildingId} splitBySpotKind />
+        <CurrentBookingsCard buildingId={buildingId} showEarnings />
+      </div>
+
+      {/* Who lends spots, and which of the building's own earn most */}
+      <div style={pairStyle}>
+        <TopContributorsCard buildingId={buildingId} />
+        <TopEarningSpotsCard buildingId={buildingId} />
+      </div>
+
       <CreditPriceCard
         rows={priceRows}
         footnote="Everyone pays in credits, the same as a Condo. The difference is that you own some of the spots, and only those can carry an extra on top of the base."
       />
-
-      {/* Recent bookings, with what each one actually paid the building */}
-      <CurrentBookingsCard buildingId={buildingId} showEarnings />
-
-      <TopEarningSpotsCard buildingId={buildingId} />
     </div>
   );
 }

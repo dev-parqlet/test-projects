@@ -13,6 +13,7 @@
  * the two can never disagree.
  */
 
+import Link from "next/link";
 import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -80,6 +81,10 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
         flexDirection: "column",
         gap: 12,
         minHeight: 260,
+        // Shares a row with Top Contributors on desktop; without these it
+        // would size to its table and leave the pair lopsided.
+        flex: 1,
+        minWidth: 0,
       }}
     >
       <div>
@@ -138,6 +143,22 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
           </tbody>
         </table>
       )}
+
+      {/* Pinned to the bottom so the link sits on the card's edge whatever
+          the table's height, the way Top Contributors' "View all" does. */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "auto", paddingTop: 12 }}>
+        <Link
+          href="/apartment/availability?tab=spots"
+          style={{
+            fontSize: "var(--font-size-tiny)",
+            color: colors.strong,
+            textDecoration: "none",
+            fontFamily: "var(--font-family-body)",
+          }}
+        >
+          Manage availability
+        </Link>
+      </div>
     </div>
   );
 }
