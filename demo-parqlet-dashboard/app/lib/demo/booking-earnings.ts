@@ -1,32 +1,35 @@
 /**
  * What the building earned on one booking, and why.
  *
- * The number on a booking row is not the price of the booking, and an
- * operator who assumes it is will think they have been short-paid. Three
- * things come off it, and each one is a product rule:
+ * Four cases, and the difference between them is a product rule rather
+ * than a rounding. Whose spot it was decides whether anyone is owed a
+ * gift-card reserve; how it was paid decides whether new money entered
+ * the system at all.
  *
- *   OUR COMMISSION AND THE CARD FEE. Taken from anything paid by card.
+ *   NEIGHBOR SPOT, CARD      price − Stripe − commission − reserve
+ *     The card payment IS the credit being bought, inline. The building
+ *     keeps its share, less the reserve, which is owed to the resident
+ *     who lent the space.
  *
- *   THE GIFT-CARD RESERVE, but only on a spot a RESIDENT shared. That
- *   resident earns a credit for lending their space, and the reserve
- *   behind that credit is money the building owes them, not money it
- *   keeps. On the building's own spots there is no one to pay, so
- *   nothing comes off.
+ *   NEIGHBOR SPOT, CREDIT    nothing
+ *     No card was charged, so nothing new came in - the credit simply
+ *     moves to the spot's owner. The building was paid when that credit
+ *     was first bought.
  *
- *   THE WHOLE AMOUNT, when the booking was paid with a credit the
- *   resident had already EARNED. No card was charged, so no new money
- *   entered the system - the building was paid when that credit was
- *   first bought by somebody else. It earns $0.00, and the row says so
- *   rather than hiding, because a missing row looks like a bug and a
- *   blank amount looks like a failure to pay.
+ *   BUILDING SPOT, CARD      price − Stripe − commission
+ *     The building owns the spot, so there is no one to owe a reserve to
+ *     and none comes off.
  *
- * Verified against the live figures: a $9.00 extra on a building's own
- * spot nets $6.64, and a $6.00 card on a resident's spot nets $1.83.
+ *   BUILDING SPOT, CREDIT + EXTRA    reserve + (extra − Stripe − commission)
+ *     The reserve behind that credit goes to the BUILDING rather than
+ *     staying for gift cards: it is the one case where it does. The extra
+ *     is dollars, so it is charged and split like any card payment.
  *
- * DEMO. Whether a credit was bought or earned is not in the mock corpus,
- * so it is derived from the booking id below - deterministically, because
- * a demo that shows different money on every refresh looks broken when
- * two people compare screens.
+ * Checked against the pricing spec at a $6 base: $1.83, $0.00, $7.41 on a
+ * $10 spot, and $5.28 on a $10 spot paid with a credit plus $4.
+ *
+ * The base is always one credit a day in both products. Only a building's
+ * own spot can carry an extra, and only in an Apartment - see pricing.ts.
  */
 
 import {
@@ -37,12 +40,12 @@ import {
 } from './pricing';
 
 export type BookingEarning = {
-  /** Whose spot it was. Drives the badge and the reserve deduction. */
-  spotKind: 'community' | 'resident';
+  /** Whose spot it was. Drives the badge and the reserve. */
+  spotKind: 'building' | 'neighbor';
   spotKindLabel: string;
-  /** How the renter paid. A reused credit earns the building nothing. */
-  paidWith: 'card' | 'reused-credit';
-  /** "$10.00 card", "1 reused credit + $9.00". */
+  /** How the renter paid for the base. The extra is always dollars. */
+  paidWith: 'card' | 'credit';
+  /** "$10.00 card", "1 credit + $4.00". */
   payLabel: string;
   earnedCents: number;
   /** Why this row earned nothing, for the tooltip. Null when it earned. */
@@ -50,71 +53,60 @@ export type BookingEarning = {
   refunded: boolean;
 };
 
-export const REUSED_CREDIT_REASON =
+export const CREDIT_TO_OWNER_REASON =
   'The building was already paid when this credit was first earned.';
 
-/** Stable per-id, so a row keeps its story across refreshes and screens. */
-function idHash(id: string): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return h;
-}
-
 export function bookingEarning(booking: {
-  id: string;
+  id?: string;
   amountCents?: number | null;
   creditsSpent?: number | null;
   spotOwnerName?: string | null;
   status?: string;
 }): BookingEarning {
-  // A spot with an owner named on it is a resident's, shared with their
-  // neighbours. Anything else is one the building listed itself.
-  const spotKind: BookingEarning['spotKind'] = booking.spotOwnerName ? 'resident' : 'community';
-  const spotKindLabel = spotKind === 'resident' ? 'Resident spot' : 'Community Spot';
+  // A spot with an owner named on it was lent by a resident. Anything else
+  // is one the building listed itself.
+  const spotKind: BookingEarning['spotKind'] = booking.spotOwnerName ? 'neighbor' : 'building';
+  const spotKindLabel = spotKind === 'neighbor' ? 'Resident spot' : 'Community Spot';
 
   const credits = booking.creditsSpent ?? 0;
   const cashCents = booking.amountCents ?? 0;
+  const paidWith: BookingEarning['paidWith'] = credits > 0 ? 'credit' : 'card';
 
-  // Roughly a third of credit-paid bookings reuse a credit the resident
-  // earned rather than one they bought.
-  const reused = credits > 0 && idHash(booking.id) % 3 === 0;
+  const refunded = booking.status === 'Cancelled' || booking.status === 'Refunded';
+  const reserveEach = reservePerCreditCents(CREDIT_PRICE_CENTS);
 
-  const refunded =
-    booking.status === 'Cancelled' || booking.status === 'Refunded';
+  // A card-paid booking carries no credit count, so the nights are read
+  // back out of what was charged: one credit's worth of base per day.
+  const cardDays = Math.max(1, Math.round(cashCents / CREDIT_PRICE_CENTS) || 1);
 
-  // What the building is paid on, before what it owes back. A reused
-  // credit puts no new money in, so only the cash on top counts.
-  const chargedCents = reused ? cashCents : cashCents + credits * CREDIT_PRICE_CENTS;
+  let earnedCents: number;
+  if (refunded) {
+    earnedCents = 0;
+  } else if (spotKind === 'neighbor') {
+    earnedCents =
+      paidWith === 'credit'
+        ? 0
+        : Math.max(0, netToBuilding(cashCents) - reserveEach * cardDays);
+  } else {
+    earnedCents =
+      paidWith === 'credit'
+        ? reserveEach * credits + netToBuilding(cashCents)
+        : netToBuilding(cashCents);
+  }
 
-  const reserveCents =
-    spotKind === 'resident' && credits > 0 && !reused
-      ? reservePerCreditCents(CREDIT_PRICE_CENTS) * credits
-      : 0;
-
-  const earnedCents = refunded
-    ? 0
-    : Math.max(0, netToBuilding(chargedCents) - reserveCents);
-
-  const creditPart =
-    credits > 0
-      ? `${credits} ${reused ? 'reused ' : ''}credit${credits === 1 ? '' : 's'}`
-      : '';
-  const cashPart = cashCents > 0 ? `${formatMoney(cashCents)}${credits > 0 ? '' : ' card'}` : '';
-  const payLabel = refunded
-    ? `${[creditPart, cashPart].filter(Boolean).join(' + ')} returned`
-    : [creditPart, cashPart].filter(Boolean).join(' + ') || '—';
+  const creditPart = credits > 0 ? `${credits} credit${credits === 1 ? '' : 's'}` : '';
+  const cashPart =
+    cashCents > 0 ? `${formatMoney(cashCents)}${credits > 0 ? '' : ' card'}` : '';
+  const paid = [creditPart, cashPart].filter(Boolean).join(' + ');
+  const payLabel = refunded ? `${paid || '—'} returned` : paid || '—';
 
   return {
     spotKind,
     spotKindLabel,
-    paidWith: reused ? 'reused-credit' : 'card',
+    paidWith,
     payLabel,
     earnedCents,
-    zeroReason: refunded
-      ? null
-      : earnedCents === 0 && reused
-        ? REUSED_CREDIT_REASON
-        : null,
+    zeroReason: !refunded && earnedCents === 0 && paidWith === 'credit' ? CREDIT_TO_OWNER_REASON : null,
     refunded,
   };
 }

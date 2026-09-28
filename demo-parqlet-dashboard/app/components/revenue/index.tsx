@@ -233,16 +233,19 @@ export const st: Record<string, React.CSSProperties> = {
   actionRow: { display: "flex", alignItems: "center", gap: "var(--spacing-16)", flexWrap: "wrap" },
   track: {
     position: "relative",
-    height: 10,
+    height: 8,
     borderRadius: 999,
-    background: "var(--color-fill-weak)",
-    border: "1px solid var(--color-stroke-medium)",
+    // No border and a flat track: the bar is read as one solid length, and
+    // an outline around it made a full bar look like it stopped short.
+    background: "var(--color-stroke-weak)",
     overflow: "hidden",
   },
   fill: {
     position: "absolute",
     inset: "0 auto 0 0",
-    background: "var(--color-tag-text-active)",
+    // The brand lime, and the same token the spot-type split bar fills
+    // with, rather than the green reserved for status badges.
+    background: "var(--color-spot-community)",
     borderRadius: 999,
   },
   floorMark: {
@@ -265,7 +268,7 @@ export const st: Record<string, React.CSSProperties> = {
     width: 8,
     height: 8,
     borderRadius: 2,
-    background: "var(--color-tag-text-active)",
+    background: "var(--color-spot-community)",
     marginRight: 6,
   },
   table: { width: "100%", borderCollapse: "collapse" },

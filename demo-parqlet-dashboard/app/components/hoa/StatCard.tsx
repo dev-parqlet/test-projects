@@ -1,16 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { IcCalendar, IcArrowUp } from "../icons";
 import { colors } from "../ui/chart-utils";
 
 interface StatCardProps {
   label: string;
-  value: number;
+  /** Pre-formatted when it is money or a pair; a plain count otherwise. */
+  value: number | string;
   tag: string;
+  /**
+   * Turns the card into a split bar: two shares of one total, drawn in the
+   * same two tones the Recent Activity chart uses for the same two things.
+   * Only a building that OWNS spots has a split to show - a Condo's
+   * residents own every spot, so it never passes this.
+   */
+  split?: { primary: number; secondary: number };
 }
 
-export function StatCard({ label, value, tag }: StatCardProps) {
+export function StatCard({ label, value, tag, split }: StatCardProps) {
+  const total = split ? split.primary + split.secondary : 0;
+  const pct = total > 0 ? (split!.primary / total) * 100 : 0;
+
   return (
     <div
       style={{
@@ -26,41 +35,44 @@ export function StatCard({ label, value, tag }: StatCardProps) {
         overflow: "hidden",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span
-          style={{
-            fontFamily: "var(--font-family-body)",
-            fontSize: "var(--font-size-uppercase)",
-            lineHeight: "var(--line-height-uppercase)",
-            fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
-            color: "var(--color-text-weak)",
-            textTransform: "uppercase" as const,
-          }}
-        >
-          {label}
-        </span>
-        <IcCalendar />
-      </div>
-      <span style={{ fontSize: 24, fontWeight: 500, lineHeight: "28px", color: colors.textStrong }}>
+      <span
+        style={{
+          fontFamily: "var(--font-family-body)",
+          fontSize: "var(--font-size-uppercase)",
+          lineHeight: "var(--line-height-uppercase)",
+          fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
+          color: "var(--color-text-strong)",
+          textTransform: "uppercase" as const,
+          letterSpacing: "0.04em",
+        }}
+      >
+        {label}
+      </span>
+
+      <span style={{ fontSize: 26, fontWeight: 600, lineHeight: "30px", color: colors.textStrong, whiteSpace: "nowrap" }}>
         {value}
       </span>
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <div
+
+      {split && (
+        <div style={{ height: 8, borderRadius: 999, background: "var(--color-fill-weak)", overflow: "hidden", display: "flex" }}>
+          <div style={{ width: `${pct}%`, background: "var(--color-spot-community)" }} />
+          <div style={{ flex: 1, background: "var(--color-spot-neighbor)" }} />
+        </div>
+      )}
+
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "auto" }}>
+        <span
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
             background: colors.tagBg,
             borderRadius: 47,
-            padding: "4px 8px",
+            padding: "4px 10px",
             fontSize: 12,
             color: colors.textStrong,
             lineHeight: "16px",
           }}
         >
           {tag}
-          <IcArrowUp />
-        </div>
+        </span>
       </div>
     </div>
   );

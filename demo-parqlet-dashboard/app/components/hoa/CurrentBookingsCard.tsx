@@ -231,14 +231,14 @@ const earnedStyle: React.CSSProperties = {
 };
 
 /** A community spot is the building's own; a resident spot is lent by a neighbour. */
-function spotKindTag(kind: "community" | "resident"): React.CSSProperties {
+function spotKindTag(kind: "building" | "neighbor"): React.CSSProperties {
   return {
     padding: "2px 8px",
     borderRadius: 47,
     fontSize: 12,
     lineHeight: "16px",
     whiteSpace: "nowrap",
-    background: kind === "community" ? "var(--color-accent-150)" : "var(--color-fill-weak)",
+    background: kind === "building" ? "var(--color-accent-150)" : "var(--color-fill-weak)",
     color: "var(--color-text-strong)",
   };
 }

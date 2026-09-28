@@ -109,6 +109,14 @@
   --color-green-400: #c3e5af;
   --color-green-150: #d2ebc3;
   --color-green-100: #e1f2d7;
+
+  /* The two kinds of spot, wherever they are drawn side by side: a split
+     bar, a stacked chart, a legend. Named for what they mean rather than
+     for their hue, so the pair stays a pair. The olive is the only colour
+     here that is not already on the accent or green ramp - it has to read
+     as "the other one" beside the lime without competing with it. */
+  --color-spot-community: #c7e51f;
+  --color-spot-neighbor: #7f8f56;
   --color-green-50: #f0f8eb;
 
   /* RAW PALETTE — Blue */

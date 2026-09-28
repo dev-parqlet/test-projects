@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { useAuth } from "../../components/auth/auth-provider";
 import { CurrentBookingsCard } from "../../components/hoa/CurrentBookingsCard";
+import { StatCard } from "../../components/hoa/StatCard";
 import { TopEarningSpotsCard } from "../../components/demo/TopEarningSpotsCard";
 import { CreditPriceCard, type PriceRow } from "../../components/pricing/CreditPriceCard";
 import { EarningsProgressCard } from "../../components/revenue/EarningsProgressCard";
@@ -22,8 +23,8 @@ import {
   DEMO_SPOTS,
   formatMoney,
   netToBuilding,
-  recentPayouts,
 } from "../../lib/demo/apartments-data";
+import { bookingEarning } from "../../lib/demo/booking-earnings";
 import {
   APARTMENT_FLOOR_CENTS,
   APARTMENT_SUBSCRIPTION_CENTS,
@@ -31,7 +32,14 @@ import {
   BASE_PRICE_CREDITS,
 } from "../../lib/demo/pricing";
 
-type Booking = { status: string };
+type Booking = {
+  status: string;
+  bookingStartIso?: string;
+  spotNumber?: string;
+  spotOwnerName?: string | null;
+  creditsSpent?: number | null;
+  amountCents?: number | null;
+};
 
 export default function ApartmentsDashboardPage() {
   const { user } = useAuth();
@@ -41,32 +49,55 @@ export default function ApartmentsDashboardPage() {
   const { data } = useQuery({
     queryKey: ["apartments", "overview", buildingId],
     enabled: !!buildingId,
-    queryFn: async (): Promise<{ current: Booking[] }> => {
-      const res = await fetch(`/api/bookings?buildingId=${buildingId}&tab=current&pageSize=200`, { cache: "no-store" });
-      return { current: ((await res.json()) as { data?: Booking[] }).data ?? [] };
+    queryFn: async (): Promise<Booking[]> => {
+      const res = await fetch(`/api/bookings?buildingId=${buildingId}&pageSize=500`, { cache: "no-store" });
+      return ((await res.json()) as { data?: Booking[] }).data ?? [];
     },
   });
 
-  const liveNow = data?.current.length ?? 0;
-  const listed = DEMO_SPOTS.filter((s) => s.status === "Listed").length;
-  // Occupancy against LISTED spots, not every spot: an unlisted spot was
-  // never on offer, so counting it would make the building look emptier
-  // than it chose to be.
-  const occupancy = listed === 0 ? 0 : Math.round((liveNow / listed) * 100);
-
   /**
-   * Every month the building has earned in, the open one included.
+   * The four headline figures, all read off the same list of bookings so
+   * they cannot disagree with each other or with the rows printed below.
    *
-   * Summed from the same history the Earnings page prints rather than from
-   * the booking corpus. The corpus is a fixed sample - a few dozen rows
-   * kept small enough to read - so adding it up gave an all-time total
-   * SMALLER than the month beside it, which reads as a bug whichever
-   * number the viewer believes.
+   * A cancelled booking is left out of every one of them: it was never
+   * paid for, so counting it would overstate both the activity and the
+   * earnings.
    */
-  const earnedAllTime = useMemo(
-    () => recentPayouts(5).reduce((sum, p) => sum + p.netCents, 0) + period.netCents,
-    [period],
-  );
+  const stats = useMemo(() => {
+    const rows = (data ?? []).filter((b) => b.status !== "Cancelled");
+    const now = new Date();
+    const sameDay = (iso?: string) => {
+      if (!iso) return false;
+      const d = new Date(iso);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+    };
+    const thisMonth = rows.filter((b) => {
+      if (!b.bookingStartIso) return false;
+      const d = new Date(b.bookingStartIso);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    });
+
+    const community = thisMonth.filter((b) => !b.spotOwnerName);
+    const neighbor = thisMonth.length - community.length;
+
+    // Averaged over the spots that actually earned, not over every spot
+    // the building owns: a spot nobody booked drags the figure towards
+    // zero and makes the ones that did work look worse than they are.
+    const earnedBySpot = new Map<string, number>();
+    for (const b of community) {
+      const key = b.spotNumber ?? "?";
+      earnedBySpot.set(key, (earnedBySpot.get(key) ?? 0) + bookingEarning(b).earnedCents);
+    }
+    const earnedTotal = [...earnedBySpot.values()].reduce((a, c) => a + c, 0);
+
+    return {
+      today: rows.filter((b) => sameDay(b.bookingStartIso)).length,
+      month: thisMonth.length,
+      community: community.length,
+      neighbor,
+      avgPerCommunitySpot: earnedBySpot.size === 0 ? 0 : Math.round(earnedTotal / earnedBySpot.size),
+    };
+  }, [data]);
 
   // Read off the spots themselves rather than restating the constants, so
   // the card cannot drift from what the Parking Spots screen charges.
@@ -115,10 +146,21 @@ export default function ApartmentsDashboardPage() {
       </div>
 
       <div style={st.stats}>
-        <Stat label="Parked right now" value={String(liveNow)} hint={`${occupancy}% of ${listed} listed spots`} />
-        <Stat label={`${period.period} balance`} value={formatMoney(period.netCents)} hint="After commission" />
-        <Stat label="Earned all time" value={formatMoney(earnedAllTime)} hint="After commission" />
-        <Stat label="Spots listed" value={`${listed}`} hint={`${DEMO_SPOTS.length} owned`} />
+        <StatCard label="Bookings today" value={stats.today} tag="today" />
+        <StatCard label="Bookings this month" value={stats.month} tag="this month" />
+        {/* The split only means something where the building owns spots of
+            its own, which is why a Condo never shows this card. */}
+        <StatCard
+          label="Bookings by spot type"
+          value={`${stats.community} Comm · ${stats.neighbor} Res`}
+          tag="this month"
+          split={{ primary: stats.community, secondary: stats.neighbor }}
+        />
+        <StatCard
+          label="Avg. earned per community spot"
+          value={formatMoney(stats.avgPerCommunitySpot)}
+          tag="this month"
+        />
       </div>
 
       {/* This month's earnings against the subscription */}
@@ -143,26 +185,8 @@ export default function ApartmentsDashboardPage() {
   );
 }
 
-function Stat({ label, value, hint }: { label: string; value: string; hint: string }) {
-  return (
-    <div style={st.stat}>
-      <span style={st.statLabel}>{label}</span>
-      <span style={st.statValue}>{value}</span>
-      <span style={st.statHint}>{hint}</span>
-    </div>
-  );
-}
-
 const st: Record<string, React.CSSProperties> = {
   h1: { margin: 0, fontSize: "var(--font-size-heading-3)", fontWeight: 600, color: "var(--color-text-strong)" },
   sub: { margin: "var(--spacing-4) 0 0", fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)" },
   stats: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "var(--spacing-12)" },
-  stat: {
-    display: "flex", flexDirection: "column", gap: 4,
-    padding: "var(--spacing-16)", borderRadius: "var(--radius-12)",
-    border: "1px solid var(--color-stroke-medium)", background: "var(--color-fill-white)",
-  },
-  statLabel: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)", textTransform: "uppercase", letterSpacing: 0.3 },
-  statValue: { fontSize: 26, fontWeight: 700, color: "var(--color-text-strong)" },
-  statHint: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },
 };
