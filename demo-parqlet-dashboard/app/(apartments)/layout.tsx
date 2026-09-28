@@ -16,14 +16,17 @@ import { usePathname } from "next/navigation";
 import { DashboardShell } from "../components/shell";
 import { AuthGuard } from "../components/auth/auth-guard";
 import { NavId, apartmentsNavItems } from "../components/layout/nav-data";
+import { stripProductPrefix } from "../lib/demo/product-path";
 import { HOA_ROLE_TOKENS } from "../(hoa)/lib/hoa-roles";
 
-function pathnameToNavId(pathname: string): NavId {
-  if (pathname === "/apartments")                  return "dashboard";
-  if (pathname.startsWith("/apartments/bookings")) return "bookings";
-  if (pathname.startsWith("/apartments/spots"))    return "spots";
-  if (pathname.startsWith("/apartments/availability")) return "availability";
-  if (pathname.startsWith("/apartments/revenue"))  return "revenue";
+function pathnameToNavId(raw: string): NavId {
+  // The browser shows /apartment/...; the routes underneath are /apartments/...
+  const pathname = stripProductPrefix(raw);
+  if (pathname === "/" || pathname === "/apartments")   return "dashboard";
+  if (pathname.startsWith("/bookings"))                 return "bookings";
+  if (pathname.startsWith("/spots"))                    return "spots";
+  if (pathname.startsWith("/availability"))             return "availability";
+  if (pathname.startsWith("/revenue"))                  return "revenue";
   return "none";
 }
 

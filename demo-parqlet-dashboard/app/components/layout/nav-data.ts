@@ -53,19 +53,25 @@ export interface NavItem {
  */
 const HOA_GIFT_CARDS_VISIBLE = true;
 
-export const navItems: readonly NavItem[] = [
-  { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard },
-  { id: "bookings",      label: "Bookings",           Icon: IcBookings },
-  { id: "parking",       label: "Resident Directory", Icon: IcResidentDirectory },
-  { id: "tickets",       label: "Support Tickets",    Icon: IcQuestion,     href: "/tickets" },
-  { id: "revenue",       label: "Revenue",            Icon: IcCredit,       href: "/revenue" },
-  { id: "subscription",  label: "Subscription",       Icon: IcSubscription, requiredAction: Actions.ViewSubscription },
-  { id: "access",        label: "Access Management",  Icon: IcPerson,       requiredAction: Actions.InviteTeamMember },
-  { id: "settings",      label: "Settings",           Icon: IcSettings },
-  { id: "profile",       label: "Profile",            Icon: IcPerson,       href: "/profile" },
-  { id: "notifications", label: "Notifications",      Icon: IcNotification, href: "/notifications" },
-  { id: "gift-cards",    label: "Gift Cards",         Icon: IcGiftCard,     href: "/gift-cards", enabled: HOA_GIFT_CARDS_VISIBLE },
+/**
+ * Every link in either nav is prefixed with its product, because the URL
+ * is how a demo link says which product it opens. See next.config.ts.
+ */
+export const CONDO_PREFIX = "/condo";
+export const APARTMENT_PREFIX = "/apartment";
 
+export const navItems: readonly NavItem[] = [
+  { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard,    href: "/condo" },
+  { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: "/condo/bookings" },
+  { id: "parking",       label: "Resident Directory", Icon: IcResidentDirectory, href: "/condo/parking" },
+  { id: "tickets",       label: "Support Tickets",    Icon: IcQuestion,     href: "/condo/tickets" },
+  { id: "revenue",       label: "Revenue",            Icon: IcCredit,       href: "/condo/revenue" },
+  { id: "subscription",  label: "Subscription",       Icon: IcSubscription, href: "/condo/subscription", requiredAction: Actions.ViewSubscription },
+  { id: "access",        label: "Access Management",  Icon: IcPerson,       href: "/condo/access", requiredAction: Actions.InviteTeamMember },
+  { id: "settings",      label: "Settings",           Icon: IcSettings,     href: "/condo/settings" },
+  { id: "profile",       label: "Profile",            Icon: IcPerson,       href: "/condo/profile" },
+  { id: "notifications", label: "Notifications",      Icon: IcNotification, href: "/condo/notifications" },
+  { id: "gift-cards",    label: "Gift Cards",         Icon: IcGiftCard,     href: "/condo/gift-cards", enabled: HOA_GIFT_CARDS_VISIBLE },
 ] as const;
 
 /**
@@ -78,17 +84,17 @@ export const navItems: readonly NavItem[] = [
  * not silently alter what an Apartments operator sees.
  */
 export const apartmentsNavItems: readonly NavItem[] = [
-  { id: "dashboard",     label: "Dashboard",        Icon: IcDashboard,    href: "/apartments" },
-  { id: "bookings",      label: "Bookings",         Icon: IcBookings,     href: "/apartments/bookings" },
-  { id: "spots",         label: "Parking Spots",    Icon: IcParking,      href: "/apartments/spots" },
-  { id: "availability",  label: "Availability",     Icon: IcBookings,     href: "/apartments/availability" },
-  { id: "revenue",       label: "Revenue",          Icon: IcCredit,       href: "/apartments/revenue" },
-  { id: "tickets",       label: "Support Tickets",  Icon: IcQuestion,     href: "/tickets" },
-  { id: "subscription",  label: "Subscription",     Icon: IcSubscription, href: "/subscription" },
-  { id: "access",        label: "Access Management", Icon: IcPerson,      href: "/access" },
-  { id: "settings",      label: "Settings",         Icon: IcSettings,     href: "/settings" },
-  { id: "profile",       label: "Profile",          Icon: IcPerson,       href: "/profile" },
-  { id: "notifications", label: "Notifications",    Icon: IcNotification, href: "/notifications" },
+  { id: "dashboard",     label: "Dashboard",        Icon: IcDashboard,    href: "/apartment" },
+  { id: "bookings",      label: "Bookings",         Icon: IcBookings,     href: "/apartment/bookings" },
+  { id: "spots",         label: "Parking Spots",    Icon: IcParking,      href: "/apartment/spots" },
+  { id: "availability",  label: "Availability",     Icon: IcBookings,     href: "/apartment/availability" },
+  { id: "revenue",       label: "Revenue",          Icon: IcCredit,       href: "/apartment/revenue" },
+  { id: "tickets",       label: "Support Tickets",  Icon: IcQuestion,     href: "/apartment/tickets" },
+  { id: "subscription",  label: "Subscription",     Icon: IcSubscription, href: "/apartment/subscription" },
+  { id: "access",        label: "Access Management", Icon: IcPerson,      href: "/apartment/access" },
+  { id: "settings",      label: "Settings",         Icon: IcSettings,     href: "/apartment/settings" },
+  { id: "profile",       label: "Profile",          Icon: IcPerson,       href: "/apartment/profile" },
+  { id: "notifications", label: "Notifications",    Icon: IcNotification, href: "/apartment/notifications" },
 ];
 
 /**

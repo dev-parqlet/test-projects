@@ -13,7 +13,6 @@ import { IcNotification } from "../icons/IcNotification";
 import { IcChevronDown } from "../icons/IcChevronDown";
 import { IcQuestion } from "../icons/IcQuestion";
 import { BuildingFilterDropdown } from "../ui/BuildingFilterDropdown";
-import { DemoVariantSwitcher } from "../demo/DemoVariantSwitcher";
 
 const iconBtnStyle = (hovered: boolean): React.CSSProperties => ({
   background: hovered ? "var(--color-fill-weak)" : "none",
@@ -73,7 +72,6 @@ export function Header({ onMenuOpen, showMenu }: { onMenuOpen?: () => void; show
       <div style={{ display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
         {/* DEMO ONLY — flips the whole site between the HOA and Apartments
             products. Does not exist in the real dashboard. */}
-        <DemoVariantSwitcher />
         <HeaderThemeToggle />
         <div style={{ position: "relative", flexShrink: 0 }} data-notification-dropdown>
           <button

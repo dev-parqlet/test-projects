@@ -8,10 +8,10 @@
  * for the sign-in screen: two choices, one click, straight into the
  * dashboard.
  *
- * Skipped entirely when the URL already names a variant
- * (`/?v=apartments`), so a link sent to an apartment operator opens on
- * their product rather than asking them to pick between two things they
- * have not heard of yet.
+ * Skipped entirely when the URL already names a product - which /condo/...
+ * and /apartment/... always do - so a link sent to an apartment operator
+ * opens on their product rather than asking them to pick between two
+ * things they have not heard of yet. In practice only `/` ever shows this.
  */
 
 import React, { useSyncExternalStore } from "react";
@@ -78,8 +78,9 @@ export function DemoGate({ children }: { children: React.ReactNode }) {
         </div>
 
         <p style={styles.footnote}>
-          Everything here is sample data. You can switch between the two at any
-          time from the header.
+          Everything here is sample data. The two demos live at their own
+          addresses and do not link to each other, so a link you send opens
+          one product and stays in it.
         </p>
       </div>
     </div>

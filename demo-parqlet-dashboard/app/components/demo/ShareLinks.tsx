@@ -4,10 +4,9 @@
  * Copying a direct link to one of the two demos.
  *
  * The demo is shown by sending it, not by sitting next to someone, and the
- * two products live at different URLs. Asking a salesperson to remember
- * that `?v=apartments` exists, and to notice they are on `/apartments`
- * before they copy the address bar, is how a prospect ends up looking at
- * the wrong dashboard. So the link is a button.
+ * two products live at their own addresses: /condo and /apartment. The
+ * address bar is now correct wherever you are, but copying it still means
+ * reading it first, and mid-call nobody does. So the link is a button.
  */
 
 import React, { useState } from "react";

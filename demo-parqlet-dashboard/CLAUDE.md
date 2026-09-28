@@ -21,7 +21,8 @@ npm run dev -- --port 3005
 |---|---|
 | **Mock mode** | Pinned in the committed `.env.production`, inlined at build time. It cannot be switched off by a Vercel setting, which is the point: a missing env var must never turn the demo into a live client pointed at a backend that rejects it. |
 | **Auth** | `fetchMe()` resolves synchronously from `app/lib/demo/variants.ts`. There is no session, no cookie and no `/api/auth/me` call. The backend and localhost paths were deleted rather than left unreachable. |
-| **Two variants** | HOA (The Meridian) and Apartments (Oakline Park), chosen at the front door by `DemoGate` or via `?v=hoa` / `?v=apartments`, and switchable from the header. |
+| **Two variants** | Condo (The Meridian) at `/condo/...` and Apartment (Oakline Park) at `/apartment/...`. The URL decides which, via rewrites in `next.config.ts`. There is no switcher: a prospect sent one link must never end up in the other product. `/` shows `DemoGate`, which is only a front door for someone arriving without a link. |
+| **URL-driven product** | A DEMO DEVICE ONLY. There is no login here, so the link is the only way to say which product to open. The real dashboard resolves this from the session and from the building type a super admin picks when creating the building — do not carry the URL scheme into `web-dashboard`. |
 | **No super admin** | Both identities are `admin`. The super-admin console is an internal tool; showing it would misrepresent what a client buys. |
 
 ## Gotchas

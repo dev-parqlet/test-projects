@@ -4,11 +4,15 @@ import { usePathname } from "next/navigation";
 import { DashboardShell } from "../components/shell";
 import { AuthGuard } from "../components/auth/auth-guard";
 import { NavId } from "../components/layout/nav-data";
+import { stripProductPrefix } from "../lib/demo/product-path";
+import { navItemsForPath } from "../lib/demo/nav-for-path";
 import { HOA_ROLE_TOKENS } from "./lib/hoa-roles";
 import { useRealtimeAlerts } from "../components/hooks/useRealtimeAlerts";
 import { AlertToast } from "../components/ui/AlertToast";
 
-function pathnameToNavId(pathname: string): NavId {
+function pathnameToNavId(raw: string): NavId {
+  // The browser shows /condo/...; the routes underneath are unprefixed.
+  const pathname = stripProductPrefix(raw);
   if (pathname === "/")                                            return "dashboard";
   if (pathname === "/bookings")                                    return "bookings";
   if (pathname === "/parking")                                     return "parking";
@@ -32,7 +36,7 @@ export default function HOALayout({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthGuard allowedRoles={HOA_ROLE_TOKENS} redirectTo="/sign-in">
-      <DashboardShell active={active}>
+      <DashboardShell active={active} navItems={navItemsForPath(pathname)}>
         {children}
         <AlertToast alerts={alerts} />
       </DashboardShell>

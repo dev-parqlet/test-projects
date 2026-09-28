@@ -9,10 +9,13 @@ import { BuildingFilterProvider } from "../components/context/building-filter-co
 import { useRealtimeAlerts } from "../components/hooks/useRealtimeAlerts";
 import { AlertToast } from "../components/ui/AlertToast";
 import type { NavId } from "../components/layout/nav-data";
+import { stripProductPrefix } from "../lib/demo/product-path";
+import { navItemsForPath } from "../lib/demo/nav-for-path";
 
 type SuperAdminNavId = "overview" | "alerts" | "buildings" | "revenue" | "credits" | "sync" | "tickets" | "settings";
 
-function pathnameToNavId(pathname: string): NavId {
+function pathnameToNavId(raw: string): NavId {
+  const pathname = stripProductPrefix(raw);
   if (pathname === "/tickets") return "tickets";
   if (pathname.startsWith("/tickets/")) return "tickets";
   return "none";
@@ -47,7 +50,7 @@ export default function TicketsLayout({ children }: { children: React.ReactNode 
   const active = pathnameToNavId(pathname);
   return (
     <AuthGuard allowedRoles={["admin", "lead_concierge", "concierge", "security"]} redirectTo="/sign-in">
-      <DashboardShell active={active}>
+      <DashboardShell active={active} navItems={navItemsForPath(pathname)}>
         {children}
         <AlertToast alerts={alerts} />
       </DashboardShell>

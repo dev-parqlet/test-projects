@@ -6,9 +6,12 @@ import { useAuth } from "../components/auth/auth-provider";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { AuthGuard } from "../components/auth/auth-guard";
 import { NavId } from "../components/layout/nav-data";
+import { stripProductPrefix } from "../lib/demo/product-path";
 
-function pathnameToNavId(pathname: string): NavId {
-  if (pathname === "/dashboard") return "dashboard";
+function pathnameToNavId(raw: string): NavId {
+  // The browser shows /condo/...; the routes underneath are unprefixed.
+  const pathname = stripProductPrefix(raw);
+  if (pathname === "/dashboard" || pathname === "/") return "dashboard";
   if (pathname === "/bookings") return "bookings";
   if (pathname === "/parking") return "parking";
   if (pathname === "/subscription") return "subscription";

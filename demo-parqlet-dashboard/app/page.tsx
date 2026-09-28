@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { defaultLandingFor } from "./lib/callback-url";
 import { useAuth } from "./components/auth/auth-provider";
+import { pathForVariant, readVariant } from "./lib/demo/variants";
 
 export default function RootPage() {
   const { user, loading } = useAuth();
@@ -15,9 +15,9 @@ export default function RootPage() {
       router.push("/sign-in");
       return;
     }
-    // Super admins have a dedicated aggregate overview; HOA roles use the
-    // building dashboard.
-    router.push(defaultLandingFor(user.role));
+    // Straight to the product's own URL. `/` only ever exists to forward:
+    // every real page in the demo lives under /condo or /apartment.
+    router.push(pathForVariant(readVariant()));
   }, [user, loading, router]);
 
   return (

@@ -2,9 +2,10 @@
  * The two dashboards this demo site shows.
  *
  * demo.parqlet.com exists to be shown to a prospect, so it has to present
- * BOTH products: the HOA dashboard that exists today, and the Apartments
- * dashboard for public parking. A visitor flips between them from the
- * header — there is no sign-in, and no real account behind either.
+ * BOTH products: the Condo dashboard that exists today, and the Apartment
+ * dashboard. Each lives at its own URL - /condo and /apartment - because a
+ * link is how a demo is sent, and the link has to say which product it
+ * opens. There is no sign-in, and no real account behind either.
  *
  * Both identities are `admin`, never `super_admin`: the super-admin console
  * is an internal tool and showing it would misrepresent what a client buys.
@@ -15,7 +16,9 @@
  * filters on exactly these ids.
  */
 
-export type DemoVariant = 'hoa' | 'apartments';
+import { APARTMENT_PREFIX, CONDO_PREFIX, productFromPath } from './product-path';
+
+export type DemoVariant = 'condo' | 'apartment';
 
 export type DemoIdentity = {
   variant: DemoVariant;
@@ -36,52 +39,52 @@ export type DemoIdentity = {
   };
 };
 
-const HOA_BUILDING = {
+const CONDO_BUILDING = {
   id: 'e6565d1b-1f25-4c51-bfa6-7db4932702cd',
   name: 'The Meridian',
 };
 
-const APARTMENTS_BUILDING = {
+const APARTMENT_BUILDING = {
   id: '80f9ac2e-b884-4634-ac02-0682a9a12662',
   name: 'Oakline Park',
 };
 
 export const DEMO_IDENTITIES: Record<DemoVariant, DemoIdentity> = {
-  hoa: {
-    variant: 'hoa',
-    label: 'HOA — The Meridian',
-    blurb: 'Residents share their own spots. Guests are paid for in credits.',
+  condo: {
+    variant: 'condo',
+    label: 'Condo — The Meridian',
+    blurb: 'Residents share their own spots. Everything costs 1 credit.',
     user: {
       id: '11111111-2222-4333-8444-555555555555',
       name: 'Sarah Johnson',
       email: 'sarah@themeridian.com',
       role: 'admin',
-      buildingId: HOA_BUILDING.id,
-      buildingIds: [HOA_BUILDING.id],
-      buildings: [HOA_BUILDING],
+      buildingId: CONDO_BUILDING.id,
+      buildingIds: [CONDO_BUILDING.id],
+      buildings: [CONDO_BUILDING],
       phone: '+1 (555) 100-0003',
       createdAt: '2026-05-15T06:55:06.103Z',
     },
   },
-  apartments: {
-    variant: 'apartments',
-    label: 'Apartments — Oakline Park',
-    blurb: 'The building owns the spots, sets prices, and is paid in dollars.',
+  apartment: {
+    variant: 'apartment',
+    label: 'Apartment — Oakline Park',
+    blurb: 'The building owns some spots and can charge extra on those. Everything else is 1 credit.',
     user: {
       id: '66666666-7777-4888-8999-000000000000',
       name: 'Daniel Reyes',
       email: 'daniel@oaklinepark.com',
       role: 'admin',
-      buildingId: APARTMENTS_BUILDING.id,
-      buildingIds: [APARTMENTS_BUILDING.id],
-      buildings: [APARTMENTS_BUILDING],
+      buildingId: APARTMENT_BUILDING.id,
+      buildingIds: [APARTMENT_BUILDING.id],
+      buildings: [APARTMENT_BUILDING],
       phone: '+1 (555) 200-0007',
       createdAt: '2026-04-02T09:12:00.000Z',
     },
   },
 };
 
-export const DEFAULT_VARIANT: DemoVariant = 'hoa';
+export const DEFAULT_VARIANT: DemoVariant = 'condo';
 
 /** localStorage key holding the visitor's choice. */
 const STORAGE_KEY = 'parqlet_demo_variant';
@@ -94,23 +97,27 @@ const STORAGE_KEY = 'parqlet_demo_variant';
  */
 function parse(v: string | null): DemoVariant | null {
   const k = (v ?? '').trim().toLowerCase();
-  if (k === 'apartments' || k === 'apartment' || k === 'apt') return 'apartments';
-  if (k === 'hoa') return 'hoa';
+  if (k === 'apartment' || k === 'apartments' || k === 'apt') return 'apartment';
+  if (k === 'condo' || k === 'condos' || k === 'hoa') return 'condo';
   return null;
 }
 
 /**
- * The variant asked for in the URL, e.g. demo.parqlet.com/?v=apartments.
+ * The variant named by the URL, e.g. demo.parqlet.com/apartment/spots.
  *
- * This is how a link is sent to a specific prospect: an apartment operator
- * should open the Apartments dashboard immediately, not be asked to choose
- * between two products they have not heard of. Reading it takes precedence
- * over whatever was stored, so a link always wins over a stale choice made
- * on a previous visit.
+ * The PATH is the source of truth. This is how a link is sent to a specific
+ * prospect: an apartment operator opens the Apartment dashboard and stays
+ * in it, because every link in that nav is prefixed too and there is no
+ * control anywhere that crosses over.
+ *
+ * `?v=` is still read, but only as a fallback, so the links already sent
+ * out before the paths existed keep working.
  */
 export function variantFromUrl(): DemoVariant | null {
   if (typeof window === 'undefined') return null;
   try {
+    const fromPath = productFromPath(window.location.pathname);
+    if (fromPath) return fromPath;
     return parse(new URLSearchParams(window.location.search).get('v'));
   } catch {
     return null;
@@ -141,31 +148,32 @@ export function readVariant(): DemoVariant {
 }
 
 /**
- * Switch and reload. A full reload rather than a re-render on purpose:
- * every screen caches building-scoped data through react-query, and
- * swapping the identity underneath them would leave one building's
+ * Open a product. A full page load rather than a client navigation on
+ * purpose: every screen caches building-scoped data through react-query,
+ * and swapping the identity underneath them would leave one building's
  * bookings next to another's residents for a few seconds — in front of a
  * prospect, that reads as a bug.
+ *
+ * Only the front door calls this. There is no switcher in the header: a
+ * prospect sent the Condo link should never find themselves in the
+ * Apartment dashboard, and a control that does that is a control that will
+ * eventually be clicked during a call.
  */
 export function setVariant(v: DemoVariant): void {
   try {
     window.localStorage.setItem(STORAGE_KEY, v);
   } catch {
-    // Ignore — the ?v= below still carries the choice.
+    // Ignore — the path carries the choice on its own.
   }
-  // Carrying `?v=` means the address bar always names what you are looking
-  // at, the link is copy-pasteable mid-demo, and it does not depend on
-  // localStorage having worked - which it may not have in a private window.
   window.location.href = pathForVariant(v);
 }
 
 /**
- * The path a variant lives at. Each product has its own routes, so a
- * shared link has to land on the right root as well as carry the right
- * identity: HOA at `/`, Apartments at `/apartments`.
+ * The path a variant lives at: /condo or /apartment. The prefix IS the
+ * identity, so nothing needs to be appended to carry it.
  */
 export function pathForVariant(v: DemoVariant): string {
-  return v === 'apartments' ? `/apartments?v=${v}` : `/?v=${v}`;
+  return v === 'apartment' ? APARTMENT_PREFIX : CONDO_PREFIX;
 }
 
 /**
@@ -181,9 +189,9 @@ export function shareUrl(v: DemoVariant): string {
   return `${origin}${pathForVariant(v)}`;
 }
 
-/** The other one. There are exactly two, so switching is a toggle. */
+/** The other one. There are exactly two. */
 export function otherVariant(v: DemoVariant): DemoVariant {
-  return v === 'hoa' ? 'apartments' : 'hoa';
+  return v === 'condo' ? 'apartment' : 'condo';
 }
 
 export function currentIdentity(): DemoIdentity {

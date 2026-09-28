@@ -14,6 +14,12 @@ export function Sidebar({ active, onClose, overlay, navItems }: { active?: NavId
   // separate product with its own pages, not an HOA with extra rows.
   // Omitted, the HOA/SA nav is resolved from the role exactly as before.
   const items = navItems ?? getNavItems(user?.role);
+  // The logo goes to the dashboard of the product you are already in. It
+  // used to point at "/", which forwards by stored preference - so an
+  // Apartment visitor clicking the logo could land in the Condo demo, and
+  // the whole point of the split URLs is that this cannot happen. The
+  // first nav item IS that product's dashboard.
+  const home = items[0]?.href ?? "/";
 
   return (
     <>
@@ -31,9 +37,10 @@ export function Sidebar({ active, onClose, overlay, navItems }: { active?: NavId
       >
         {/* Logo */}
         <div style={{ height: 64, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", flexShrink: 0 }}>
-          <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
+          <Link href={home} style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size inline SVG; next/image adds a loader for no benefit */}
             <img src="/parqlet-logo-light.svg" alt="Parqlet" style={{ height: 22, width: "auto", display: "block" }} />
-          </a>
+          </Link>
           {overlay && (
             <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
               <IcClose color="var(--color-text-weaker)" />
