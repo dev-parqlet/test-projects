@@ -101,12 +101,13 @@ export const CONDO_FLOOR_CENTS = money(100);
  * carrying enough of them needs no platform fee, and `applyOffset`
  * handles zero without a special case.
  *
- * The demo building runs a small one anyway, because a bill of zero
- * demonstrates nothing: the whole pitch is that the spots cover the
- * subscription and the rest is yours, and that needs a subscription to
- * cover. Set this to `money(0)` to show the other case.
+ * The demo building runs one anyway, because a bill of zero demonstrates
+ * nothing: the whole pitch is that the spots cover the subscription and
+ * the rest is yours, and that needs a subscription to cover. It matches
+ * the figure on the Subscription screen - the two must never disagree.
+ * Set this to `money(0)` to show the other case.
  */
-export const APARTMENT_SUBSCRIPTION_CENTS = money(250);
+export const APARTMENT_SUBSCRIPTION_CENTS = money(500);
 
 /** No floor: an Apartment's bill can reach zero, unlike a Condo's. */
 export const APARTMENT_FLOOR_CENTS = money(0);

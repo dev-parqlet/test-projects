@@ -27,9 +27,32 @@ function serializeParams(params: unknown): URLSearchParams {
   return sp;
 }
 
+/**
+ * Where /api/* lives.
+ *
+ * `.env.production` deliberately sets NEXT_PUBLIC_API_URL to EMPTY, meaning
+ * "call your own origin", so one build serves demo.parqlet.com and every
+ * preview URL without being rebuilt per domain. But `??` only falls back on
+ * null and undefined - an empty string is not nullish, so the base stayed
+ * "" and `new URL("/api/gift-cards", "")` throws "is not a valid URL". That
+ * is why every data screen on the deployed demo failed to load while
+ * localhost, which sets the variable to a real origin, was fine.
+ *
+ * Resolved here rather than at module scope because the browser origin is
+ * not knowable during a server render.
+ */
+function resolveBaseUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (configured) return configured;
+  // Same origin. In the browser that is the page we are on; during a server
+  // render there is no origin to speak of, and any absolute base will do
+  // because these calls only ever run client-side.
+  if (typeof window !== "undefined") return window.location.origin;
+  return "http://localhost:3005";
+}
+
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://api.parqlet.com";
-  const url = new URL(path, BACKEND_URL);
+  const url = new URL(path, resolveBaseUrl());
 
   const res = await fetch(url.toString(), {
     ...options,
