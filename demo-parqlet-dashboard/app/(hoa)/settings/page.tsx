@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { usePathname } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useAutoInvite } from "../../components/auto-invite-context";
@@ -14,11 +15,13 @@ import {
 import { preferencesApi, type UserPreferences } from "../../lib/api/preferences";
 import { TableScroll } from "../../components/ui/TableScroll";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
+import { CREDIT_PRICE_CENTS, formatMoney, netToBuilding } from "../../lib/demo/pricing";
+import { productFromPath } from "../../lib/demo/product-path";
 import "../../tokens.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Tab = "notifications" | "profile" | "security" | "resident-mgmt" | "sms-settings";
+type Tab = "notifications" | "profile" | "security" | "resident-mgmt" | "sms-settings" | "credit-price";
 
 interface NotifRow {
   id:    string;
@@ -1467,17 +1470,205 @@ function SmsSettingsTab() {
   );
 }
 
+// ─── Credit Price tab ─────────────────────────────────────────────────────────
+
+/**
+ * Setting what a credit costs.
+ *
+ * Every spot in a Condo costs one credit a day, so this single number is
+ * the building's whole price list. It is the one setting on this page that
+ * changes what residents are charged, which is why it does not save on
+ * blur like the rest: it asks first, and says what it is about to do.
+ *
+ * The warning is not decoration. A credit already in a resident's wallet
+ * keeps buying one day whatever the price becomes, so raising the price
+ * does not reprice what people have already bought - it changes what the
+ * NEXT credit costs, and it moves the gift-card maths for balances that
+ * already exist. Anyone changing this should know that before they do,
+ * not after a resident asks why their gift card moved.
+ *
+ * DEMO: this is local state. Nothing is persisted and no other screen
+ * reads it back - the dashboards quote CREDIT_PRICE_CENTS from
+ * lib/demo/pricing.ts. Wiring it up for real means
+ * PUT /api/buildings/:id/settings, which already owns
+ * `credits_price_cents` and already clears the price cache.
+ */
+function CreditPriceTab() {
+  const [saved, setSaved] = useState(CREDIT_PRICE_CENTS);
+  const [draft, setDraft] = useState((CREDIT_PRICE_CENTS / 100).toFixed(2));
+  const [confirming, setConfirming] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+
+  const draftCents = Math.round(Number(draft) * 100);
+  const valid = Number.isFinite(draftCents) && draftCents > 0;
+  const changed = valid && draftCents !== saved;
+  const direction = draftCents > saved ? "up" : "down";
+
+  const reserveFor = (cents: number) => Math.round((cents * 0.4) / 25) * 25;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
+      <Card>
+        <div style={{ padding: "var(--spacing-24)", display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
+          <div>
+            <h2 style={cp.h2}>Credit price</h2>
+            <p style={cp.sub}>
+              What a resident pays for one credit. Every spot in your
+              building costs one credit a day, so this is the price of a
+              day&apos;s parking - the same for every spot and every
+              resident. Residents never set their own.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "flex-end", gap: "var(--spacing-16)", flexWrap: "wrap" }}>
+            <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <span style={cp.label}>Price per credit (USD)</span>
+              <div style={cp.inputWrap}>
+                <span style={cp.prefix}>$</span>
+                <input
+                  value={draft}
+                  inputMode="decimal"
+                  onChange={(e) => { setDraft(e.target.value); setConfirming(false); setJustSaved(false); }}
+                  style={cp.input}
+                />
+              </div>
+            </label>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <span style={cp.label}>You receive per credit</span>
+              <span style={cp.derived}>
+                {valid ? formatMoney(netToBuilding(draftCents)) : "—"}
+              </span>
+              <span style={cp.hint}>after commission and card fees</span>
+            </div>
+          </div>
+
+          {changed && !confirming && (
+            <div style={{ display: "flex", gap: "var(--spacing-12)" }}>
+              <button style={cp.primary} onClick={() => setConfirming(true)}>
+                Review change
+              </button>
+              <button style={cp.secondary} onClick={() => { setDraft((saved / 100).toFixed(2)); setConfirming(false); }}>
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {justSaved && (
+            <span style={{ ...cp.hint, color: "var(--color-tag-text-active)" }}>
+              Saved. New bookings are charged at {formatMoney(saved)} a day.
+            </span>
+          )}
+        </div>
+      </Card>
+
+      {/* The warning only appears once a change is actually pending. A
+          banner that is always on screen is a banner nobody reads. */}
+      {changed && confirming && (
+        <Card>
+          <div style={{ padding: "var(--spacing-24)", display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
+            <div style={cp.warnHead}>
+              <span aria-hidden style={cp.warnIcon}>!</span>
+              <span style={cp.warnTitle}>
+                Before you change the price {direction} to {formatMoney(draftCents)}
+              </span>
+            </div>
+
+            <ul style={cp.list}>
+              <li style={cp.li}>
+                <strong>Credits residents already bought are not repriced.</strong>{" "}
+                A credit always buys one day. Someone holding 10 credits
+                bought at {formatMoney(saved)} still parks 10 days, so you
+                carry the difference until their balance runs out.
+              </li>
+              <li style={cp.li}>
+                <strong>Gift cards move for balances that already exist.</strong>{" "}
+                What a credit earns toward a gift card is a share of its
+                price, so it goes from {formatMoney(reserveFor(saved))} to{" "}
+                {formatMoney(reserveFor(draftCents))} per credit. Residents
+                who have been saving will see their progress change without
+                having done anything.
+              </li>
+              <li style={cp.li}>
+                <strong>Only new bookings are affected.</strong> Anything
+                already booked or paid for stays at {formatMoney(saved)}.
+              </li>
+            </ul>
+
+            <div style={{ display: "flex", gap: "var(--spacing-12)", flexWrap: "wrap" }}>
+              <button
+                style={cp.primary}
+                onClick={() => { setSaved(draftCents); setConfirming(false); setJustSaved(true); }}
+              >
+                Change price to {formatMoney(draftCents)}
+              </button>
+              <button
+                style={cp.secondary}
+                onClick={() => { setDraft((saved / 100).toFixed(2)); setConfirming(false); }}
+              >
+                Keep {formatMoney(saved)}
+              </button>
+            </div>
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+const cp: Record<string, React.CSSProperties> = {
+  h2: { margin: 0, fontSize: "var(--font-size-small)", fontWeight: 600, color: "var(--color-text-strong)" },
+  sub: { margin: "var(--spacing-8) 0 0", fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)", maxWidth: 560, lineHeight: 1.6 },
+  label: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },
+  inputWrap: {
+    display: "flex", alignItems: "center", gap: 4, height: 40, padding: "0 12px",
+    border: "1px solid var(--color-stroke-medium)", borderRadius: "var(--radius-8)",
+    background: "var(--color-fill-white)", width: 150,
+  },
+  prefix: { fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)" },
+  input: {
+    border: "none", outline: "none", background: "transparent", width: "100%",
+    fontSize: "var(--font-size-small)", fontFamily: "var(--font-family-body)",
+    color: "var(--color-text-strong)",
+  },
+  derived: { fontSize: "var(--font-size-small)", fontWeight: 600, color: "var(--color-text-strong)" },
+  hint: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },
+  warnHead: { display: "flex", alignItems: "center", gap: "var(--spacing-8)" },
+  warnIcon: {
+    display: "inline-flex", alignItems: "center", justifyContent: "center",
+    width: 20, height: 20, borderRadius: 999, flexShrink: 0,
+    background: "var(--color-tag-fill-pending, #FDF0D5)",
+    color: "var(--color-tag-text-pending, #8A6100)",
+    fontSize: 13, fontWeight: 700,
+  },
+  warnTitle: { fontSize: "var(--font-size-small)", fontWeight: 600, color: "var(--color-text-strong)" },
+  list: { margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "var(--spacing-12)" },
+  li: { fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)", lineHeight: 1.65 },
+  primary: {
+    height: 36, padding: "0 16px", borderRadius: "var(--radius-8)", border: "none",
+    background: "var(--color-fill-inverse, #111)", color: "var(--color-text-inverse, #fff)",
+    fontSize: "var(--font-size-tiny)", fontFamily: "var(--font-family-body)", cursor: "pointer",
+  },
+  secondary: {
+    height: 36, padding: "0 16px", borderRadius: "var(--radius-8)",
+    border: "1px solid var(--color-stroke-medium)", background: "var(--color-fill-white)",
+    color: "var(--color-text-strong)", fontSize: "var(--font-size-tiny)",
+    fontFamily: "var(--font-family-body)", cursor: "pointer",
+  },
+};
+
 // ─── Tab bar ──────────────────────────────────────────────────────────────────
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "security",       label: "Security"            },
+  { id: "credit-price",   label: "Credit Price"        },
   { id: "profile",        label: "Profile Preferences" },
   { id: "resident-mgmt",  label: "Resident Management" },
   { id: "notifications",  label: "Notifications"       },
   { id: "sms-settings",   label: "SMS Settings"        },
 ];
 
-function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
+function TabBar({ active, onChange, tabs }: { active: Tab; onChange: (t: Tab) => void; tabs: { id: Tab; label: string }[] }) {
   const [hovered, setHovered] = useState<Tab | null>(null);
 
   return (
@@ -1493,7 +1684,7 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
       borderBottom: "1px solid var(--color-stroke-medium)",
       minWidth:     "max-content",
     }}>
-      {TABS.map(({ id, label }) => {
+      {tabs.map(({ id, label }) => {
         const isActive  = active === id;
         const isHovered = hovered === id && !isActive;
         return (
@@ -1537,6 +1728,16 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>("security");
+  const pathname = usePathname();
+  // Settings is served under BOTH product prefixes, so the tab list has to
+  // be decided by the URL. Credit price is a Condo control: there the one
+  // number IS the price list, since residents own every spot and the
+  // building sets one rate for all of them.
+  const isCondo = productFromPath(pathname) !== "apartment";
+  const tabs = useMemo(
+    () => TABS.filter((t) => t.id !== "credit-price" || isCondo),
+    [isCondo],
+  );
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -1594,7 +1795,7 @@ export default function SettingsPage() {
             )}
         </div>
 
-        <TabBar active={activeTab} onChange={setActiveTab} />
+        <TabBar active={activeTab} onChange={setActiveTab} tabs={tabs} />
 
         {!loading && activeTab === "security" && (
           <SecurityTab savedPreferences={preferences} onSave={savePreferences} />
@@ -1609,6 +1810,7 @@ export default function SettingsPage() {
           <NotificationsTab savedPreferences={preferences} onSave={savePreferences} />
         )}
         {!loading && activeTab === "sms-settings" && <SmsSettingsTab />}
+        {!loading && activeTab === "credit-price" && isCondo && <CreditPriceTab />}
       </div>
   );
 }

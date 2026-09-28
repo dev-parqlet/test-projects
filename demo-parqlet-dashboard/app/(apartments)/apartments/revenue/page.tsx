@@ -55,19 +55,18 @@ export default function ApartmentsRevenuePage() {
   // Only what the subscription could not absorb is yours to take out.
   const withdrawableCents = offset.surplusCents;
 
-  // Once per calendar month. A withdrawal already in flight blocks another.
-  const pendingPayout = payouts.find((p) => p.status === "Processing");
-  const canWithdraw = !pendingPayout && withdrawableCents > 0 && !requested;
+  // Once per calendar month, and the month that matters is THIS one. The
+  // history below is completed months only, so nothing there can block a
+  // withdrawal or lend its name to the notice.
+  const canWithdraw = withdrawableCents > 0 && !requested;
 
   const blockedReason = requested
-    ? "Withdrawal requested. You will be paid within 3 working days."
-    : pendingPayout
-      ? `Your ${pendingPayout.period} withdrawal is still processing. One withdrawal per month.`
-      : withdrawableCents === 0
-        ? "This month's earnings have gone to your subscription. Anything past it is yours to withdraw."
-        : null;
+    ? `Your ${period.period} withdrawal is being processed. You will be paid within 3 working days, and you can withdraw again next month.`
+    : withdrawableCents === 0
+      ? "This month's earnings have gone to your subscription. Anything past it is yours to withdraw."
+      : null;
 
-  const rows: HistoryRow[] = payouts.map((p) => ({
+  const completed: HistoryRow[] = payouts.map((p) => ({
     id: p.id,
     period: p.period,
     grossCents: p.grossCents,
@@ -78,6 +77,23 @@ export default function ApartmentsRevenuePage() {
       ? new Date(p.paidOn).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
       : "—",
   }));
+
+  // A withdrawal taken just now appears at the top of its own month,
+  // rather than the page claiming it is done while the table disagrees.
+  const rows: HistoryRow[] = requested
+    ? [
+        {
+          id: "pending",
+          period: period.period,
+          grossCents: period.grossCents,
+          feesCents: period.commissionCents,
+          netCents: withdrawableCents,
+          status: "Processing",
+          trailing: "—",
+        },
+        ...completed,
+      ]
+    : completed;
 
   return (
     <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 24 }}>
@@ -135,7 +151,7 @@ export default function ApartmentsRevenuePage() {
           </Button>
           <span style={st.hint}>
             {blockedReason ??
-              "Paid to your account within 3 working days. One withdrawal per month."}
+              `Paid to your account within 3 working days. One withdrawal per month, so this covers ${period.period}.`}
           </span>
         </div>
       </RevenueCard>

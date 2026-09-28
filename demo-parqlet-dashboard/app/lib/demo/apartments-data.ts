@@ -132,7 +132,15 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-/** The last `count` completed months, newest first. */
+/**
+ * The last `count` COMPLETED months, newest first. All paid.
+ *
+ * The month in progress is deliberately absent: it has not been withdrawn
+ * yet, and listing it as "processing" put last month's name on the "your
+ * withdrawal is still processing" notice while the card above it talked
+ * about this month. A withdrawal in flight belongs to the month you are
+ * standing in, so the page composes that row itself.
+ */
 export function recentPayouts(count = 5, now = new Date()): DemoPayout[] {
   const out: DemoPayout[] = [];
   for (let i = 1; i <= count; i++) {
@@ -147,14 +155,16 @@ export function recentPayouts(count = 5, now = new Date()): DemoPayout[] {
       grossCents,
       commissionCents: grossCents - netCents,
       netCents,
-      status: i === 1 ? 'Processing' : 'Paid',
-      paidOn:
-        i === 1
-          ? null
-          : new Date(d.getFullYear(), d.getMonth() + 1, 3).toISOString(),
+      status: 'Paid',
+      paidOn: new Date(d.getFullYear(), d.getMonth() + 1, 3).toISOString(),
     });
   }
   return out;
+}
+
+/** The month name a withdrawal requested right now would belong to. */
+export function currentPeriodLabel(now = new Date()): string {
+  return `${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
 }
 
 /** Earnings so far in the current, still-open month. */
