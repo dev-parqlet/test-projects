@@ -207,7 +207,7 @@ export const st: Record<string, React.CSSProperties> = {
   },
   pitch: {
     margin: "var(--spacing-8) 0 0",
-    fontSize: "var(--font-size-small)",
+    fontSize: "var(--font-size-body)",
     color: "var(--color-text-strong)",
     maxWidth: 620,
   },
@@ -218,7 +218,7 @@ export const st: Record<string, React.CSSProperties> = {
     maxWidth: 620,
     lineHeight: 1.6,
   },
-  cardTitle: { fontSize: "var(--font-size-small)", fontWeight: 600, color: "var(--color-text-strong)" },
+  cardTitle: { fontSize: "var(--font-size-body)", fontWeight: 600, color: "var(--color-text-strong)" },
   figures: { display: "flex", gap: 48, flexWrap: "wrap" },
   figureLabel: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },
   figureNote: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },

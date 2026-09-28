@@ -68,7 +68,7 @@ export function CreditPriceCard({
 }
 
 const s: Record<string, React.CSSProperties> = {
-  title: { fontSize: "var(--font-size-small)", fontWeight: 600, color: "var(--color-text-strong)" },
+  title: { fontSize: "var(--font-size-body)", fontWeight: 600, color: "var(--color-text-strong)" },
   rate: { fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)" },
   rows: { display: "flex", flexDirection: "column" },
   row: {
@@ -79,6 +79,6 @@ const s: Record<string, React.CSSProperties> = {
   rowLabel: { fontSize: "var(--font-size-tiny)", color: "var(--color-text-strong)" },
   rowNote: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },
   rowPrice: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)", whiteSpace: "nowrap" },
-  rowTotal: { fontSize: "var(--font-size-small)", fontWeight: 600, color: "var(--color-text-strong)", whiteSpace: "nowrap" },
+  rowTotal: { fontSize: "var(--font-size-body)", fontWeight: 600, color: "var(--color-text-strong)", whiteSpace: "nowrap" },
   footnote: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)", lineHeight: 1.6 },
 };

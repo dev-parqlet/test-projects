@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -14,6 +14,8 @@ import {
 } from "../../lib/api/buildings";
 import { preferencesApi, type UserPreferences } from "../../lib/api/preferences";
 import { TableScroll } from "../../components/ui/TableScroll";
+import { Input } from "../../components/ui/Input";
+import { Button } from "../../components/ui/Button";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
 import { CREDIT_PRICE_CENTS, formatMoney, netToBuilding } from "../../lib/demo/pricing";
 import { productFromPath } from "../../lib/demo/product-path";
@@ -1475,88 +1477,145 @@ function SmsSettingsTab() {
 /**
  * Setting what a credit costs.
  *
- * Every spot in a Condo costs one credit a day, so this single number is
- * the building's whole price list. It is the one setting on this page that
- * changes what residents are charged, which is why it does not save on
- * blur like the rest: it asks first, and says what it is about to do.
+ * Both products price in credits, so both buildings need this - but it
+ * means different things in each. In a Condo it IS the price list: every
+ * spot costs one credit a day and residents own all of them. In an
+ * Apartment it is the floor: a resident's own spot costs exactly this, and
+ * the building's own spots cost this plus a per-spot extra set on the
+ * Parking Spots screen.
  *
- * The warning is not decoration. A credit already in a resident's wallet
- * keeps buying one day whatever the price becomes, so raising the price
- * does not reprice what people have already bought - it changes what the
- * NEXT credit costs, and it moves the gift-card maths for balances that
- * already exist. Anyone changing this should know that before they do,
- * not after a resident asks why their gift card moved.
+ * Whole dollars only, $6 to $40. The bound is not cosmetic - $6 is the
+ * pilot rate every building runs on today, and the gift-card reserve is
+ * rounded to the nearest $0.25 of 40% of the price, so a price carrying
+ * cents produces a reserve that does not divide evenly into a $25 card and
+ * leaves a remainder nobody can spend. Integers keep that arithmetic exact.
  *
- * DEMO: this is local state. Nothing is persisted and no other screen
- * reads it back - the dashboards quote CREDIT_PRICE_CENTS from
- * lib/demo/pricing.ts. Wiring it up for real means
- * PUT /api/buildings/:id/settings, which already owns
- * `credits_price_cents` and already clears the price cache.
+ * It is the one setting on this page that changes what residents are
+ * charged, which is why it does not save on blur like the rest: it asks
+ * first, and says what it is about to do.
+ *
+ * DEMO: local state. Nothing is persisted and no other screen reads it
+ * back - the dashboards quote CREDIT_PRICE_CENTS from lib/demo/pricing.ts.
+ * Wiring it up for real means PUT /api/buildings/:id/settings, which
+ * already owns `credits_price_cents` and already clears the price cache.
  */
-function CreditPriceTab() {
-  const [saved, setSaved] = useState(CREDIT_PRICE_CENTS);
-  const [draft, setDraft] = useState((CREDIT_PRICE_CENTS / 100).toFixed(2));
+const MIN_CREDIT_PRICE_DOLLARS = 6;
+const MAX_CREDIT_PRICE_DOLLARS = 40;
+
+/** 40% of the price, rounded to the nearest $0.25 — the backend's formula. */
+function reservePerCreditCents(priceCents: number): number {
+  return Math.round((priceCents * 0.4) / 25) * 25;
+}
+
+function CreditPriceTab({ product }: { product: "condo" | "apartment" }) {
+  const [savedDollars, setSavedDollars] = useState(Math.round(CREDIT_PRICE_CENTS / 100));
+  const [draft, setDraft] = useState(String(Math.round(CREDIT_PRICE_CENTS / 100)));
   const [confirming, setConfirming] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
 
-  const draftCents = Math.round(Number(draft) * 100);
-  const valid = Number.isFinite(draftCents) && draftCents > 0;
-  const changed = valid && draftCents !== saved;
-  const direction = draftCents > saved ? "up" : "down";
+  // Digits only, at most two, no leading zeros. Cents are not a valid price
+  // here, so the field never accepts a decimal point in the first place
+  // rather than accepting one and rejecting it on submit - there is no
+  // version of "$15.50" this screen can save. Typing it yields "15".
+  const onChange = (raw: string) => {
+    const digits = raw.replace(/[^0-9]/g, "").slice(0, 2);
+    setDraft(digits.replace(/^0+(?=\d)/, ""));
+    setConfirming(false);
+    setJustSaved(false);
+  };
 
-  const reserveFor = (cents: number) => Math.round((cents * 0.4) / 25) * 25;
+  const dollars = draft === "" ? NaN : Number(draft);
+  const inRange =
+    Number.isInteger(dollars) &&
+    dollars >= MIN_CREDIT_PRICE_DOLLARS &&
+    dollars <= MAX_CREDIT_PRICE_DOLLARS;
+  const error =
+    draft === ""
+      ? undefined
+      : inRange
+        ? undefined
+        : `Choose a whole dollar amount between $${MIN_CREDIT_PRICE_DOLLARS} and $${MAX_CREDIT_PRICE_DOLLARS}.`;
+
+  const draftCents = inRange ? dollars * 100 : NaN;
+  const savedCents = savedDollars * 100;
+  const changed = inRange && draftCents !== savedCents;
+  const direction = changed && draftCents > savedCents ? "up" : "down";
+
+  const reset = () => {
+    setDraft(String(savedDollars));
+    setConfirming(false);
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
       <Card>
-        <div style={{ padding: "var(--spacing-24)", display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
+        <div style={cp.body}>
           <div>
             <h2 style={cp.h2}>Credit price</h2>
             <p style={cp.sub}>
-              What a resident pays for one credit. Every spot in your
-              building costs one credit a day, so this is the price of a
-              day&apos;s parking - the same for every spot and every
-              resident. Residents never set their own.
+              {product === "apartment" ? (
+                <>
+                  What a resident pays for one credit. Every spot starts
+                  here: a spot a resident shares costs exactly this, and a
+                  spot your building owns costs this plus whatever extra you
+                  set on it. Change this and the whole garage moves
+                  together. The per-spot extras are set on{" "}
+                  <strong>Parking Spots</strong>, not here.
+                </>
+              ) : (
+                <>
+                  What a resident pays for one credit. Every spot in your
+                  building costs one credit a day, so this is the price of a
+                  day&apos;s parking - the same for every spot and every
+                  resident. Residents never set their own.
+                </>
+              )}
             </p>
           </div>
 
-          <div style={{ display: "flex", alignItems: "flex-end", gap: "var(--spacing-16)", flexWrap: "wrap" }}>
-            <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <span style={cp.label}>Price per credit (USD)</span>
-              <div style={cp.inputWrap}>
-                <span style={cp.prefix}>$</span>
-                <input
-                  value={draft}
-                  inputMode="decimal"
-                  onChange={(e) => { setDraft(e.target.value); setConfirming(false); setJustSaved(false); }}
-                  style={cp.input}
-                />
-              </div>
-            </label>
+          <div style={cp.fieldRow}>
+            <Input
+              label="Price per credit"
+              variant="compact"
+              inputMode="numeric"
+              value={draft}
+              error={error}
+              onChange={(e) => onChange(e.target.value)}
+              style={{ width: 132 }}
+            />
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <span style={cp.label}>You receive per credit</span>
-              <span style={cp.derived}>
-                {valid ? formatMoney(netToBuilding(draftCents)) : "—"}
-              </span>
-              <span style={cp.hint}>after commission and card fees</span>
-            </div>
+            <Figure
+              label="You receive per credit"
+              value={inRange ? formatMoney(netToBuilding(draftCents)) : "—"}
+              note="after commission and card fees"
+            />
+            <Figure
+              label="Earns toward a gift card"
+              value={inRange ? formatMoney(reservePerCreditCents(draftCents)) : "—"}
+              note="per credit a resident earns"
+            />
           </div>
 
+          <span style={cp.hint}>
+            Whole dollars, ${MIN_CREDIT_PRICE_DOLLARS} to $
+            {MAX_CREDIT_PRICE_DOLLARS}. Currently{" "}
+            <strong>{formatMoney(savedCents)}</strong>.
+          </span>
+
           {changed && !confirming && (
-            <div style={{ display: "flex", gap: "var(--spacing-12)" }}>
-              <button style={cp.primary} onClick={() => setConfirming(true)}>
+            <div style={cp.actions}>
+              <Button variant="primary" size="small" style={{ width: "auto" }} onClick={() => setConfirming(true)}>
                 Review change
-              </button>
-              <button style={cp.secondary} onClick={() => { setDraft((saved / 100).toFixed(2)); setConfirming(false); }}>
+              </Button>
+              <Button variant="secondary" size="small" style={{ width: "auto" }} onClick={reset}>
                 Cancel
-              </button>
+              </Button>
             </div>
           )}
 
           {justSaved && (
             <span style={{ ...cp.hint, color: "var(--color-tag-text-active)" }}>
-              Saved. New bookings are charged at {formatMoney(saved)} a day.
+              Saved. New bookings are charged {formatMoney(savedCents)} a day.
             </span>
           )}
         </div>
@@ -1566,11 +1625,11 @@ function CreditPriceTab() {
           banner that is always on screen is a banner nobody reads. */}
       {changed && confirming && (
         <Card>
-          <div style={{ padding: "var(--spacing-24)", display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
+          <div style={cp.body}>
             <div style={cp.warnHead}>
               <span aria-hidden style={cp.warnIcon}>!</span>
               <span style={cp.warnTitle}>
-                Before you change the price {direction} to {formatMoney(draftCents)}
+                Before you move the price {direction} to {formatMoney(draftCents)}
               </span>
             </div>
 
@@ -1578,36 +1637,45 @@ function CreditPriceTab() {
               <li style={cp.li}>
                 <strong>Credits residents already bought are not repriced.</strong>{" "}
                 A credit always buys one day. Someone holding 10 credits
-                bought at {formatMoney(saved)} still parks 10 days, so you
-                carry the difference until their balance runs out.
+                bought at {formatMoney(savedCents)} still parks 10 days, so
+                you carry the difference until their balance runs out.
               </li>
               <li style={cp.li}>
                 <strong>Gift cards move for balances that already exist.</strong>{" "}
                 What a credit earns toward a gift card is a share of its
-                price, so it goes from {formatMoney(reserveFor(saved))} to{" "}
-                {formatMoney(reserveFor(draftCents))} per credit. Residents
-                who have been saving will see their progress change without
-                having done anything.
+                price, so it goes from{" "}
+                {formatMoney(reservePerCreditCents(savedCents))} to{" "}
+                {formatMoney(reservePerCreditCents(draftCents))} per credit.
+                Residents who have been saving will see their progress change
+                without having done anything.
               </li>
               <li style={cp.li}>
                 <strong>Only new bookings are affected.</strong> Anything
-                already booked or paid for stays at {formatMoney(saved)}.
+                already booked or paid for stays at {formatMoney(savedCents)}.
               </li>
+              {product === "apartment" && (
+                <li style={cp.li}>
+                  <strong>Every spot you own moves with it.</strong> The
+                  extras you set per spot are added on top of this, so they
+                  do not change - but the total a renter pays for each of
+                  them shifts by the same{" "}
+                  {formatMoney(Math.abs(draftCents - savedCents))}.
+                </li>
+              )}
             </ul>
 
-            <div style={{ display: "flex", gap: "var(--spacing-12)", flexWrap: "wrap" }}>
-              <button
-                style={cp.primary}
-                onClick={() => { setSaved(draftCents); setConfirming(false); setJustSaved(true); }}
+            <div style={cp.actions}>
+              <Button
+                variant="primary"
+                size="small"
+                style={{ width: "auto" }}
+                onClick={() => { setSavedDollars(dollars); setConfirming(false); setJustSaved(true); }}
               >
                 Change price to {formatMoney(draftCents)}
-              </button>
-              <button
-                style={cp.secondary}
-                onClick={() => { setDraft((saved / 100).toFixed(2)); setConfirming(false); }}
-              >
-                Keep {formatMoney(saved)}
-              </button>
+              </Button>
+              <Button variant="secondary" size="small" style={{ width: "auto" }} onClick={reset}>
+                Keep {formatMoney(savedCents)}
+              </Button>
             </div>
           </div>
         </Card>
@@ -1616,44 +1684,89 @@ function CreditPriceTab() {
   );
 }
 
+function Figure({ label, value, note }: { label: string; value: string; note: string }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-4)" }}>
+      <span style={cp.figureLabel}>{label}</span>
+      <span style={cp.figureValue}>{value}</span>
+      <span style={cp.hint}>{note}</span>
+    </div>
+  );
+}
+
 const cp: Record<string, React.CSSProperties> = {
-  h2: { margin: 0, fontSize: "var(--font-size-small)", fontWeight: 600, color: "var(--color-text-strong)" },
-  sub: { margin: "var(--spacing-8) 0 0", fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)", maxWidth: 560, lineHeight: 1.6 },
-  label: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },
-  inputWrap: {
-    display: "flex", alignItems: "center", gap: 4, height: 40, padding: "0 12px",
-    border: "1px solid var(--color-stroke-medium)", borderRadius: "var(--radius-8)",
-    background: "var(--color-fill-white)", width: 150,
+  body: {
+    padding: "var(--spacing-24)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--spacing-16)",
   },
-  prefix: { fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)" },
-  input: {
-    border: "none", outline: "none", background: "transparent", width: "100%",
-    fontSize: "var(--font-size-small)", fontFamily: "var(--font-family-body)",
+  h2: {
+    margin: 0,
+    fontSize: "var(--font-size-body)",
+    fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
+    color: "var(--color-text-strong)",
+    fontFamily: "var(--font-family-heading)",
+  },
+  sub: {
+    margin: "var(--spacing-8) 0 0",
+    fontSize: "var(--font-size-tiny)",
+    lineHeight: "var(--line-height-tiny)",
+    color: "var(--color-text-weak)",
+    maxWidth: 560,
+  },
+  fieldRow: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "var(--spacing-24)",
+    flexWrap: "wrap",
+  },
+  figureLabel: {
+    fontSize: "var(--font-size-extra-tiny)",
+    fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
     color: "var(--color-text-strong)",
   },
-  derived: { fontSize: "var(--font-size-small)", fontWeight: 600, color: "var(--color-text-strong)" },
-  hint: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },
+  figureValue: {
+    fontSize: "var(--font-size-body)",
+    fontWeight: 600,
+    color: "var(--color-text-strong)",
+  },
+  hint: {
+    fontSize: "var(--font-size-extra-tiny)",
+    lineHeight: "var(--line-height-extra-tiny)",
+    color: "var(--color-text-weak)",
+  },
+  actions: { display: "flex", gap: "var(--spacing-12)", flexWrap: "wrap" },
   warnHead: { display: "flex", alignItems: "center", gap: "var(--spacing-8)" },
   warnIcon: {
-    display: "inline-flex", alignItems: "center", justifyContent: "center",
-    width: 20, height: 20, borderRadius: 999, flexShrink: 0,
-    background: "var(--color-tag-fill-pending, #FDF0D5)",
-    color: "var(--color-tag-text-pending, #8A6100)",
-    fontSize: 13, fontWeight: 700,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 20,
+    height: 20,
+    borderRadius: "var(--radius-pill)",
+    flexShrink: 0,
+    background: "var(--color-tag-pending)",
+    color: "var(--color-tag-text-pending)",
+    fontSize: "var(--font-size-tiny)",
+    fontWeight: 700,
   },
-  warnTitle: { fontSize: "var(--font-size-small)", fontWeight: 600, color: "var(--color-text-strong)" },
-  list: { margin: 0, padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: "var(--spacing-12)" },
-  li: { fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)", lineHeight: 1.65 },
-  primary: {
-    height: 36, padding: "0 16px", borderRadius: "var(--radius-8)", border: "none",
-    background: "var(--color-fill-inverse, #111)", color: "var(--color-text-inverse, #fff)",
-    fontSize: "var(--font-size-tiny)", fontFamily: "var(--font-family-body)", cursor: "pointer",
+  warnTitle: {
+    fontSize: "var(--font-size-body)",
+    fontWeight: 600,
+    color: "var(--color-text-strong)",
   },
-  secondary: {
-    height: 36, padding: "0 16px", borderRadius: "var(--radius-8)",
-    border: "1px solid var(--color-stroke-medium)", background: "var(--color-fill-white)",
-    color: "var(--color-text-strong)", fontSize: "var(--font-size-tiny)",
-    fontFamily: "var(--font-family-body)", cursor: "pointer",
+  list: {
+    margin: 0,
+    padding: "0 0 0 18px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--spacing-12)",
+  },
+  li: {
+    fontSize: "var(--font-size-tiny)",
+    lineHeight: "var(--line-height-tiny)",
+    color: "var(--color-text-weak)",
   },
 };
 
@@ -1729,15 +1842,12 @@ function TabBar({ active, onChange, tabs }: { active: Tab; onChange: (t: Tab) =>
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>("security");
   const pathname = usePathname();
-  // Settings is served under BOTH product prefixes, so the tab list has to
-  // be decided by the URL. Credit price is a Condo control: there the one
-  // number IS the price list, since residents own every spot and the
-  // building sets one rate for all of them.
-  const isCondo = productFromPath(pathname) !== "apartment";
-  const tabs = useMemo(
-    () => TABS.filter((t) => t.id !== "credit-price" || isCondo),
-    [isCondo],
-  );
+  // Settings is served under BOTH product prefixes, so anything that reads
+  // differently per product has to be decided by the URL. Both products
+  // price in credits, so both get the control - what differs is whether
+  // this number is the whole price list or only the floor under it.
+  const product = productFromPath(pathname) === "apartment" ? "apartment" : "condo";
+  const tabs = TABS;
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -1810,7 +1920,7 @@ export default function SettingsPage() {
           <NotificationsTab savedPreferences={preferences} onSave={savePreferences} />
         )}
         {!loading && activeTab === "sms-settings" && <SmsSettingsTab />}
-        {!loading && activeTab === "credit-price" && isCondo && <CreditPriceTab />}
+        {!loading && activeTab === "credit-price" && <CreditPriceTab product={product} />}
       </div>
   );
 }
