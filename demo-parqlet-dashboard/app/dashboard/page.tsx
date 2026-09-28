@@ -12,6 +12,36 @@ import {
   TopGuestParkingBookersCard,
   DocumentModal,
 } from "../components/hoa";
+import { CreditPriceCard, type PriceRow } from "../components/pricing/CreditPriceCard";
+import {
+  BASE_PRICE_CENTS,
+  BASE_PRICE_CREDITS,
+  COMMISSION_PCT,
+  CREDIT_PRICE_CENTS,
+  formatMoney,
+  netToBuilding,
+} from "../lib/demo/pricing";
+
+/**
+ * A Condo has ONE price for the whole building. Residents own every spot
+ * and share them with each other, so there is nothing for the building to
+ * price differently and nothing for a resident to set - the building
+ * decides, once, and it applies everywhere.
+ */
+const CONDO_PRICE_ROWS: readonly PriceRow[] = [
+  {
+    label: "Any spot in the building",
+    note: "One price everywhere - residents never set their own",
+    price: `${BASE_PRICE_CREDITS} credit`,
+    total: formatMoney(BASE_PRICE_CENTS),
+  },
+  {
+    label: "You receive",
+    note: `After our ${COMMISSION_PCT}% commission and card fees`,
+    price: "per credit bought",
+    total: formatMoney(netToBuilding(CREDIT_PRICE_CENTS)),
+  },
+];
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -77,6 +107,12 @@ export default function DashboardPage() {
             <RecentActivityCard buildingId={buildingId} />
             <CurrentBookingsCard buildingId={buildingId} />
           </div>
+
+          {/* What a spot costs */}
+          <CreditPriceCard
+            rows={CONDO_PRICE_ROWS}
+            footnote="Your residents pay each other in credits and buy more with a card when they run out. What you earn does not arrive as a payout - it comes off your subscription."
+          />
 
           {/* Top Contributors + Top Guest Parking Bookers */}
           <div style={{ display: "flex", flexDirection: isDesktop ? "row" : "column", gap: 16, alignItems: isDesktop ? "stretch" : undefined }}>
