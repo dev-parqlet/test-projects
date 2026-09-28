@@ -6,6 +6,67 @@ import * as path from "path";
 
 const MOCK_DATA_DIR = path.join(process.cwd(), "app/lib/mock-data");
 
+/**
+ * The day every mock JSON file is written to be correct on.
+ *
+ * The demo is shown for months from a fixed corpus, and a fixed corpus has
+ * a shelf life: this one was a production dump taken in May and by late
+ * September every ticket, invoice and sync log on screen was four months
+ * old. Nobody notices while editing the data; every prospect notices when
+ * the newest support ticket predates the meeting by a season.
+ *
+ * So dates are not served as written. Everything is shifted forward by the
+ * whole number of days between this epoch and today, which keeps the
+ * corpus exactly as internally consistent as it was authored - an invoice
+ * still lands a month before the next renewal - while the whole thing
+ * stays anchored to now.
+ *
+ * EVERY mock file must be authored against this one date. Two anchors
+ * cannot both survive a single shift.
+ */
+const DEMO_EPOCH = Date.UTC(2026, 8, 28); // 2026-09-28
+
+/** Whole days from the epoch to today. Never negative. */
+function demoDayShift(now = new Date()): number {
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return Math.max(0, Math.round((today - DEMO_EPOCH) / 86_400_000));
+}
+
+// A full ISO-8601 instant, or a bare calendar date. Anchored at both ends
+// so it cannot match the digits inside a UUID, a phone number or an id.
+const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})(T[\d:.]+(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+
+function shiftIsoString(value: string, days: number): string {
+  const m = ISO_DATE.exec(value);
+  if (!m) return value;
+  const [, y, mo, d, time] = m;
+  const shifted = new Date(Date.UTC(Number(y), Number(mo) - 1, Number(d) + days));
+  const yyyy = String(shifted.getUTCFullYear()).padStart(4, "0");
+  const mm = String(shifted.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(shifted.getUTCDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}${time ?? ""}`;
+}
+
+/**
+ * Walks a parsed mock payload and moves every date-looking string forward.
+ * Whole strings only, so "2026-09-28" is rebased and
+ * "Invoice #INV-0034 from 2026-09-28" is left alone - partial rewriting of
+ * prose is how you end up with a sentence nobody can read.
+ */
+function rebaseDates<T>(value: T, days: number): T {
+  if (days === 0) return value;
+  if (typeof value === "string") return shiftIsoString(value, days) as unknown as T;
+  if (Array.isArray(value)) return value.map((v) => rebaseDates(v, days)) as unknown as T;
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = rebaseDates(v, days);
+    }
+    return out as unknown as T;
+  }
+  return value;
+}
+
 interface MockOptions {
   mockFactory?: () => unknown;
   mockFactoryWithBody?: (body: unknown) => unknown;
@@ -48,7 +109,7 @@ async function handleMock(request: NextRequest, options?: MockOptions): Promise<
     const filePath = path.join(MOCK_DATA_DIR, `${fileName}.json`);
     if (fs.existsSync(filePath)) {
       const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-      return NextResponse.json(data, { status: 200 });
+      return NextResponse.json(rebaseDates(data, demoDayShift()), { status: 200 });
     }
   }
 

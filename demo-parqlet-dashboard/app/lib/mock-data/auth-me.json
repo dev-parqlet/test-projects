@@ -2,10 +2,10 @@
   "user": {
     "id": "11111111-2222-4333-8444-555555555555",
     "name": "Sarah Johnson",
-    "email": "sarah@44east.com",
+    "email": "sarah@themeridian.com",
     "role": "admin",
     "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
-    "createdAt": "2026-05-15T06:55:06.103Z",
+    "createdAt": "2026-09-24T06:55:06.103Z",
     "phone": "+1 (555) 100-0003",
     "buildingIds": [
       "e6565d1b-1f25-4c51-bfa6-7db4932702cd"

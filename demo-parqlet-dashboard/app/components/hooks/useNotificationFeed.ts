@@ -131,7 +131,15 @@ export function useNotificationFeed() {
   const isError = alertsQuery.isError;
 
   const items = useMemo<NotificationFeedItem[]>(() => {
-    const alertItems: NotificationFeedItem[] = (alertsQuery.data?.data ?? []).map((a: Alert) => ({
+    // /api/alerts is unscoped - it is a super-admin feed. A building admin
+    // must only see their own building's incidents, or one client's demo
+    // shows another client's name.
+    const isSuperAdmin = user?.role === "super_admin";
+    const visibleAlerts = (alertsQuery.data?.data ?? []).filter(
+      (a: Alert) => isSuperAdmin || !buildingId || a.buildingId === buildingId,
+    );
+
+    const alertItems: NotificationFeedItem[] = visibleAlerts.map((a: Alert) => ({
       id: a.id,
       category: "alerts",
       initials: (a.buildingName?.trim()?.[0] ?? a.type?.trim()?.[0] ?? "!").toUpperCase(),
@@ -170,7 +178,7 @@ export function useNotificationFeed() {
     return [...alertItems, ...notificationItems, ...synthetic].sort(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
-  }, [alertsQuery.data, buildingQuery.data, realNotificationsQuery.data, prefsQuery.data, seenIds]);
+  }, [alertsQuery.data, buildingQuery.data, realNotificationsQuery.data, prefsQuery.data, seenIds, user, buildingId]);
 
   // Cross-tab/cross-component sync — another tab (or the dropdown vs. the
   // full page in the same tab) marking something seen should update here too.

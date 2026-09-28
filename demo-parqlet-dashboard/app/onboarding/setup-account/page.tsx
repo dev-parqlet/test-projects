@@ -548,7 +548,7 @@ export default function Step1Page() {
                 <FormField
                   label="Email address"
                   type="email"
-                  placeholder="jondoe@44eastave.com"
+                  placeholder="jordan@themeridian.com"
                   disabled
                   value={invitedEmail}
                 />

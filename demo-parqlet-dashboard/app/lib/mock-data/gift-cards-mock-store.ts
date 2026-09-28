@@ -1,5 +1,9 @@
 /**
- * Static mock data for the Gift Cards report (designer/mock mode only).
+ * Static mock data for the Gift Cards report (demo/mock mode only).
+ *
+ * Building ids here MUST match app/lib/mock-data/buildings.json. The report
+ * filters residents by the selected building, so an id that matches nothing
+ * renders an empty table rather than an error.
  * Read-only report — no create/edit UI — so unlike
  * admin-broadcasts-mock-store.ts this doesn't need mutable in-memory
  * state, just representative sample rows.
@@ -39,9 +43,9 @@ const MOCK_RESIDENTS: MockGiftCardResidentSummary[] = [
     residentId: "mock-resident-1",
     residentName: "Jordan Reyes",
     residentEmail: "jordan.reyes@email.com",
-    residentPhone: "+16502299567",
+    residentPhone: "+12145550142",
     unit: "204",
-    buildingId: "mock-building-1",
+    buildingId: "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
     buildingName: "The Meridian",
     creditBalance: 2,
     giftCardCount: 1,
@@ -52,7 +56,7 @@ const MOCK_RESIDENTS: MockGiftCardResidentSummary[] = [
     residentEmail: "priya.n@email.com",
     residentPhone: "+14155550101",
     unit: "12B",
-    buildingId: "mock-building-2",
+    buildingId: "80f9ac2e-b884-4634-ac02-0682a9a12662",
     buildingName: "Oakline Park",
     creditBalance: 4,
     giftCardCount: 2,
@@ -63,7 +67,7 @@ const MOCK_RESIDENTS: MockGiftCardResidentSummary[] = [
     residentEmail: "sam.okafor@email.com",
     residentPhone: "+13105550199",
     unit: "7",
-    buildingId: "mock-building-1",
+    buildingId: "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
     buildingName: "The Meridian",
     creditBalance: 14,
     giftCardCount: 0,
@@ -74,7 +78,7 @@ const MOCK_RESIDENTS: MockGiftCardResidentSummary[] = [
     residentEmail: "lena.k@email.com",
     residentPhone: "+12065550123",
     unit: "3A",
-    buildingId: "mock-building-2",
+    buildingId: "80f9ac2e-b884-4634-ac02-0682a9a12662",
     buildingName: "Oakline Park",
     creditBalance: 10,
     giftCardCount: 0,

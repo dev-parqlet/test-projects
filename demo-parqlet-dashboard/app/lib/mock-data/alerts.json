@@ -1,57 +1,67 @@
 {
   "data": [
     {
-      "id": "a2306fd5-0ab8-4abc-bfb6-5070c491ef55",
-      "severity": "Critical",
-      "buildingId": "80f9ac2e-b884-4634-ac02-0682a9a12662",
-      "type": "Data Sync Error",
-      "description": "Yardi sync returned malformed response",
-      "acknowledged": false,
-      "timestamp": "2026-05-18T08:20:13.113Z",
-      "buildingName": "Oakline Park"
-    },
-    {
-      "id": "c9704d9f-ca5c-45f2-9776-c5865e9dc79b",
-      "severity": "Warning",
-      "buildingId": "60808600-ad82-4202-a2ca-3b24ae87ee5e",
-      "type": "Low Adoption",
-      "description": "Parkview Condos adoption is at 18%",
-      "acknowledged": true,
-      "timestamp": "2026-05-18T08:20:13.112Z",
-      "buildingName": "Parkview Condos"
-    },
-    {
-      "id": "25d3fef1-b125-46d7-a490-d825c8ab21e3",
+      "id": "a1000000-0000-4000-8000-000000000001",
       "severity": "Info",
-      "buildingId": "60808600-ad82-4202-a2ca-3b24ae87ee5e",
+      "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
+      "buildingName": "The Meridian",
       "type": "New Registration",
-      "description": "5 new residents registered this week",
+      "description": "8 new residents registered this week",
       "acknowledged": true,
-      "timestamp": "2026-05-18T08:20:13.111Z",
-      "buildingName": "Parkview Condos"
+      "timestamp": "2026-09-26T09:20:13.000Z"
     },
     {
-      "id": "1d8cb8ff-5cfd-4a7d-a69c-ca7c35737885",
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "severity": "Warning",
+      "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
+      "buildingName": "The Meridian",
+      "type": "Sync Delay",
+      "description": "BuildingLink sync ran 40 minutes late",
+      "acknowledged": false,
+      "timestamp": "2026-09-27T07:20:13.000Z"
+    },
+    {
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "severity": "Info",
+      "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
+      "buildingName": "The Meridian",
+      "type": "Adoption Milestone",
+      "description": "Resident adoption passed 75%",
+      "acknowledged": true,
+      "timestamp": "2026-09-24T14:20:13.000Z"
+    },
+    {
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "severity": "Info",
+      "buildingId": "80f9ac2e-b884-4634-ac02-0682a9a12662",
+      "buildingName": "Oakline Park",
+      "type": "New Registration",
+      "description": "14 new residents registered this week",
+      "acknowledged": true,
+      "timestamp": "2026-09-26T10:20:13.000Z"
+    },
+    {
+      "id": "a1000000-0000-4000-8000-000000000005",
       "severity": "Warning",
       "buildingId": "80f9ac2e-b884-4634-ac02-0682a9a12662",
-      "type": "Subscription Overdue",
-      "description": "Invoice #INV-0034 is 15 days overdue",
-      "acknowledged": true,
-      "timestamp": "2026-05-18T08:20:13.110Z",
-      "buildingName": "Oakline Park"
+      "buildingName": "Oakline Park",
+      "type": "High Demand",
+      "description": "Level 1 was fully booked on 4 days this week",
+      "acknowledged": false,
+      "timestamp": "2026-09-27T18:20:13.000Z"
     },
     {
-      "id": "6a993f31-ee24-4922-824e-08a5e733d577",
-      "severity": "Critical",
-      "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
-      "type": "Sync Failure",
-      "description": "BuildingLink sync failed: invalid credentials",
-      "acknowledged": false,
-      "timestamp": "2026-05-18T08:20:13.108Z",
-      "buildingName": "The Meridian"
+      "id": "a1000000-0000-4000-8000-000000000006",
+      "severity": "Info",
+      "buildingId": "80f9ac2e-b884-4634-ac02-0682a9a12662",
+      "buildingName": "Oakline Park",
+      "type": "Payout Scheduled",
+      "description": "Your monthly payout is queued for the 3rd",
+      "acknowledged": true,
+      "timestamp": "2026-09-25T11:20:13.000Z"
     }
   ],
-  "total": 5,
+  "total": 6,
   "page": 1,
   "pageSize": 20
 }

@@ -1,34 +1,25 @@
 {
   "data": [
     {
-      "buildingId": "016c19cc-6ed3-4b22-80eb-890054263794",
-      "buildingName": "Parkview Condos",
-      "mrr": 1999,
-      "status": "Past Due",
-      "lastPayment": null,
-      "nextRenewal": "2026-06-15T06:42:33.065Z",
-      "contractExpiry": "2026-06-15T06:42:33.065Z"
-    },
-    {
-      "buildingId": "c3de2ba5-3c7c-4b29-9f43-390039765f45",
-      "buildingName": "Oakline Park",
-      "mrr": 999,
-      "status": "Active",
-      "lastPayment": null,
-      "nextRenewal": "2026-06-15T06:42:33.060Z",
-      "contractExpiry": "2026-06-15T06:42:33.060Z"
-    },
-    {
-      "buildingId": "adefd306-a109-478b-a473-59cebcab72cd",
+      "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
       "buildingName": "The Meridian",
       "mrr": 499,
       "status": "Active",
-      "lastPayment": null,
-      "nextRenewal": "2026-06-15T06:42:33.041Z",
-      "contractExpiry": "2026-06-15T06:42:33.041Z"
+      "lastPayment": "2026-09-24T02:10:00.000Z",
+      "nextRenewal": "2026-10-25T06:42:33.041Z",
+      "contractExpiry": "2026-10-25T06:42:33.041Z"
+    },
+    {
+      "buildingId": "80f9ac2e-b884-4634-ac02-0682a9a12662",
+      "buildingName": "Oakline Park",
+      "mrr": 999,
+      "status": "Active",
+      "lastPayment": "2026-09-24T02:12:00.000Z",
+      "nextRenewal": "2026-10-25T06:42:33.060Z",
+      "contractExpiry": "2026-10-25T06:42:33.060Z"
     }
   ],
-  "total": 3,
+  "total": 2,
   "page": 1,
   "pageSize": 20
 }

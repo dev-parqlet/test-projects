@@ -54,7 +54,7 @@ export const DEMO_IDENTITIES: Record<DemoVariant, DemoIdentity> = {
     user: {
       id: '11111111-2222-4333-8444-555555555555',
       name: 'Sarah Johnson',
-      email: 'sarah@44east.com',
+      email: 'sarah@themeridian.com',
       role: 'admin',
       buildingId: HOA_BUILDING.id,
       buildingIds: [HOA_BUILDING.id],
@@ -70,7 +70,7 @@ export const DEMO_IDENTITIES: Record<DemoVariant, DemoIdentity> = {
     user: {
       id: '66666666-7777-4888-8999-000000000000',
       name: 'Daniel Reyes',
-      email: 'daniel@riversidetowers.com',
+      email: 'daniel@oaklinepark.com',
       role: 'admin',
       buildingId: APARTMENTS_BUILDING.id,
       buildingIds: [APARTMENTS_BUILDING.id],

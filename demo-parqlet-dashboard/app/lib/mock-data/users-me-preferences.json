@@ -3,11 +3,11 @@
   "timeFormat": "12h",
   "twoFactorEnabled": false,
   "autoInviteEnabled": false,
-  "adminNotificationEmail": "margo@parqlet.com",
+  "adminNotificationEmail": "sarah@themeridian.com",
   "notificationPreferences": {
     "res-invite": {
       "email": true,
-      "web": false
+      "web": true
     },
     "res-updated": {
       "email": true,
@@ -27,15 +27,15 @@
     },
     "book-new": {
       "email": true,
-      "web": false
+      "web": true
     },
     "book-cancel": {
       "email": true,
-      "web": false
+      "web": true
     },
     "book-issue": {
       "email": true,
-      "web": false
+      "web": true
     },
     "sync-ok": {
       "email": false,
@@ -43,7 +43,11 @@
     },
     "sync-error": {
       "email": false,
-      "web": false
+      "web": true
+    },
+    "ticket-reply": {
+      "email": true,
+      "web": true
     }
   },
   "alertSeverityPreferences": {

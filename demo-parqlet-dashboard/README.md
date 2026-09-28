@@ -8,8 +8,8 @@ It shows **both** variants, switched from the header:
 
 | Variant | Building | What it demonstrates |
 |---|---|---|
-| **HOA** | 44 East Avenue | Residents share their own spots; guests are paid for in credits. |
-| **Apartments** | Riverside Towers | The building owns the spots, sets a price per spot, and is paid in dollars. |
+| **HOA** | The Meridian | Residents share their own spots; guests are paid for in credits. |
+| **Apartments** | Oakline Park | The building owns some spots and can charge a dollar extra on those; everything else is 1 credit, as in a Condo. |
 
 ## Why it is a fork and not a flag in the real dashboard
 

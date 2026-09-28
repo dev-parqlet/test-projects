@@ -4,7 +4,7 @@
       "id": "sync-001",
       "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
       "buildingName": "The Meridian",
-      "timestamp": "2026-05-19T06:30:00Z",
+      "timestamp": "2026-09-28T06:30:00Z",
       "status": "Success",
       "platform": "BuildingLink",
       "recordsSynced": 38,
@@ -12,21 +12,10 @@
       "type": "API Sync"
     },
     {
-      "id": "sync-002",
-      "buildingId": "60808600-ad82-4202-a2ca-3b24ae87ee5e",
-      "buildingName": "Parkview Condos",
-      "timestamp": "2026-05-19T06:30:00Z",
-      "status": "Failed",
-      "platform": "BuildingLink",
-      "recordsSynced": null,
-      "errorMessage": "Connection timeout after 30s",
-      "type": "Manual"
-    },
-    {
       "id": "sync-003",
       "buildingId": "80f9ac2e-b884-4634-ac02-0682a9a12662",
       "buildingName": "Oakline Park",
-      "timestamp": "2026-05-19T06:30:00Z",
+      "timestamp": "2026-09-28T06:30:00Z",
       "status": "Success",
       "platform": "Yardi",
       "recordsSynced": 42,
@@ -37,7 +26,7 @@
       "id": "sync-004",
       "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
       "buildingName": "The Meridian",
-      "timestamp": "2026-05-18T06:30:00Z",
+      "timestamp": "2026-09-27T06:30:00Z",
       "status": "Success",
       "platform": "BuildingLink",
       "recordsSynced": 38,
@@ -45,21 +34,10 @@
       "type": "API Sync"
     },
     {
-      "id": "sync-005",
-      "buildingId": "60808600-ad82-4202-a2ca-3b24ae87ee5e",
-      "buildingName": "Parkview Condos",
-      "timestamp": "2026-05-18T06:30:00Z",
-      "status": "Stale",
-      "platform": "BuildingLink",
-      "recordsSynced": 35,
-      "errorMessage": null,
-      "type": "Manual"
-    },
-    {
       "id": "sync-006",
       "buildingId": "80f9ac2e-b884-4634-ac02-0682a9a12662",
       "buildingName": "Oakline Park",
-      "timestamp": "2026-05-18T06:30:00Z",
+      "timestamp": "2026-09-27T06:30:00Z",
       "status": "Success",
       "platform": "Yardi",
       "recordsSynced": 42,
@@ -67,7 +45,7 @@
       "type": "API Sync"
     }
   ],
-  "total": 6,
+  "total": 4,
   "page": 1,
   "pageSize": 20
 }

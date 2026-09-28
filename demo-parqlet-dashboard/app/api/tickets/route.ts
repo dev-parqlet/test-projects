@@ -4,7 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { handleRequest } from "@/lib/handle-request";
 
 export async function GET(request: NextRequest) {
-  return handleRequest(request, "/api/tickets");
+  // The mock file is named for the page, not the endpoint, so the default
+  // "infer the filename from the URL" rule looked for tickets.json, found
+  // nothing, and fell through to the empty-list fallback - leaving Support
+  // Tickets blank in the demo while support-tickets.json sat unread.
+  return handleRequest(request, "/api/tickets", { mockFile: "support-tickets" });
 }
 
 export async function POST(request: NextRequest) {
