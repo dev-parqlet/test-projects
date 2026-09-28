@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "../components/auth/auth-provider";
 import { useDashboardStats } from "../components/hooks";
 import { useWindowWidth } from "../components/hooks/useWindowSize";
@@ -13,14 +13,17 @@ import {
   DocumentModal,
 } from "../components/hoa";
 import { CreditPriceCard, type PriceRow } from "../components/pricing/CreditPriceCard";
+import { EarningsProgressCard } from "../components/revenue/EarningsProgressCard";
 import {
   BASE_PRICE_CENTS,
   BASE_PRICE_CREDITS,
   COMMISSION_PCT,
+  CONDO_FLOOR_CENTS,
   CREDIT_PRICE_CENTS,
   formatMoney,
   netToBuilding,
 } from "../lib/demo/pricing";
+import { currentCondoMonth } from "../lib/demo/condo-revenue";
 
 /**
  * A Condo has ONE price for the whole building. Residents own every spot
@@ -56,6 +59,9 @@ export default function DashboardPage() {
   // page silently gets no scope at all against a real session.
   const buildingId = user?.buildingIds?.[0] ?? null;
   const { data: stats, isLoading: statsLoading } = useDashboardStats(buildingId);
+  // Same source as the Revenue page, so the dashboard cannot quote a
+  // different month's earnings than the page it links to.
+  const month = useMemo(() => currentCondoMonth(), []);
   const safeStats = stats ?? { daily: 0, weekly: 0, monthly: 0, ytd: 0 };
 
   return (
@@ -101,6 +107,15 @@ export default function DashboardPage() {
             <StatCard label="Monthly Bookings" value={statsLoading ? 0 : safeStats.monthly} tag={statsLoading ? "Loading…" : "this month"} />
             <StatCard label="Year to Date Bookings" value={statsLoading ? 0 : safeStats.ytd} tag={statsLoading ? "Loading…" : "all time"} />
           </div>
+
+          {/* This month's earnings against the subscription */}
+          <EarningsProgressCard
+            product="condo"
+            earningsCents={month.earningsCents}
+            subscriptionCents={month.subscriptionCents}
+            floorCents={CONDO_FLOOR_CENTS}
+            revenueHref="/condo/revenue"
+          />
 
           {/* Recent Activity + Current Bookings */}
           <div style={{ display: "flex", flexDirection: isDesktop ? "row" : "column", gap: 16, alignItems: isDesktop ? "stretch" : undefined }}>

@@ -16,7 +16,9 @@ import { useAuth } from "../../../components/auth/auth-provider";
 import { Badge } from "../../../components/ui/Badge";
 import { FilterDropdown } from "../../../components/ui/FilterDropdown";
 import { TableHeadLabel } from "../../../components/ui/TableHeadLabel";
-import { formatMoney, netToBuilding, COMMISSION_PCT } from "../../../lib/demo/apartments-data";
+import { InfoTooltip } from "../../../components/ui/InfoTooltip";
+import { formatMoney, COMMISSION_PCT } from "../../../lib/demo/apartments-data";
+import { bookingEarning } from "../../../lib/demo/booking-earnings";
 
 type Row = {
   id: string;
@@ -28,6 +30,10 @@ type Row = {
   bookingEnd: string;
   status: string;
   amountCents?: number | null;
+  /** Credits the renter spent. Zero on a spot paid for outright. */
+  creditsSpent?: number | null;
+  /** Named when a RESIDENT lent the spot; null on the building's own. */
+  spotOwnerName?: string | null;
 };
 
 const TABS = [
@@ -36,7 +42,9 @@ const TABS = [
   { label: "Past", value: "past" },
 ];
 
-const COL = ["7 1 90px", "7 1 80px", "10 1 130px", "9 1 110px", "10 1 120px", "10 1 120px", "8 1 100px", "8 1 100px", "9 1 110px"];
+// "Paid" carries a sentence now ("1 reused credit + $9.00"), not just a
+// figure, so it is given room the other columns do not need.
+const COL = ["7 1 90px", "7 1 80px", "10 1 130px", "9 1 110px", "10 1 120px", "10 1 120px", "12 1 150px", "8 1 100px", "9 1 110px"];
 
 export default function ApartmentsBookingsPage() {
   const { user } = useAuth();
@@ -72,9 +80,11 @@ export default function ApartmentsBookingsPage() {
         (acc, r) => {
           // Cancelled bookings were never paid for, so including them would
           // overstate the period.
-          if (r.status === "Cancelled" || r.amountCents == null) return acc;
-          acc.gross += r.amountCents;
-          acc.net += netToBuilding(r.amountCents);
+          if (r.status === "Cancelled") return acc;
+          acc.gross += r.amountCents ?? 0;
+          // Summed from the same helper the rows print, so the footer can
+          // never disagree with the column above it.
+          acc.net += bookingEarning(r).earnedCents;
           return acc;
         },
         { gross: 0, net: 0 },
@@ -132,7 +142,9 @@ export default function ApartmentsBookingsPage() {
 
         {isLoading && <div style={{ ...st.row, ...st.empty }}>Loading…</div>}
 
-        {!isLoading && rows.map((r) => (
+        {!isLoading && rows.map((r) => {
+          const earn = bookingEarning(r);
+          return (
           <div key={r.id} style={st.row}>
             <div style={{ ...st.cell, flex: COL[0] }}><span style={st.txt}>{r.idShort}</span></div>
             <div style={{ ...st.cell, flex: COL[1] }}><span style={{ ...st.txt, fontWeight: 600 }}>{r.spotNumber}</span></div>
@@ -141,20 +153,30 @@ export default function ApartmentsBookingsPage() {
             <div style={{ ...st.cell, flex: COL[4] }}><span style={st.txt}>{r.bookingStart}</span></div>
             <div style={{ ...st.cell, flex: COL[5] }}><span style={st.txt}>{r.bookingEnd}</span></div>
             <div style={{ ...st.cell, flex: COL[6] }}>
-              <span style={{ ...st.txt, fontWeight: 600 }}>
-                {r.amountCents != null ? formatMoney(r.amountCents) : "—"}
-              </span>
+              <span style={{ ...st.txt, fontWeight: 600 }}>{earn.payLabel}</span>
             </div>
             <div style={{ ...st.cell, flex: COL[7] }}>
-              <span style={{ ...st.txt, color: "var(--color-text-weak)" }}>
-                {r.amountCents != null ? formatMoney(netToBuilding(r.amountCents)) : "—"}
-              </span>
+              {earn.zeroReason ? (
+                // A row that paid the building nothing says why, on the row
+                // itself. Support answered this question often enough that it
+                // belongs next to the number.
+                <InfoTooltip text={earn.zeroReason}>
+                  <span style={{ ...st.txt, color: "var(--color-text-weak)", borderBottom: "1px dotted var(--color-stroke-strong)" }}>
+                    {formatMoney(earn.earnedCents)}
+                  </span>
+                </InfoTooltip>
+              ) : (
+                <span style={{ ...st.txt, color: "var(--color-text-weak)" }}>
+                  {earn.refunded ? "—" : formatMoney(earn.earnedCents)}
+                </span>
+              )}
             </div>
             <div style={{ ...st.cell, flex: COL[8] }}>
               <Badge as="span" variant={badgeFor(r.status)}>{r.status}</Badge>
             </div>
           </div>
-        ))}
+          );
+        })}
 
         {!isLoading && rows.length === 0 && (
           <div style={{ ...st.row, ...st.empty }}>No bookings here.</div>

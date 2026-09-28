@@ -88,6 +88,20 @@ export function apartmentSpotTotalCents(extraCents: number): number {
   return BASE_PRICE_CENTS + Math.max(0, extraCents);
 }
 
+// ─── The gift-card reserve ──────────────────────────────────────────
+
+/**
+ * What one credit a resident earns puts aside towards a gift card: 40% of
+ * the credit price, rounded to the nearest $0.25 - the backend's formula.
+ *
+ * The rounding is why the credit price is whole dollars only: a price
+ * carrying cents produces a reserve that does not divide evenly into a
+ * $25 card and leaves a remainder nobody can spend.
+ */
+export function reservePerCreditCents(priceCents: number): number {
+  return Math.round((priceCents * 0.4) / 25) * 25;
+}
+
 // ─── Subscriptions ──────────────────────────────────────────────────
 
 export const CONDO_SUBSCRIPTION_CENTS = money(750);

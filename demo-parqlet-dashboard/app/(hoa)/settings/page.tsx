@@ -15,9 +15,11 @@ import {
 import { preferencesApi, type UserPreferences } from "../../lib/api/preferences";
 import { TableScroll } from "../../components/ui/TableScroll";
 import { Input } from "../../components/ui/Input";
+import { NumberStepper } from "../../components/ui/NumberStepper";
+import { TabBar } from "../../components/ui/TabBar";
 import { Button } from "../../components/ui/Button";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
-import { CREDIT_PRICE_CENTS, formatMoney, netToBuilding } from "../../lib/demo/pricing";
+import { CREDIT_PRICE_CENTS, formatMoney, netToBuilding, reservePerCreditCents } from "../../lib/demo/pricing";
 import { productFromPath } from "../../lib/demo/product-path";
 import "../../tokens.css";
 
@@ -1502,11 +1504,6 @@ function SmsSettingsTab() {
 const MIN_CREDIT_PRICE_DOLLARS = 6;
 const MAX_CREDIT_PRICE_DOLLARS = 40;
 
-/** 40% of the price, rounded to the nearest $0.25 — the backend's formula. */
-function reservePerCreditCents(priceCents: number): number {
-  return Math.round((priceCents * 0.4) / 25) * 25;
-}
-
 function CreditPriceTab({ product }: { product: "condo" | "apartment" }) {
   const [savedDollars, setSavedDollars] = useState(Math.round(CREDIT_PRICE_CENTS / 100));
   const [draft, setDraft] = useState(String(Math.round(CREDIT_PRICE_CENTS / 100)));
@@ -1574,14 +1571,14 @@ function CreditPriceTab({ product }: { product: "condo" | "apartment" }) {
           </div>
 
           <div style={cp.fieldRow}>
-            <Input
+            <NumberStepper
               label="Price per credit"
-              variant="compact"
-              inputMode="numeric"
               value={draft}
+              min={MIN_CREDIT_PRICE_DOLLARS}
+              max={MAX_CREDIT_PRICE_DOLLARS}
               error={error}
-              onChange={(e) => onChange(e.target.value)}
-              style={{ width: 132 }}
+              width={132}
+              onChange={onChange}
             />
 
             <Figure
@@ -1780,62 +1777,6 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "notifications",  label: "Notifications"       },
   { id: "sms-settings",   label: "SMS Settings"        },
 ];
-
-function TabBar({ active, onChange, tabs }: { active: Tab; onChange: (t: Tab) => void; tabs: { id: Tab; label: string }[] }) {
-  const [hovered, setHovered] = useState<Tab | null>(null);
-
-  return (
-    <div style={{
-      overflowX:              "auto",
-      WebkitOverflowScrolling: "touch",
-      marginBottom:           "var(--spacing-24)",
-    }}>
-    <div style={{
-      display:      "flex",
-      alignItems:   "flex-end",
-      gap:          0,
-      borderBottom: "1px solid var(--color-stroke-medium)",
-      minWidth:     "max-content",
-    }}>
-      {tabs.map(({ id, label }) => {
-        const isActive  = active === id;
-        const isHovered = hovered === id && !isActive;
-        return (
-          <button
-            key={id}
-            onClick={() => onChange(id)}
-            onMouseEnter={() => setHovered(id)}
-            onMouseLeave={() => setHovered(null)}
-            style={{
-              padding:      "0 var(--spacing-4)",
-              height:       40,
-              marginRight:  "var(--spacing-24)",
-              background:   "none",
-              border:       "none",
-              borderBottom: isActive
-                ? "2px solid var(--color-text-strong)"
-                : "2px solid transparent",
-              cursor:       "pointer",
-              fontFamily:   "var(--font-family-body)",
-              fontSize:     "var(--font-size-tiny)",
-              fontWeight:   isActive
-                ? ("var(--font-weight-medium)" as React.CSSProperties["fontWeight"])
-                : ("var(--font-weight-regular)" as React.CSSProperties["fontWeight"]),
-              lineHeight:   "var(--line-height-tiny)",
-              color:        isActive ? "var(--color-text-strong)" : isHovered ? "var(--color-text-strong)" : "var(--color-text-weak)",
-              transition:   "color 0.15s, border-color 0.15s",
-              marginBottom: -1,
-              whiteSpace:   "nowrap",
-            }}
-          >
-            {label}
-          </button>
-        );
-      })}
-    </div>
-    </div>
-  );
-}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 

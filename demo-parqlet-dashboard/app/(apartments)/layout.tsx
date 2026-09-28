@@ -24,7 +24,11 @@ function pathnameToNavId(raw: string): NavId {
   const pathname = stripProductPrefix(raw);
   if (pathname === "/" || pathname === "/apartments")   return "dashboard";
   if (pathname.startsWith("/bookings"))                 return "bookings";
-  if (pathname.startsWith("/spots"))                    return "spots";
+  if (pathname.startsWith("/parking"))                  return "parking";
+  if (pathname.startsWith("/gift-cards"))               return "gift-cards";
+  // Spots is a tab of Availability now, so the old URL lights the same row
+  // while its redirect runs.
+  if (pathname.startsWith("/spots"))                    return "availability";
   if (pathname.startsWith("/availability"))             return "availability";
   if (pathname.startsWith("/revenue"))                  return "revenue";
   return "none";

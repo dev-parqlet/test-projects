@@ -62,16 +62,16 @@ export const APARTMENT_PREFIX = "/apartment";
 
 export const navItems: readonly NavItem[] = [
   { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard,    href: "/condo" },
-  { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: "/condo/bookings" },
   { id: "parking",       label: "Resident Directory", Icon: IcResidentDirectory, href: "/condo/parking" },
+  { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: "/condo/bookings" },
+  { id: "revenue",       label: "Earnings",           Icon: IcCredit,       href: "/condo/revenue" },
+  { id: "gift-cards",    label: "Reward Redemption",  Icon: IcGiftCard,     href: "/condo/gift-cards", enabled: HOA_GIFT_CARDS_VISIBLE },
   { id: "tickets",       label: "Support Tickets",    Icon: IcQuestion,     href: "/condo/tickets" },
-  { id: "revenue",       label: "Revenue",            Icon: IcCredit,       href: "/condo/revenue" },
   { id: "subscription",  label: "Subscription",       Icon: IcSubscription, href: "/condo/subscription", requiredAction: Actions.ViewSubscription },
   { id: "access",        label: "Access Management",  Icon: IcPerson,       href: "/condo/access", requiredAction: Actions.InviteTeamMember },
   { id: "settings",      label: "Settings",           Icon: IcSettings,     href: "/condo/settings" },
   { id: "profile",       label: "Profile",            Icon: IcPerson,       href: "/condo/profile" },
   { id: "notifications", label: "Notifications",      Icon: IcNotification, href: "/condo/notifications" },
-  { id: "gift-cards",    label: "Gift Cards",         Icon: IcGiftCard,     href: "/condo/gift-cards", enabled: HOA_GIFT_CARDS_VISIBLE },
 ] as const;
 
 /**
@@ -82,19 +82,26 @@ export const navItems: readonly NavItem[] = [
  *
  * Deliberately shares nothing with `navItems`. A change to the HOA nav must
  * not silently alter what an Apartments operator sees.
+ *
+ * Parking Spots has no row of its own. Spots and the windows they are free
+ * in are two views of the same question - which of my spots can be booked,
+ * and when - so they sit as two tabs on Availability rather than as two
+ * sidebar entries an operator has to bounce between while pricing a level.
+ * The /apartment/spots URL still works and opens that tab.
  */
 export const apartmentsNavItems: readonly NavItem[] = [
-  { id: "dashboard",     label: "Dashboard",        Icon: IcDashboard,    href: "/apartment" },
-  { id: "bookings",      label: "Bookings",         Icon: IcBookings,     href: "/apartment/bookings" },
-  { id: "spots",         label: "Parking Spots",    Icon: IcParking,      href: "/apartment/spots" },
-  { id: "availability",  label: "Availability",     Icon: IcBookings,     href: "/apartment/availability" },
-  { id: "revenue",       label: "Revenue",          Icon: IcCredit,       href: "/apartment/revenue" },
-  { id: "tickets",       label: "Support Tickets",  Icon: IcQuestion,     href: "/apartment/tickets" },
-  { id: "subscription",  label: "Subscription",     Icon: IcSubscription, href: "/apartment/subscription" },
-  { id: "access",        label: "Access Management", Icon: IcPerson,      href: "/apartment/access" },
-  { id: "settings",      label: "Settings",         Icon: IcSettings,     href: "/apartment/settings" },
-  { id: "profile",       label: "Profile",          Icon: IcPerson,       href: "/apartment/profile" },
-  { id: "notifications", label: "Notifications",    Icon: IcNotification, href: "/apartment/notifications" },
+  { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard,    href: "/apartment" },
+  { id: "parking",       label: "Resident Directory", Icon: IcResidentDirectory, href: "/apartment/parking" },
+  { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: "/apartment/bookings" },
+  { id: "availability",  label: "Availability",       Icon: IcParking,      href: "/apartment/availability" },
+  { id: "revenue",       label: "Earnings",           Icon: IcCredit,       href: "/apartment/revenue" },
+  { id: "gift-cards",    label: "Reward Redemption",  Icon: IcGiftCard,     href: "/apartment/gift-cards" },
+  { id: "tickets",       label: "Support Tickets",    Icon: IcQuestion,     href: "/apartment/tickets" },
+  { id: "subscription",  label: "Subscription",       Icon: IcSubscription, href: "/apartment/subscription" },
+  { id: "access",        label: "Access Management",  Icon: IcPerson,       href: "/apartment/access" },
+  { id: "settings",      label: "Settings",           Icon: IcSettings,     href: "/apartment/settings" },
+  { id: "profile",       label: "Profile",            Icon: IcPerson,       href: "/apartment/profile" },
+  { id: "notifications", label: "Notifications",      Icon: IcNotification, href: "/apartment/notifications" },
 ];
 
 /**

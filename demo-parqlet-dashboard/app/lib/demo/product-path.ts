@@ -38,3 +38,13 @@ export function productFromPath(pathname: string): 'condo' | 'apartment' | null 
   if (pathname === CONDO_PREFIX || pathname.startsWith(CONDO_PREFIX + '/')) return 'condo';
   return null;
 }
+
+/**
+ * The prefix a link from inside one product must carry, so a router push
+ * cannot drop a visitor out of the product they were sent to. Defaults to
+ * the Condo prefix on an unprefixed path, which is where the shared pages
+ * live.
+ */
+export function productPrefix(pathname: string): string {
+  return productFromPath(pathname) === 'apartment' ? APARTMENT_PREFIX : CONDO_PREFIX;
+}

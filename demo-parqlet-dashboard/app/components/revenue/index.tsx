@@ -93,9 +93,14 @@ export function RevenueCard({
 export function OffsetBar({
   offset,
   floorLabel,
+  /** Hide the legend under the track, for a caller that states the same
+   *  figures in its own header. The floor note survives, because nothing
+   *  else on a Condo card explains why the bar stops short. */
+  compact = false,
 }: {
   offset: OffsetResult;
   floorLabel?: string;
+  compact?: boolean;
 }) {
   const { subscriptionCents, appliedCents, floorCents } = offset;
   // A zero subscription has nothing to offset and no bar to draw.
@@ -112,10 +117,12 @@ export function OffsetBar({
           <div style={{ ...st.floorMark, left: pct(maxOffsetCents) }} />
         )}
       </div>
-      <div style={st.trackLegend}>
-        <span>
-          <span style={st.swatch} /> {formatMoney(appliedCents)} covered by your earnings
-        </span>
+      <div style={{ ...st.trackLegend, display: compact && floorCents === 0 ? "none" : undefined }}>
+        {!compact && (
+          <span>
+            <span style={st.swatch} /> {formatMoney(appliedCents)} covered by your earnings
+          </span>
+        )}
         {floorCents > 0 && (
           <span style={{ color: "var(--color-text-weak)" }}>
             {floorLabel ?? `Discount stops at ${formatMoney(floorCents)}`}
@@ -190,7 +197,7 @@ export function HistoryTable({
 export function RevenueHeader({ pitch, children }: { pitch: string; children?: React.ReactNode }) {
   return (
     <div>
-      <h1 style={st.h1}>Revenue</h1>
+      <h1 style={st.h1}>Earnings</h1>
       <p style={st.pitch}>{pitch}</p>
       {children && <p style={st.sub}>{children}</p>}
     </div>

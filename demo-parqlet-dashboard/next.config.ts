@@ -24,7 +24,20 @@ import type { NextConfig } from "next";
  * who signed in and from the building type a super admin picked when the
  * building was created, and the URL says nothing about it.
  */
-const APARTMENT_SHARED = ["subscription", "access", "settings", "profile", "notifications"];
+const APARTMENT_SHARED = [
+  "subscription",
+  "access",
+  "settings",
+  "profile",
+  "notifications",
+  // The resident list and the gift-card ledger are the same screens in both
+  // products - a resident is a resident and a $25 card is a $25 card - so
+  // Apartments links at them rather than growing a second copy. The nav they
+  // render with comes from the URL (see lib/demo/nav-for-path.ts), so an
+  // Apartments visitor keeps the Apartments sidebar on them.
+  "parking",
+  "gift-cards",
+];
 
 const nextConfig: NextConfig = {
   output: "standalone",

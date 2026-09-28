@@ -509,7 +509,11 @@ export function GiftCardsReport({ isSuperAdmin = false }: { isSuperAdmin?: boole
             color: "var(--color-text-strong)",
             fontFamily: "var(--font-family-heading)",
           }}>
-          Gift Cards
+          {/* Named for what an operator comes here to see - what residents
+              turned their credits into - and matching the sidebar. The
+              column below still says "Gift Cards", because that column
+              really is a count of cards. */}
+          Reward Redemption
         </h1>
         <p style={{ margin: "6px 0 0", fontSize: "var(--font-size-body)", color: "var(--color-text-weak)" }}>
           {loading

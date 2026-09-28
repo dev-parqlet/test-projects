@@ -12,8 +12,10 @@ import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { useAuth } from "../../components/auth/auth-provider";
+import { CurrentBookingsCard } from "../../components/hoa/CurrentBookingsCard";
 import { TopEarningSpotsCard } from "../../components/demo/TopEarningSpotsCard";
 import { CreditPriceCard, type PriceRow } from "../../components/pricing/CreditPriceCard";
+import { EarningsProgressCard } from "../../components/revenue/EarningsProgressCard";
 import {
   COMMISSION_PCT,
   currentPeriod,
@@ -21,7 +23,12 @@ import {
   formatMoney,
   netToBuilding,
 } from "../../lib/demo/apartments-data";
-import { BASE_PRICE_CENTS, BASE_PRICE_CREDITS } from "../../lib/demo/pricing";
+import {
+  APARTMENT_FLOOR_CENTS,
+  APARTMENT_SUBSCRIPTION_CENTS,
+  BASE_PRICE_CENTS,
+  BASE_PRICE_CREDITS,
+} from "../../lib/demo/pricing";
 
 type Booking = { status: string; amountCents?: number | null };
 
@@ -107,10 +114,22 @@ export default function ApartmentsDashboardPage() {
         <Stat label="Spots listed" value={`${listed}`} hint={`${DEMO_SPOTS.length} owned`} />
       </div>
 
+      {/* This month's earnings against the subscription */}
+      <EarningsProgressCard
+        product="apartment"
+        earningsCents={period.netCents}
+        subscriptionCents={APARTMENT_SUBSCRIPTION_CENTS}
+        floorCents={APARTMENT_FLOOR_CENTS}
+        revenueHref="/apartment/revenue"
+      />
+
       <CreditPriceCard
         rows={priceRows}
         footnote="Everyone pays in credits, the same as a Condo. The difference is that you own some of the spots, and only those can carry an extra on top of the base."
       />
+
+      {/* Recent bookings, with what each one actually paid the building */}
+      <CurrentBookingsCard buildingId={buildingId} showEarnings />
 
       <TopEarningSpotsCard buildingId={buildingId} />
     </div>

@@ -59,15 +59,30 @@ function uuid(seed) {
  * @param buildingId which building the rows belong to
  * @param counts     how many of each kind
  * @param spots      spot numbers to cycle through
- * @param owned      true for Apartments: the BUILDING owns the spot, so
- *                   there is no resident spot-owner to name
+ * @param owned      true for Apartments: most spots are the BUILDING's, so
+ *                   there is no resident spot-owner to name. Not every one,
+ *                   though - see `sharedSpots`.
+ * @param sharedSpots  Apartments only: spot numbers RESIDENTS share, from
+ *                   the 401+ blocks in app/lib/demo/apartments-data.ts.
+ *                   Every fourth booking lands on one, paid with a credit
+ *                   rather than a card, because an Apartment really does
+ *                   carry both kinds and a corpus of nothing but the
+ *                   building's own spots makes the dashboard look like it
+ *                   has one. Pass nothing for an HOA, where every spot is
+ *                   a resident's.
  */
-function makeBookings(buildingId, counts, spots, owned, startIndex) {
+function makeBookings(buildingId, counts, spots, owned, startIndex, sharedSpots = []) {
   const now = new Date();
   const rows = [];
   let i = startIndex;
 
   const push = (startOffsetHours, durationHours, status) => {
+    // A quarter of an Apartment's bookings are on a spot a resident lent,
+    // which is paid for in credits and earns the building less - the
+    // difference the dashboard exists to show.
+    const shared = owned && sharedSpots.length > 0 && i % 4 === 3;
+    const buildingOwned = owned && !shared;
+    const spotList = shared ? sharedSpots : spots;
     const start = new Date(now.getTime() + startOffsetHours * 3600_000);
     start.setMinutes(i % 2 === 0 ? 0 : 30, 0, 0);
     const end = new Date(start.getTime() + durationHours * 3600_000);
@@ -87,22 +102,24 @@ function makeBookings(buildingId, counts, spots, owned, startIndex) {
       bookingEnd: fmt(end),
       status,
       hasNote: i % 9 === 0,
-      creditsSpent: owned ? 0 : Math.max(1, Math.ceil(durationHours / 24)),
-      // Apartments are paid in dollars, HOAs in credits. `amountCents` is
-      // the gross the renter paid; the dashboard derives our commission
-      // from it rather than storing a second, divergent number.
-      amountCents: owned
-        ? spotPriceCents(pick(spots, i)) * Math.max(1, Math.ceil(durationHours / 24))
+      creditsSpent: buildingOwned ? 0 : Math.max(1, Math.ceil(durationHours / 24)),
+      // A building's own spot is paid for in dollars; a spot a resident
+      // shared costs the base credit and nothing else, in both products.
+      // `amountCents` is the gross the renter paid; the dashboard derives
+      // our commission from it rather than storing a second, divergent
+      // number.
+      amountCents: buildingOwned
+        ? spotPriceCents(pick(spotList, i)) * Math.max(1, Math.ceil(durationHours / 24))
         : null,
-      commissionPct: owned ? COMMISSION_PCT : null,
+      commissionPct: buildingOwned ? COMMISSION_PCT : null,
       createdAt: new Date(start.getTime() - 86_400_000).toISOString(),
       updatedAt: new Date(start.getTime() - 86_400_000).toISOString(),
       idShort: uuid(i).slice(-6),
       notes: [],
       unitNumber: `${1 + (i % 9)}${unitLetter}`,
-      spotNumber: pick(spots, i),
-      spotOwnerName: owned ? null : name(i * 5 + 2),
-      spotOwnerPhone: owned ? null : `(555) 10${i % 10}-${1000 + ((i * 17) % 9000)}`,
+      spotNumber: pick(spotList, i),
+      spotOwnerName: buildingOwned ? null : name(i * 5 + 2),
+      spotOwnerPhone: buildingOwned ? null : `(555) 10${i % 10}-${1000 + ((i * 17) % 9000)}`,
       i,
     });
     i++;
@@ -124,6 +141,9 @@ function makeBookings(buildingId, counts, spots, owned, startIndex) {
 // or a booking cites a spot the Parking Spots page does not list.
 const APARTMENT_SPOTS = ["4", "11", "23", "38", "204", "217", "228", "305", "312"];
 
+/** Oakline Park spots that RESIDENTS share - the 401+ blocks. */
+const APARTMENT_SHARED_SPOTS = ["403", "409", "418", "424", "433", "438"];
+
 /**
  * Daily price for a numbered spot, mirroring the blocks in
  * app/lib/demo/apartments-data.ts. Kept in step by hand because the seeder
@@ -143,7 +163,7 @@ const HOA_SPOTS = ["419", "251", "222", "519", "108", "330"];
 
 const data = [
   // Oakline Park is the one being pitched, so it is the busy building.
-  ...makeBookings(APARTMENTS, { current: 6, upcoming: 14, pending: 0, past: 22 }, APARTMENT_SPOTS, true, 1),
+  ...makeBookings(APARTMENTS, { current: 6, upcoming: 14, pending: 0, past: 22 }, APARTMENT_SPOTS, true, 1, APARTMENT_SHARED_SPOTS),
   ...makeBookings(HOA, { current: 3, upcoming: 8, pending: 3, past: 14 }, HOA_SPOTS, false, 500),
 ];
 
