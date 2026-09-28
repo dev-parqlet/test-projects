@@ -76,10 +76,21 @@ function monthFrom(grossCents: number, d: Date, id: string, status: CondoMonth['
  * The month in progress. A busy building runs past the point where the
  * discount stops, so the demo shows both halves of the story: the bill at
  * its floor AND a surplus on top.
+ *
+ * About $33 a day in credit top-ups, which nets roughly $710 over a full
+ * month. That is deliberately just past the $650 the discount is worth:
+ * enough to put the bill on its floor and leave a small surplus, without
+ * the $170 overshoot it used to show, which made the surplus look like the
+ * point rather than the remainder.
+ *
+ * It is a larger number than the Apartment's, which reads oddly until you
+ * remember the Condo carries the larger subscription and every one of its
+ * residents is trading credits, where an Apartment earns on the spots it
+ * owns.
  */
 export function currentCondoMonth(now = new Date()): CondoMonth {
   const d = new Date(now.getFullYear(), now.getMonth(), 1);
-  return monthFrom(money(38 * now.getDate()), d, 'current', 'Processing');
+  return monthFrom(money(33 * now.getDate()), d, 'current', 'Processing');
 }
 
 /** The last `count` completed months, newest first. */
@@ -91,7 +102,9 @@ export function recentCondoMonths(count = 5, now = new Date()): CondoMonth[] {
     // numbers on every refresh looks broken when two people compare
     // screens. The spread crosses the floor in some months and not in
     // others, so the table shows a bill that actually moves.
-    const gross = 620 + ((d.getMonth() * 211) % 680);
+    // 173 rather than 211: 211 doubles to 2 mod 420, so every other month
+    // landed within a few dollars of the last and the table looked frozen.
+    const gross = 620 + ((d.getMonth() * 173) % 420);
     out.push(monthFrom(money(gross), d, `c${i}`, 'Paid'));
   }
   return out;

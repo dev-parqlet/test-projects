@@ -147,7 +147,9 @@ export function recentPayouts(count = 5, now = new Date()): DemoPayout[] {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     // Deterministic rather than random: a demo that shows different numbers
     // on every refresh looks broken when two people compare screens.
-    const grossCents = money(2400 + ((d.getMonth() * 137) % 900));
+    // Sized to bracket the month in progress, so the history reads as the
+    // same building rather than one that has just collapsed or trebled.
+    const grossCents = money(730 + ((d.getMonth() * 137) % 340));
     const netCents = netToBuilding(grossCents);
     out.push({
       id: `p${i}`,
@@ -167,9 +169,18 @@ export function currentPeriodLabel(now = new Date()): string {
   return `${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
 }
 
-/** Earnings so far in the current, still-open month. */
+/**
+ * Earnings so far in the current, still-open month.
+ *
+ * About $31 a day taken at the till, which lands the month near $670 after
+ * our commission and the card fees - roughly a hundred bookings on a
+ * building of this size, against a $500 subscription it therefore clears
+ * with something left to withdraw. The figure was four times that, which
+ * made every screen quoting it read as a much bigger building than the 125
+ * spots the Parking Spots page lists.
+ */
 export function currentPeriod(now = new Date()) {
-  const grossCents = money(96 * now.getDate());
+  const grossCents = money(31 * now.getDate());
   const netCents = netToBuilding(grossCents);
   return {
     period: `${MONTHS[now.getMonth()]} ${now.getFullYear()}`,

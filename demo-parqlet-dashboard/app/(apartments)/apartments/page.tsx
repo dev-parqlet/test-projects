@@ -22,6 +22,7 @@ import {
   DEMO_SPOTS,
   formatMoney,
   netToBuilding,
+  recentPayouts,
 } from "../../lib/demo/apartments-data";
 import {
   APARTMENT_FLOOR_CENTS,
@@ -30,7 +31,7 @@ import {
   BASE_PRICE_CREDITS,
 } from "../../lib/demo/pricing";
 
-type Booking = { status: string; amountCents?: number | null };
+type Booking = { status: string };
 
 export default function ApartmentsDashboardPage() {
   const { user } = useAuth();
@@ -40,12 +41,9 @@ export default function ApartmentsDashboardPage() {
   const { data } = useQuery({
     queryKey: ["apartments", "overview", buildingId],
     enabled: !!buildingId,
-    queryFn: async (): Promise<{ current: Booking[]; all: Booking[] }> => {
-      const [cur, all] = await Promise.all([
-        fetch(`/api/bookings?buildingId=${buildingId}&tab=current&pageSize=200`, { cache: "no-store" }).then((r) => r.json()),
-        fetch(`/api/bookings?buildingId=${buildingId}&pageSize=500`, { cache: "no-store" }).then((r) => r.json()),
-      ]);
-      return { current: cur.data ?? [], all: all.data ?? [] };
+    queryFn: async (): Promise<{ current: Booking[] }> => {
+      const res = await fetch(`/api/bookings?buildingId=${buildingId}&tab=current&pageSize=200`, { cache: "no-store" });
+      return { current: ((await res.json()) as { data?: Booking[] }).data ?? [] };
     },
   });
 
@@ -56,10 +54,19 @@ export default function ApartmentsDashboardPage() {
   // than it chose to be.
   const occupancy = listed === 0 ? 0 : Math.round((liveNow / listed) * 100);
 
-  const earned = (data?.all ?? []).reduce((sum, b) => {
-    if (b.status === "Cancelled" || b.amountCents == null) return sum;
-    return sum + netToBuilding(b.amountCents);
-  }, 0);
+  /**
+   * Every month the building has earned in, the open one included.
+   *
+   * Summed from the same history the Earnings page prints rather than from
+   * the booking corpus. The corpus is a fixed sample - a few dozen rows
+   * kept small enough to read - so adding it up gave an all-time total
+   * SMALLER than the month beside it, which reads as a bug whichever
+   * number the viewer believes.
+   */
+  const earnedAllTime = useMemo(
+    () => recentPayouts(5).reduce((sum, p) => sum + p.netCents, 0) + period.netCents,
+    [period],
+  );
 
   // Read off the spots themselves rather than restating the constants, so
   // the card cannot drift from what the Parking Spots screen charges.
@@ -110,7 +117,7 @@ export default function ApartmentsDashboardPage() {
       <div style={st.stats}>
         <Stat label="Parked right now" value={String(liveNow)} hint={`${occupancy}% of ${listed} listed spots`} />
         <Stat label={`${period.period} balance`} value={formatMoney(period.netCents)} hint="After commission" />
-        <Stat label="Earned all time" value={formatMoney(earned)} hint="After commission" />
+        <Stat label="Earned all time" value={formatMoney(earnedAllTime)} hint="After commission" />
         <Stat label="Spots listed" value={`${listed}`} hint={`${DEMO_SPOTS.length} owned`} />
       </div>
 
