@@ -38,18 +38,18 @@ export type DemoIdentity = {
 
 const HOA_BUILDING = {
   id: 'e6565d1b-1f25-4c51-bfa6-7db4932702cd',
-  name: '44 East Avenue',
+  name: 'The Meridian',
 };
 
 const APARTMENTS_BUILDING = {
   id: '80f9ac2e-b884-4634-ac02-0682a9a12662',
-  name: 'Riverside Towers',
+  name: 'Oakline Park',
 };
 
 export const DEMO_IDENTITIES: Record<DemoVariant, DemoIdentity> = {
   hoa: {
     variant: 'hoa',
-    label: 'HOA — 44 East Avenue',
+    label: 'HOA — The Meridian',
     blurb: 'Residents share their own spots. Guests are paid for in credits.',
     user: {
       id: '11111111-2222-4333-8444-555555555555',
@@ -65,7 +65,7 @@ export const DEMO_IDENTITIES: Record<DemoVariant, DemoIdentity> = {
   },
   apartments: {
     variant: 'apartments',
-    label: 'Apartments — Riverside Towers',
+    label: 'Apartments — Oakline Park',
     blurb: 'The building owns the spots, sets prices, and is paid in dollars.',
     user: {
       id: '66666666-7777-4888-8999-000000000000',
@@ -153,12 +153,32 @@ export function setVariant(v: DemoVariant): void {
   } catch {
     // Ignore — the ?v= below still carries the choice.
   }
-  // Each product has its own routes, so switching has to land on the right
-  // root: HOA at `/`, Apartments at `/apartments`. Carrying `?v=` too means
-  // the address bar always names what you are looking at, the link is
-  // copy-pasteable mid-demo, and it does not depend on localStorage having
-  // worked - which it may not have in a private window.
-  window.location.href = v === "apartments" ? `/apartments?v=${v}` : `/?v=${v}`;
+  // Carrying `?v=` means the address bar always names what you are looking
+  // at, the link is copy-pasteable mid-demo, and it does not depend on
+  // localStorage having worked - which it may not have in a private window.
+  window.location.href = pathForVariant(v);
+}
+
+/**
+ * The path a variant lives at. Each product has its own routes, so a
+ * shared link has to land on the right root as well as carry the right
+ * identity: HOA at `/`, Apartments at `/apartments`.
+ */
+export function pathForVariant(v: DemoVariant): string {
+  return v === 'apartments' ? `/apartments?v=${v}` : `/?v=${v}`;
+}
+
+/**
+ * The link you send a prospect.
+ *
+ * Absolute, and built from the browser's own origin rather than a
+ * hard-coded demo.parqlet.com, so a link copied from a preview
+ * deployment or from localhost points at the site it was copied from. A
+ * link that silently retargets production is worse than no link.
+ */
+export function shareUrl(v: DemoVariant): string {
+  const origin = typeof window === 'undefined' ? '' : window.location.origin;
+  return `${origin}${pathForVariant(v)}`;
 }
 
 /** The other one. There are exactly two, so switching is a toggle. */

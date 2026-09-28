@@ -170,7 +170,7 @@ export function EditBillingModal({
               id="billing-company"
               style={inputStyle}
               type="text"
-              placeholder="44 East Avenue Homeowners Association, Inc."
+              placeholder="The Meridian Homeowners Association, Inc."
               value={company}
               onChange={(e) => setCompany(e.target.value)}
               autoComplete="organization"

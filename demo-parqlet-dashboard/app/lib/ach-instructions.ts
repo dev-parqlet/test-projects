@@ -54,7 +54,7 @@ export interface AchBankInstructions {
 export const ACH_INSTRUCTIONS: AchBankInstructions = {
   beneficiaryName: "Parqlet LLC",
   beneficiaryAddress: {
-    line1: "44 East Avenue",
+    line1: "The Meridian",
     line2: "1708",
     city: "Austin",
     state: "TX",

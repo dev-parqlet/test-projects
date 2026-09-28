@@ -16,6 +16,7 @@
 
 import React, { useSyncExternalStore } from "react";
 
+import { ShareLinkList } from "./ShareLinks";
 import {
   DEMO_IDENTITIES,
   hasChosenVariant,
@@ -67,6 +68,13 @@ export function DemoGate({ children }: { children: React.ReactNode }) {
               </button>
             );
           })}
+        </div>
+
+        {/* Sending the demo is the point of it, so the links are here
+            rather than left to be reconstructed from the address bar. */}
+        <div style={styles.share}>
+          <span style={styles.shareTitle}>Send a direct link</span>
+          <ShareLinkList />
         </div>
 
         <p style={styles.footnote}>
@@ -131,6 +139,21 @@ const styles: Record<string, React.CSSProperties> = {
   optionBlurb: {
     fontSize: 13,
     lineHeight: "18px",
+    color: "var(--color-text-weak)",
+  },
+  share: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    marginTop: 24,
+    paddingTop: 20,
+    borderTop: "1px solid var(--color-stroke-medium)",
+  },
+  shareTitle: {
+    fontSize: 12,
+    fontWeight: 600,
+    letterSpacing: 0.3,
+    textTransform: "uppercase",
     color: "var(--color-text-weak)",
   },
   footnote: {

@@ -21,8 +21,8 @@ import path from "node:path";
 const ROOT = process.cwd();
 const FILE = path.join(ROOT, "app/lib/mock-data/bookings.json");
 
-const HOA = "e6565d1b-1f25-4c51-bfa6-7db4932702cd";        // 44 East Avenue
-const APARTMENTS = "80f9ac2e-b884-4634-ac02-0682a9a12662"; // Riverside Towers
+const HOA = "e6565d1b-1f25-4c51-bfa6-7db4932702cd";        // The Meridian
+const APARTMENTS = "80f9ac2e-b884-4634-ac02-0682a9a12662"; // Oakline Park
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
@@ -142,7 +142,7 @@ const COMMISSION_PCT = 20;
 const HOA_SPOTS = ["419", "251", "222", "519", "108", "330"];
 
 const data = [
-  // Riverside Towers is the one being pitched, so it is the busy building.
+  // Oakline Park is the one being pitched, so it is the busy building.
   ...makeBookings(APARTMENTS, { current: 6, upcoming: 14, pending: 0, past: 22 }, APARTMENT_SPOTS, true, 1),
   ...makeBookings(HOA, { current: 3, upcoming: 8, pending: 3, past: 14 }, HOA_SPOTS, false, 500),
 ];
@@ -153,8 +153,8 @@ fs.writeFileSync(
 );
 
 const byBuilding = data.reduce((acc, r) => {
-  acc[r.buildingId === APARTMENTS ? "Riverside Towers" : "44 East Avenue"] ??= 0;
-  acc[r.buildingId === APARTMENTS ? "Riverside Towers" : "44 East Avenue"]++;
+  acc[r.buildingId === APARTMENTS ? "Oakline Park" : "The Meridian"] ??= 0;
+  acc[r.buildingId === APARTMENTS ? "Oakline Park" : "The Meridian"]++;
   return acc;
 }, {});
 console.log(`[seed-demo-data] ${data.length} bookings anchored to ${new Date().toDateString()}`, byBuilding);

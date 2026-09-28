@@ -8,9 +8,14 @@
  * what price. An HOA has no equivalent - there each resident shares their
  * own spot from their phone.
  *
- * The price defaults to the spot's own price and can be overridden for a
- * single window, which is how a building charges more for an event weekend
- * without permanently repricing the spot.
+ * Only the building's OWN spots appear here. A resident sharing their own
+ * space does it from their phone, exactly as they do in a Condo, and the
+ * building never sets a price on their behalf.
+ *
+ * Every window starts at the base credit. The EXTRA defaults to the spot's
+ * own extra and can be overridden for a single window, which is how a
+ * building charges more for an event weekend without permanently
+ * repricing the spot.
  */
 
 import React, { useMemo, useState } from "react";
@@ -22,16 +27,22 @@ import { Input } from "../../../components/ui/Input";
 import {
   COMMISSION_PCT,
   DEMO_SPOTS,
+  canPrice,
   formatMoney,
   netToBuilding,
 } from "../../../lib/demo/apartments-data";
+import { BASE_PRICE_CENTS, BASE_PRICE_CREDITS } from "../../../lib/demo/pricing";
+
+/** What a renter pays for a window: the base credit, plus this window's extra. */
+const windowTotal = (extraCents: number) => BASE_PRICE_CENTS + extraCents;
 
 type Window = {
   id: string;
   spotId: string;
   startsAt: string;
   endsAt: string;
-  priceCents: number;
+  /** Dollars on top of the base credit, for this window only. */
+  extraCents: number;
   booked: boolean;
 };
 
@@ -46,10 +57,10 @@ function seedWindows(now: Date): Window[] {
     return d.toISOString();
   };
   return [
-    { id: "w1", spotId: "s1", startsAt: at(0, 8),  endsAt: at(0, 20), priceCents: 2400, booked: true },
-    { id: "w2", spotId: "s3", startsAt: at(1, 9),  endsAt: at(1, 18), priceCents: 2800, booked: false },
-    { id: "w3", spotId: "s2", startsAt: at(2, 7),  endsAt: at(3, 19), priceCents: 2200, booked: false },
-    { id: "w4", spotId: "s4", startsAt: at(4, 10), endsAt: at(4, 22), priceCents: 1800, booked: false },
+    { id: "w1", spotId: "s1", startsAt: at(0, 8),  endsAt: at(0, 20), extraCents: 900, booked: true },
+    { id: "w2", spotId: "s3", startsAt: at(1, 9),  endsAt: at(1, 18), extraCents: 1300, booked: false },
+    { id: "w3", spotId: "s2", startsAt: at(2, 7),  endsAt: at(3, 19), extraCents: 700, booked: false },
+    { id: "w4", spotId: "s4", startsAt: at(4, 10), endsAt: at(4, 22), extraCents: 300, booked: false },
   ];
 }
 
@@ -101,9 +112,9 @@ export default function AvailabilityPage() {
                 <td style={{ ...st.td, fontWeight: 600 }}>{spotName(w.spotId)}</td>
                 <td style={st.td}>{fmt(w.startsAt)}</td>
                 <td style={st.td}>{fmt(w.endsAt)}</td>
-                <td style={{ ...st.td, fontWeight: 600 }}>{formatMoney(w.priceCents)}</td>
+                <td style={{ ...st.td, fontWeight: 600 }}>{formatMoney(windowTotal(w.extraCents))}</td>
                 <td style={{ ...st.td, color: "var(--color-text-weak)" }}>
-                  {formatMoney(netToBuilding(w.priceCents))}
+                  {formatMoney(netToBuilding(windowTotal(w.extraCents)))}
                 </td>
                 <td style={st.td}>
                   <Badge variant={w.booked ? "upcoming" : "active"}>
@@ -164,7 +175,9 @@ function AddWindowModal({
   onCancel: () => void;
   onAdd: (w: Window) => void;
 }) {
-  const listed = DEMO_SPOTS.filter((s) => s.status === "Listed");
+  // The building's own spots only. A resident's spot is shared from their
+  // phone, so offering it here would imply a control the building has not got.
+  const listed = DEMO_SPOTS.filter((s) => s.status === "Listed" && canPrice(s));
   const [spotId, setSpotId] = useState(listed[0]?.id ?? "");
   const start = new Date(now);
   start.setHours(start.getHours() + 1, 0, 0, 0);
@@ -174,8 +187,9 @@ function AddWindowModal({
   const [startsAt, setStartsAt] = useState(iso(start));
   const [endsAt, setEndsAt] = useState(iso(end));
   const spot = DEMO_SPOTS.find((s) => s.id === spotId);
-  const [price, setPrice] = useState(((spot?.priceCents ?? 0) / 100).toFixed(2));
+  const [extra, setExtra] = useState(((spot?.extraCents ?? 0) / 100).toFixed(2));
 
+  const extraCents = Math.max(0, Math.round(Number(extra) * 100) || 0);
   const invalid = new Date(endsAt) <= new Date(startsAt);
 
   return (
@@ -189,12 +203,12 @@ function AddWindowModal({
             onChange={(e) => {
               setSpotId(e.target.value);
               const s = DEMO_SPOTS.find((x) => x.id === e.target.value);
-              if (s) setPrice((s.priceCents / 100).toFixed(2));
+              if (s) setExtra((s.extraCents / 100).toFixed(2));
             }}
           >
             {listed.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.number} — {s.level} — {formatMoney(s.priceCents)}/day
+                {s.number} — {s.level} — {formatMoney(windowTotal(s.extraCents))}/day
               </option>
             ))}
           </select>
@@ -202,14 +216,19 @@ function AddWindowModal({
 
         <Input label="From" type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
         <Input label="Until" type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
-        <Input label="Price per day (USD)" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} />
+        <Input
+          label="Extra per day (USD), on top of the base credit"
+          inputMode="decimal"
+          value={extra}
+          onChange={(e) => setExtra(e.target.value)}
+        />
 
         <span style={{ fontSize: 12, color: "var(--color-text-weak)" }}>
-          You receive{" "}
-          <strong>
-            {formatMoney(netToBuilding(Math.round(Number(price) * 100) || 0))}
-          </strong>{" "}
-          per day, after our {COMMISSION_PCT}% commission.
+          Renter pays <strong>{formatMoney(windowTotal(extraCents))}</strong>{" "}
+          ({BASE_PRICE_CREDITS} credit
+          {extraCents > 0 ? ` + ${formatMoney(extraCents)}` : ""}) · you receive{" "}
+          <strong>{formatMoney(netToBuilding(windowTotal(extraCents)))}</strong>{" "}
+          per day, after our {COMMISSION_PCT}% commission and card fees.
         </span>
 
         {invalid && (
@@ -231,7 +250,7 @@ function AddWindowModal({
                 spotId,
                 startsAt: new Date(startsAt).toISOString(),
                 endsAt: new Date(endsAt).toISOString(),
-                priceCents: Math.round(Number(price) * 100) || 0,
+                extraCents,
                 booked: false,
               })
             }

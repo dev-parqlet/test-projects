@@ -17,6 +17,7 @@
 
 import React from "react";
 
+import { CopyLinkButton } from "./ShareLinks";
 import {
   DEMO_IDENTITIES,
   otherVariant,
@@ -29,22 +30,28 @@ export function DemoVariantSwitcher() {
   const next = otherVariant(active);
 
   return (
-    <button
-      type="button"
-      onClick={() => setVariant(next)}
-      title={`Switch to ${DEMO_IDENTITIES[next].label}`}
-      style={styles.trigger}
-    >
-      <span style={styles.badge}>Demo</span>
-      <span style={styles.label}>{DEMO_IDENTITIES[active].label}</span>
-      <span aria-hidden style={styles.swap}>
-        ⇄
-      </span>
-    </button>
+    <div style={styles.wrap}>
+      <button
+        type="button"
+        onClick={() => setVariant(next)}
+        title={`Switch to ${DEMO_IDENTITIES[next].label}`}
+        style={styles.trigger}
+      >
+        <span style={styles.badge}>Demo</span>
+        <span style={styles.label}>{DEMO_IDENTITIES[active].label}</span>
+        <span aria-hidden style={styles.swap}>
+          ⇄
+        </span>
+      </button>
+      {/* Copies a link to what is on screen right now, so the address bar
+          never has to be read or edited mid-call. */}
+      <CopyLinkButton variant={active} />
+    </div>
   );
 }
 
 const styles: Record<string, React.CSSProperties> = {
+  wrap: { display: "flex", alignItems: "center", gap: 6, flexShrink: 0 },
   trigger: {
     display: "flex",
     alignItems: "center",

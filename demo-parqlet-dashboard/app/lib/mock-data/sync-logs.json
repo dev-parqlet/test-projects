@@ -3,7 +3,7 @@
     {
       "id": "sync-001",
       "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
-      "buildingName": "44 East Avenue",
+      "buildingName": "The Meridian",
       "timestamp": "2026-05-19T06:30:00Z",
       "status": "Success",
       "platform": "BuildingLink",
@@ -25,7 +25,7 @@
     {
       "id": "sync-003",
       "buildingId": "80f9ac2e-b884-4634-ac02-0682a9a12662",
-      "buildingName": "Riverside Towers",
+      "buildingName": "Oakline Park",
       "timestamp": "2026-05-19T06:30:00Z",
       "status": "Success",
       "platform": "Yardi",
@@ -36,7 +36,7 @@
     {
       "id": "sync-004",
       "buildingId": "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
-      "buildingName": "44 East Avenue",
+      "buildingName": "The Meridian",
       "timestamp": "2026-05-18T06:30:00Z",
       "status": "Success",
       "platform": "BuildingLink",
@@ -58,7 +58,7 @@
     {
       "id": "sync-006",
       "buildingId": "80f9ac2e-b884-4634-ac02-0682a9a12662",
-      "buildingName": "Riverside Towers",
+      "buildingName": "Oakline Park",
       "timestamp": "2026-05-18T06:30:00Z",
       "status": "Success",
       "platform": "Yardi",

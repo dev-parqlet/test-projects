@@ -3,15 +3,26 @@
 /**
  * Parking Spots — Apartments only.
  *
- * The building owns these, so it can add, edit, unlist and delete them, and
- * each carries its own daily price: a covered space on P1 is worth more
- * than one on the roof, which is why price lives on the spot rather than on
- * the building.
+ * Two kinds of spot live in one list, and the difference between them is
+ * the whole point of the screen:
  *
- * Ninety spots is too many to scan, so this reuses the same search box and
- * <FilterDropdown> row the Bookings and Resident Directory pages use, and
- * the shared <Modal> / <Input> for editing. An operator should not have to
- * learn a second set of controls on their third screen.
+ *   The BUILDING's own spots. It can add, edit, unlist and delete them,
+ *   and it can charge an EXTRA on top of the base credit, because a
+ *   covered space by the lift is worth more than one on the roof.
+ *
+ *   A RESIDENT's own spot. The building can see it and can unlist it, but
+ *   it cannot price it or delete it. A resident's spot costs the base
+ *   credit and nothing else - the same deal residents get in a Condo.
+ *   Residents never set prices in either product.
+ *
+ * Both appear here rather than on separate screens so the rule is visible
+ * rather than documented: the price column simply has nothing to edit on a
+ * resident's row.
+ *
+ * A hundred-odd spots is too many to scan, so this reuses the same search
+ * box and <FilterDropdown> row the Bookings and Resident Directory pages
+ * use, and the shared <Modal> / <Input> for editing. An operator should not
+ * have to learn a second set of controls on their third screen.
  */
 
 import React, { useMemo, useState } from "react";
@@ -25,10 +36,13 @@ import { TableHeadLabel } from "../../../components/ui/TableHeadLabel";
 import {
   COMMISSION_PCT,
   DEMO_SPOTS,
+  canPrice,
   formatMoney,
   netToBuilding,
+  spotPriceCents,
   type DemoSpot,
 } from "../../../lib/demo/apartments-data";
+import { BASE_PRICE_CENTS, BASE_PRICE_CREDITS } from "../../../lib/demo/pricing";
 
 type Draft = Omit<DemoSpot, "id">;
 
@@ -38,7 +52,9 @@ const EMPTY: Draft = {
   type: "Standard",
   covered: true,
   evCharger: false,
-  priceCents: 1500,
+  // Anything the building adds by hand is its own, so it starts priceable.
+  owner: "building",
+  extraCents: 0,
   status: "Listed",
 };
 
@@ -62,6 +78,7 @@ export default function SpotsPage() {
   const [query, setQuery] = useState("");
   const [level, setLevel] = useState("All levels");
   const [type, setType] = useState("All types");
+  const [owner, setOwner] = useState("All spots");
   const [status, setStatus] = useState("All");
   const [covered, setCovered] = useState("Covered: All");
   const [ev, setEv] = useState("EV: All");
@@ -78,6 +95,8 @@ export default function SpotsPage() {
       if (q && !`${s.number} ${s.level} ${s.type}`.toLowerCase().includes(q)) return false;
       if (level !== "All levels" && s.level !== level) return false;
       if (type !== "All types" && s.type !== type) return false;
+      if (owner === "Building owned" && s.owner !== "building") return false;
+      if (owner === "Resident shared" && s.owner !== "resident") return false;
       if (status !== "All" && s.status !== status) return false;
       if (covered === "Covered only" && !s.covered) return false;
       if (covered === "Uncovered only" && s.covered) return false;
@@ -95,10 +114,10 @@ export default function SpotsPage() {
       return a.number.localeCompare(b.number);
     };
 
-    if (sort === "Price: high to low") return [...rows].sort((a, b) => b.priceCents - a.priceCents);
-    if (sort === "Price: low to high") return [...rows].sort((a, b) => a.priceCents - b.priceCents);
+    if (sort === "Price: high to low") return [...rows].sort((a, b) => spotPriceCents(b) - spotPriceCents(a));
+    if (sort === "Price: low to high") return [...rows].sort((a, b) => spotPriceCents(a) - spotPriceCents(b));
     return [...rows].sort(byNumber);
-  }, [spots, query, level, type, status, covered, ev, sort]);
+  }, [spots, query, level, type, owner, status, covered, ev, sort]);
 
   const save = (draft: Draft, id?: string) => {
     setSpots((prev) =>
@@ -108,31 +127,46 @@ export default function SpotsPage() {
     setCreating(false);
   };
 
+  const toggleListed = (id: string) =>
+    setSpots((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, status: s.status === "Listed" ? "Unlisted" : "Listed" } : s)),
+    );
+
   /**
    * Price a whole block at once, by spot NUMBER. This is how a building
    * actually prices - everything on level 1 at one rate, the roof at
-   * another - and setting ninety spots one at a time is the sort of thing
-   * that makes an operator abandon onboarding.
+   * another - and setting a hundred spots one at a time is the sort of
+   * thing that makes an operator abandon onboarding.
+   *
+   * Residents' spots inside the range are skipped rather than repriced,
+   * and the count is reported, so a bulk edit can never quietly overrule
+   * the rule that a resident's spot costs the base.
    */
-  const applyRange = (from: number, to: number, priceCents: number) => {
+  const applyRange = (from: number, to: number, extraCents: number) => {
     const lo = Math.min(from, to);
     const hi = Math.max(from, to);
     let touched = 0;
+    let skipped = 0;
     setSpots((prev) =>
       prev.map((sp) => {
         const n = Number(sp.number);
         // A non-numeric spot number is outside every range rather than
         // coerced to 0 and silently repriced.
         if (!Number.isFinite(n) || n < lo || n > hi) return sp;
+        if (!canPrice(sp)) {
+          skipped++;
+          return sp;
+        }
         touched++;
-        return { ...sp, priceCents };
+        return { ...sp, extraCents };
       }),
     );
     setPricingRange(false);
+    const skippedNote = skipped === 0 ? "" : ` ${skipped} resident-shared spot${skipped === 1 ? "" : "s"} left at the base.`;
     setLastBulk(
       touched === 0
-        ? `No spots numbered ${lo}–${hi}.`
-        : `${touched} spot${touched === 1 ? "" : "s"} (${lo}–${hi}) set to ${formatMoney(priceCents)} per day.`,
+        ? `No spots you own are numbered ${lo}–${hi}.${skippedNote}`
+        : `${touched} spot${touched === 1 ? "" : "s"} (${lo}–${hi}) set to ${formatMoney(BASE_PRICE_CENTS + extraCents)} per day.${skippedNote}`,
     );
   };
 
@@ -142,8 +176,11 @@ export default function SpotsPage() {
         <div>
           <h1 style={st.h1}>Parking Spots</h1>
           <p style={st.sub}>
-            Spots your building owns and rents out. Each has its own daily
-            price; Parqlet keeps {COMMISSION_PCT}% and the rest is paid to you.
+            Every spot starts at the base of {BASE_PRICE_CREDITS} credit
+            ({formatMoney(BASE_PRICE_CENTS)} a day). On the spots your
+            building owns you can charge whatever you like on top; spots
+            your residents share stay at the base. Parqlet keeps{" "}
+            {COMMISSION_PCT}% and the rest is paid to you.
           </p>
         </div>
         <div style={{ display: "flex", gap: "var(--spacing-8)", flexShrink: 0 }}>
@@ -169,6 +206,7 @@ export default function SpotsPage() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)", flexWrap: "wrap", flexShrink: 0 }}>
+          <FilterDropdown label="Owner" options={["All spots", "Building owned", "Resident shared"]} value={owner} onChange={setOwner} />
           <FilterDropdown label="Level" options={levels} value={level} onChange={setLevel} />
           <FilterDropdown label="Type" options={["All types", "Compact", "Standard", "Large SUV"]} value={type} onChange={setType} />
           <FilterDropdown label="Status" options={["All", "Listed", "Unlisted"]} value={status} onChange={setStatus} />
@@ -187,36 +225,63 @@ export default function SpotsPage() {
 
       <div style={st.card}>
         <div style={{ ...st.row, ...st.headRow }}>
-          {["Spot", "Level", "Type", "Covered", "EV", "Price / day", "You receive", "Status", ""].map((h, i) => (
-            <div key={h || i} style={{ ...st.cellBase, flex: COL_FLEX[i], justifyContent: i === 8 ? "flex-end" : "flex-start" }}>
+          {["Spot", "Level", "Type", "Covered", "EV", "Shared by", "Price / day", "You receive", "Status", ""].map((h, i) => (
+            <div key={h || i} style={{ ...st.cellBase, flex: COL_FLEX[i], justifyContent: i === 9 ? "flex-end" : "flex-start" }}>
               <TableHeadLabel style={{ color: "var(--color-text-weak)" }}>{h}</TableHeadLabel>
             </div>
           ))}
         </div>
 
-        {visible.map((sp) => (
-          <div key={sp.id} style={st.row}>
-            <Cell i={0}><span style={{ ...st.txt, fontWeight: 600 }}>{sp.number}</span></Cell>
-            <Cell i={1}><span style={st.txt}>{sp.level}</span></Cell>
-            <Cell i={2}><span style={st.txt}>{sp.type}</span></Cell>
-            <Cell i={3}><span style={st.txt}>{sp.covered ? "Yes" : "No"}</span></Cell>
-            <Cell i={4}><span style={st.txt}>{sp.evCharger ? "Yes" : "No"}</span></Cell>
-            <Cell i={5}><span style={{ ...st.txt, fontWeight: 600 }}>{formatMoney(sp.priceCents)}</span></Cell>
-            <Cell i={6}><span style={{ ...st.txt, color: "var(--color-text-weak)" }}>{formatMoney(netToBuilding(sp.priceCents))}</span></Cell>
-            <Cell i={7}>
-              <Badge as="span" variant={sp.status === "Listed" ? "active" : "inactive"}>{sp.status}</Badge>
-            </Cell>
-            <div style={{ ...st.cellBase, flex: COL_FLEX[8], justifyContent: "flex-end", gap: "var(--spacing-12)" }}>
-              <button style={st.link} onClick={() => setEditing(sp)}>Edit</button>
-              <button
-                style={{ ...st.link, color: "var(--color-tag-text-expired)" }}
-                onClick={() => setSpots((prev) => prev.filter((x) => x.id !== sp.id))}
-              >
-                Delete
-              </button>
+        {visible.map((sp) => {
+          const total = spotPriceCents(sp);
+          return (
+            <div key={sp.id} style={st.row}>
+              <Cell i={0}><span style={{ ...st.txt, fontWeight: 600 }}>{sp.number}</span></Cell>
+              <Cell i={1}><span style={st.txt}>{sp.level}</span></Cell>
+              <Cell i={2}><span style={st.txt}>{sp.type}</span></Cell>
+              <Cell i={3}><span style={st.txt}>{sp.covered ? "Yes" : "No"}</span></Cell>
+              <Cell i={4}><span style={st.txt}>{sp.evCharger ? "Yes" : "No"}</span></Cell>
+              <Cell i={5}>
+                <span style={{ ...st.txt, color: sp.owner === "building" ? "var(--color-text-strong)" : "var(--color-text-weak)" }}>
+                  {sp.owner === "building" ? "Building" : "Resident"}
+                </span>
+              </Cell>
+              <Cell i={6}>
+                <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+                  <span style={{ ...st.txt, fontWeight: 600 }}>{formatMoney(total)}</span>
+                  <span style={st.subTxt}>
+                    {sp.extraCents > 0
+                      ? `${BASE_PRICE_CREDITS} credit + ${formatMoney(sp.extraCents)}`
+                      : `${BASE_PRICE_CREDITS} credit`}
+                  </span>
+                </span>
+              </Cell>
+              <Cell i={7}><span style={{ ...st.txt, color: "var(--color-text-weak)" }}>{formatMoney(netToBuilding(total))}</span></Cell>
+              <Cell i={8}>
+                <Badge as="span" variant={sp.status === "Listed" ? "active" : "inactive"}>{sp.status}</Badge>
+              </Cell>
+              <div style={{ ...st.cellBase, flex: COL_FLEX[9], justifyContent: "flex-end", gap: "var(--spacing-12)" }}>
+                {canPrice(sp) ? (
+                  <>
+                    <button style={st.link} onClick={() => setEditing(sp)}>Edit</button>
+                    <button
+                      style={{ ...st.link, color: "var(--color-tag-text-expired)" }}
+                      onClick={() => setSpots((prev) => prev.filter((x) => x.id !== sp.id))}
+                    >
+                      Delete
+                    </button>
+                  </>
+                ) : (
+                  // A resident's spot is theirs. The building can take it
+                  // off the market, but it cannot reprice or remove it.
+                  <button style={st.link} onClick={() => toggleListed(sp.id)}>
+                    {sp.status === "Listed" ? "Unlist" : "List"}
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {visible.length === 0 && (
           <div style={{ ...st.row, color: "var(--color-text-weak)", fontSize: "var(--font-size-tiny)" }}>
@@ -250,12 +315,25 @@ export default function SpotsPage() {
 }
 
 const COL_FLEX = [
-  "8 1 80px", "7 1 70px", "9 1 100px", "7 1 80px",
-  "6 1 60px", "9 1 110px", "9 1 110px", "8 1 100px", "9 1 130px",
+  "7 1 70px", "6 1 60px", "8 1 90px", "6 1 70px", "5 1 55px",
+  "7 1 80px", "9 1 120px", "8 1 100px", "8 1 100px", "8 1 120px",
 ];
 
 function Cell({ i, children }: { i: number; children: React.ReactNode }) {
   return <div style={{ ...st.cellBase, flex: COL_FLEX[i] }}>{children}</div>;
+}
+
+/** The base + extra + commission line, shown wherever a price is set. */
+function PriceBreakdown({ extraCents }: { extraCents: number }) {
+  const total = BASE_PRICE_CENTS + extraCents;
+  return (
+    <span style={st.formHint}>
+      Renter pays <strong>{formatMoney(total)}</strong> ({BASE_PRICE_CREDITS} credit
+      {extraCents > 0 ? ` + ${formatMoney(extraCents)}` : ""}) · Parqlet keeps{" "}
+      {formatMoney(total - netToBuilding(total))} ({COMMISSION_PCT}% and card fees) ·
+      you receive <strong>{formatMoney(netToBuilding(total))}</strong>
+    </span>
+  );
 }
 
 function RangePriceModal({
@@ -265,21 +343,22 @@ function RangePriceModal({
 }: {
   open: boolean;
   onClose: () => void;
-  onApply: (from: number, to: number, priceCents: number) => void;
+  onApply: (from: number, to: number, extraCents: number) => void;
 }) {
   const [from, setFrom] = useState("1");
   const [to, setTo] = useState("100");
-  const [price, setPrice] = useState("15.00");
+  const [extra, setExtra] = useState("10.00");
 
-  const priceCents = Math.round(Number(price) * 100) || 0;
-  const valid = Number.isFinite(Number(from)) && Number.isFinite(Number(to)) && priceCents > 0;
+  const extraCents = Math.max(0, Math.round(Number(extra) * 100) || 0);
+  const valid = Number.isFinite(Number(from)) && Number.isFinite(Number(to)) && Number.isFinite(Number(extra));
 
   return (
     <Modal open={open} onClose={onClose} title="Set prices by range" size="small">
       <div style={st.form}>
         <p style={st.formHint}>
-          Applies one price to every spot whose number falls in the range.
-          Run it once per block: 1–100 at one rate, 200–300 at another.
+          Applies one extra to every spot you own whose number falls in the
+          range. Run it once per block: 1–100 at one rate, 200–300 at
+          another. Spots your residents share are skipped.
         </p>
 
         <div style={{ display: "flex", gap: "var(--spacing-12)" }}>
@@ -287,19 +366,18 @@ function RangePriceModal({
           <Input label="To spot" inputMode="numeric" value={to} onChange={(e) => setTo(e.target.value)} />
         </div>
 
-        <Input label="Price per day (USD)" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} />
+        <Input
+          label="Extra per day (USD), on top of the base credit"
+          inputMode="decimal"
+          value={extra}
+          onChange={(e) => setExtra(e.target.value)}
+        />
 
-        {priceCents > 0 && (
-          <span style={st.formHint}>
-            Renter pays {formatMoney(priceCents)} · Parqlet keeps{" "}
-            {formatMoney(priceCents - netToBuilding(priceCents))} ({COMMISSION_PCT}%) · you
-            receive <strong>{formatMoney(netToBuilding(priceCents))}</strong>
-          </span>
-        )}
+        <PriceBreakdown extraCents={extraCents} />
 
         <div style={st.actions}>
           <Button variant="secondary" size="small" style={{ width: "auto" }} onClick={onClose}>Cancel</Button>
-          <Button variant="primary" size="small" style={{ width: "auto" }} disabled={!valid} onClick={() => onApply(Number(from), Number(to), priceCents)}>
+          <Button variant="primary" size="small" style={{ width: "auto" }} disabled={!valid} onClick={() => onApply(Number(from), Number(to), extraCents)}>
             Apply
           </Button>
         </div>
@@ -324,15 +402,15 @@ function SpotModal({
   const [d, setD] = useState<Draft>(initial);
   // Dollars in the field, cents in the model - "24.50" must not become 2450
   // dollars. Keyed on `title` so reopening for a different spot resets.
-  const [price, setPrice] = useState((initial.priceCents / 100).toFixed(2));
+  const [extra, setExtra] = useState((initial.extraCents / 100).toFixed(2));
   const [seen, setSeen] = useState(title);
   if (seen !== title) {
     setSeen(title);
     setD(initial);
-    setPrice((initial.priceCents / 100).toFixed(2));
+    setExtra((initial.extraCents / 100).toFixed(2));
   }
 
-  const priceCents = Math.round(Number(price) * 100) || 0;
+  const extraCents = Math.max(0, Math.round(Number(extra) * 100) || 0);
 
   return (
     <Modal open={open} onClose={onClose} title={title} size="small">
@@ -353,12 +431,14 @@ function SpotModal({
           </select>
         </label>
 
-        <Input label="Price per day (USD)" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} />
+        <Input
+          label="Extra per day (USD), on top of the base credit"
+          inputMode="decimal"
+          value={extra}
+          onChange={(e) => setExtra(e.target.value)}
+        />
 
-        <span style={st.formHint}>
-          You receive <strong>{formatMoney(netToBuilding(priceCents))}</strong> of
-          it, after our {COMMISSION_PCT}% commission.
-        </span>
+        <PriceBreakdown extraCents={extraCents} />
 
         <label style={st.check}>
           <input type="checkbox" checked={d.covered} onChange={(e) => setD({ ...d, covered: e.target.checked })} />
@@ -379,7 +459,7 @@ function SpotModal({
 
         <div style={st.actions}>
           <Button variant="secondary" size="small" style={{ width: "auto" }} onClick={onClose}>Cancel</Button>
-          <Button variant="primary" size="small" style={{ width: "auto" }} onClick={() => onSave({ ...d, priceCents })}>Save</Button>
+          <Button variant="primary" size="small" style={{ width: "auto" }} onClick={() => onSave({ ...d, extraCents })}>Save</Button>
         </div>
       </div>
     </Modal>
@@ -388,7 +468,7 @@ function SpotModal({
 
 const st: Record<string, React.CSSProperties> = {
   h1: { margin: 0, fontSize: "var(--font-size-heading-3)", fontWeight: 600, color: "var(--color-text-strong)" },
-  sub: { margin: "var(--spacing-4) 0 0", fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)", maxWidth: 560 },
+  sub: { margin: "var(--spacing-4) 0 0", fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)", maxWidth: 620 },
   search: {
     display: "flex", alignItems: "center", gap: 10,
     background: "var(--color-fill-white)",
@@ -409,12 +489,13 @@ const st: Record<string, React.CSSProperties> = {
   },
   row: {
     display: "flex", alignItems: "center", gap: "var(--spacing-8)",
-    padding: "0 var(--spacing-24)", minHeight: 48,
+    padding: "var(--spacing-8) var(--spacing-24)", minHeight: 48,
     borderBottom: "1px solid var(--color-stroke-medium)",
   },
   headRow: { background: "var(--color-fill-white)" },
   cellBase: { display: "flex", alignItems: "center", minWidth: 0 },
   txt: { fontSize: "var(--font-size-tiny)", color: "var(--color-text-strong)", whiteSpace: "nowrap" },
+  subTxt: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)", whiteSpace: "nowrap" },
   link: {
     background: "none", border: "none", cursor: "pointer",
     fontSize: "var(--font-size-tiny)", color: "var(--color-text-strong)",
@@ -429,10 +510,10 @@ const st: Record<string, React.CSSProperties> = {
   noticeClose: {
     background: "none", border: "none", cursor: "pointer",
     fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)",
-    textDecoration: "underline", fontFamily: "var(--font-family-body)",
+    textDecoration: "underline", fontFamily: "var(--font-family-body)", flexShrink: 0,
   },
   form: { display: "flex", flexDirection: "column", gap: "var(--spacing-12)" },
-  formHint: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)", margin: 0 },
+  formHint: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)", margin: 0, lineHeight: 1.5 },
   actions: { display: "flex", gap: "var(--spacing-12)", justifyContent: "flex-end", marginTop: "var(--spacing-8)" },
   selectWrap: { display: "flex", flexDirection: "column", gap: 6 },
   selectLabel: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },

@@ -534,7 +534,7 @@ export default function Step3Page() {
                   fontWeight: "var(--font-weight-regular)" as React.CSSProperties["fontWeight"],
                   color: "var(--color-text-weak)",
                 }}>
-                  Add staff who will help manage parking at {enrollment?.buildingName ?? "44 East Avenue"}.
+                  Add staff who will help manage parking at {enrollment?.buildingName ?? "The Meridian"}.
                 </p>
               </div>
 

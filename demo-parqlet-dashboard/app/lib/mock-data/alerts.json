@@ -8,7 +8,7 @@
       "description": "Yardi sync returned malformed response",
       "acknowledged": false,
       "timestamp": "2026-05-18T08:20:13.113Z",
-      "buildingName": "Riverside Towers"
+      "buildingName": "Oakline Park"
     },
     {
       "id": "c9704d9f-ca5c-45f2-9776-c5865e9dc79b",
@@ -38,7 +38,7 @@
       "description": "Invoice #INV-0034 is 15 days overdue",
       "acknowledged": true,
       "timestamp": "2026-05-18T08:20:13.110Z",
-      "buildingName": "Riverside Towers"
+      "buildingName": "Oakline Park"
     },
     {
       "id": "6a993f31-ee24-4922-824e-08a5e733d577",
@@ -48,7 +48,7 @@
       "description": "BuildingLink sync failed: invalid credentials",
       "acknowledged": false,
       "timestamp": "2026-05-18T08:20:13.108Z",
-      "buildingName": "44 East Avenue"
+      "buildingName": "The Meridian"
     }
   ],
   "total": 5,

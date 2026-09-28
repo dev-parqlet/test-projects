@@ -23,7 +23,7 @@ function pathnameToNavId(pathname: string): NavId {
   if (pathname.startsWith("/apartments/bookings")) return "bookings";
   if (pathname.startsWith("/apartments/spots"))    return "spots";
   if (pathname.startsWith("/apartments/availability")) return "availability";
-  if (pathname.startsWith("/apartments/income"))   return "income";
+  if (pathname.startsWith("/apartments/revenue"))  return "revenue";
   return "none";
 }
 

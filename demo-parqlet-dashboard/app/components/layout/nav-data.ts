@@ -24,7 +24,7 @@ export type NavId =
   | "gift-cards"
   | "spots"
   | "availability"
-  | "income"
+  | "revenue"
   | "none";
 
 export interface NavItem {
@@ -43,22 +43,22 @@ export interface NavItem {
 }
 
 /**
- * Gift Cards is built and live for Super Admins, who need it to watch
- * redemptions and Tremendous funding, but it is not being shown to HOA
- * staff until the feature is announced to their residents. The page
- * itself still works — this hides the way in, so flipping it back is
- * one word.
+ * Gift Cards is live for HOA staff as of the September release, so the
+ * demo shows it. It stays a switch rather than a deletion because the
+ * order in which a feature reaches the app, the dashboard and the demo is
+ * not always the same.
  *
  * The matching switch in the resident app is
  * mobile-app/features/gift-cards/featureFlag.ts.
  */
-const HOA_GIFT_CARDS_VISIBLE = false;
+const HOA_GIFT_CARDS_VISIBLE = true;
 
 export const navItems: readonly NavItem[] = [
   { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard },
   { id: "bookings",      label: "Bookings",           Icon: IcBookings },
   { id: "parking",       label: "Resident Directory", Icon: IcResidentDirectory },
   { id: "tickets",       label: "Support Tickets",    Icon: IcQuestion,     href: "/tickets" },
+  { id: "revenue",       label: "Revenue",            Icon: IcCredit,       href: "/revenue" },
   { id: "subscription",  label: "Subscription",       Icon: IcSubscription, requiredAction: Actions.ViewSubscription },
   { id: "access",        label: "Access Management",  Icon: IcPerson,       requiredAction: Actions.InviteTeamMember },
   { id: "settings",      label: "Settings",           Icon: IcSettings },
@@ -82,7 +82,7 @@ export const apartmentsNavItems: readonly NavItem[] = [
   { id: "bookings",      label: "Bookings",         Icon: IcBookings,     href: "/apartments/bookings" },
   { id: "spots",         label: "Parking Spots",    Icon: IcParking,      href: "/apartments/spots" },
   { id: "availability",  label: "Availability",     Icon: IcBookings,     href: "/apartments/availability" },
-  { id: "income",        label: "Income",           Icon: IcCredit,       href: "/apartments/income" },
+  { id: "revenue",       label: "Revenue",          Icon: IcCredit,       href: "/apartments/revenue" },
   { id: "tickets",       label: "Support Tickets",  Icon: IcQuestion,     href: "/tickets" },
   { id: "subscription",  label: "Subscription",     Icon: IcSubscription, href: "/subscription" },
   { id: "access",        label: "Access Management", Icon: IcPerson,      href: "/access" },
