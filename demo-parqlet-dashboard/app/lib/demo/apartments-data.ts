@@ -112,10 +112,12 @@ function buildSpots(): DemoSpot[] {
     }
   };
   // The building's own spots. Level 1 is covered and closest to the lifts,
-  // so it carries the largest extra; the roof carries none.
-  block(1, 40, 'P1', true, 'building', 10);
-  block(201, 30, 'P2', true, 'building', 5);
-  block(301, 20, 'Roof', false, 'building', 0);
+  // so it carries the largest extra; the roof carries the smallest.
+  // On the $6 base these come to $15, $10 and $8 a day - the prices the
+  // pricing spec uses as its example and the design puts on screen.
+  block(1, 40, 'P1', true, 'building', 9);
+  block(201, 30, 'P2', true, 'building', 4);
+  block(301, 20, 'Roof', false, 'building', 2);
   // Residents sharing their own assigned spaces. Base credit, no extra.
   block(401, 24, 'P1', true, 'resident', 0);
   block(431, 11, 'P2', true, 'resident', 0);

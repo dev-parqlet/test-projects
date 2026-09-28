@@ -77,20 +77,15 @@ function monthFrom(grossCents: number, d: Date, id: string, status: CondoMonth['
  * discount stops, so the demo shows both halves of the story: the bill at
  * its floor AND a surplus on top.
  *
- * About $33 a day in credit top-ups, which nets roughly $710 over a full
- * month. That is deliberately just past the $650 the discount is worth:
- * enough to put the bill on its floor and leave a small surplus, without
- * the $170 overshoot it used to show, which made the surplus look like the
- * point rather than the remainder.
- *
- * It is a larger number than the Apartment's, which reads oddly until you
- * remember the Condo carries the larger subscription and every one of its
- * residents is trading credits, where an Apartment earns on the spots it
- * owns.
+ * About $21 a day in credit top-ups, which nets roughly $450 over a full
+ * month. That is deliberately just past the $400 the discount is worth on
+ * a $500 plan with a $100 floor: enough to put the bill on its floor and
+ * leave a small surplus, without an overshoot that would make the
+ * remainder look like the headline.
  */
 export function currentCondoMonth(now = new Date()): CondoMonth {
   const d = new Date(now.getFullYear(), now.getMonth(), 1);
-  return monthFrom(money(33 * now.getDate()), d, 'current', 'Processing');
+  return monthFrom(money(21 * now.getDate()), d, 'current', 'Processing');
 }
 
 /** The last `count` completed months, newest first. */
@@ -104,7 +99,10 @@ export function recentCondoMonths(count = 5, now = new Date()): CondoMonth[] {
     // others, so the table shows a bill that actually moves.
     // 173 rather than 211: 211 doubles to 2 mod 420, so every other month
     // landed within a few dollars of the last and the table looked frozen.
-    const gross = 620 + ((d.getMonth() * 173) % 420);
+    // The range brackets the open month, and straddles the $400 the
+    // discount is worth, so the table shows both a bill on its floor and a
+    // bill that did not quite get there.
+    const gross = 520 + ((d.getMonth() * 173) % 200);
     out.push(monthFrom(money(gross), d, `c${i}`, 'Paid'));
   }
   return out;

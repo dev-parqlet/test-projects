@@ -77,12 +77,25 @@ function makeBookings(buildingId, counts, spots, owned, startIndex, sharedSpots 
   let i = startIndex;
 
   const push = (startOffsetHours, durationHours, status) => {
-    // A quarter of an Apartment's bookings are on a spot a resident lent,
-    // which is paid for in credits and earns the building less - the
-    // difference the dashboard exists to show.
-    const shared = owned && sharedSpots.length > 0 && i % 4 === 3;
-    const buildingOwned = owned && !shared;
-    const spotList = shared ? sharedSpots : spots;
+    // A quarter of an Apartment's bookings are on a spot a resident lent.
+    // An HOA's are all on residents' spots - nobody else owns any.
+    const shared = !owned || (sharedSpots.length > 0 && i % 4 === 3);
+    const buildingOwned = !shared;
+    const spotList = shared && owned ? sharedSpots : spots;
+    const days = Math.max(1, Math.ceil(durationHours / 24));
+
+    /**
+     * Paid with a credit, or by card?
+     *
+     * Both happen in both products, and the four combinations of this and
+     * whose spot it was are the four rows of the pricing spec's split
+     * table. A corpus that only ever shows two of them cannot demonstrate
+     * the rule, so the mix is deliberate rather than incidental: most
+     * bookings on a resident's spot spend a credit, most on the building's
+     * own are paid outright.
+     */
+    const paidWithCredit = shared ? i % 8 !== 3 : i % 5 === 1;
+    const extraCents = spotPriceCents(pick(spotList, i)) - BASE_CENTS;
     const start = new Date(now.getTime() + startOffsetHours * 3600_000);
     start.setMinutes(i % 2 === 0 ? 0 : 30, 0, 0);
     const end = new Date(start.getTime() + durationHours * 3600_000);
@@ -102,24 +115,33 @@ function makeBookings(buildingId, counts, spots, owned, startIndex, sharedSpots 
       bookingEnd: fmt(end),
       status,
       hasNote: i % 9 === 0,
-      creditsSpent: buildingOwned ? 0 : Math.max(1, Math.ceil(durationHours / 24)),
-      // A building's own spot is paid for in dollars; a spot a resident
-      // shared costs the base credit and nothing else, in both products.
-      // `amountCents` is the gross the renter paid; the dashboard derives
-      // our commission from it rather than storing a second, divergent
-      // number.
+      creditsSpent: paidWithCredit ? days : 0,
+      /**
+       * The dollars actually charged to a card, which is NOT the price of
+       * the booking whenever a credit covered the base.
+       *
+       *   resident's spot, credit   nothing - the credit is the whole fare
+       *   resident's spot, card     the base, which buys the credit inline
+       *   building's spot, card     base + extra, the whole price
+       *   building's spot, credit   the extra only; the base was a credit
+       *
+       * The dashboard derives our commission from this rather than storing
+       * a second, divergent number.
+       */
       amountCents: buildingOwned
-        ? spotPriceCents(pick(spotList, i)) * Math.max(1, Math.ceil(durationHours / 24))
-        : null,
-      commissionPct: buildingOwned ? COMMISSION_PCT : null,
+        ? (paidWithCredit ? extraCents : spotPriceCents(pick(spotList, i))) * days
+        : paidWithCredit
+          ? null
+          : BASE_CENTS * days,
+      commissionPct: buildingOwned || !paidWithCredit ? COMMISSION_PCT : null,
       createdAt: new Date(start.getTime() - 86_400_000).toISOString(),
       updatedAt: new Date(start.getTime() - 86_400_000).toISOString(),
       idShort: uuid(i).slice(-6),
       notes: [],
       unitNumber: `${1 + (i % 9)}${unitLetter}`,
       spotNumber: pick(spotList, i),
-      spotOwnerName: buildingOwned ? null : name(i * 5 + 2),
-      spotOwnerPhone: buildingOwned ? null : `(555) 10${i % 10}-${1000 + ((i * 17) % 9000)}`,
+      spotOwnerName: shared ? name(i * 5 + 2) : null,
+      spotOwnerPhone: shared ? `(555) 10${i % 10}-${1000 + ((i * 17) % 9000)}` : null,
       i,
     });
     i++;
@@ -153,12 +175,17 @@ const APARTMENT_SHARED_SPOTS = ["403", "409", "418", "424", "433", "438"];
  */
 function spotPriceCents(number) {
   const n = Number(number);
-  if (n >= 1 && n <= 40) return 1500;
-  if (n >= 201 && n <= 230) return 1200;
-  return 900;
+  // base + the block's extra. These WERE flat figures that owed nothing to
+  // the blocks above, so a booking on spot #11 charged $15 while the
+  // Parking Spots page priced the same spot at $25.
+  if (n >= 1 && n <= 40) return BASE_CENTS + 900;
+  if (n >= 201 && n <= 230) return BASE_CENTS + 400;
+  return BASE_CENTS + 200;
 }
 
 const COMMISSION_PCT = 20;
+/** Keep in step with CREDIT_PRICE_CENTS in app/lib/demo/pricing.ts. */
+const BASE_CENTS = 600;
 const HOA_SPOTS = ["419", "251", "222", "519", "108", "330"];
 
 const data = [

@@ -45,7 +45,13 @@ const STRIPE_PCT = 2.9;
 const STRIPE_FIXED_CENTS = 30;
 
 /** What one credit costs the resident, set per building. */
-export const CREDIT_PRICE_CENTS = money(15);
+/**
+ * The pricing spec, the design and the Parking Spots screen all agree at
+ * $6: a rooftop spot at $8 and a lower level at $15 are this base plus a
+ * $2 and a $9 extra, and every worked example in the spec - $1.83, $7.41,
+ * $5.28, a $2.50 reserve, ten credits for a $25 card - is quoted at it.
+ */
+export const CREDIT_PRICE_CENTS = money(6);
 
 /** Every spot, in both products, costs this many credits per day. */
 export const BASE_PRICE_CREDITS = 1;
@@ -104,7 +110,12 @@ export function reservePerCreditCents(priceCents: number): number {
 
 // ─── Subscriptions ──────────────────────────────────────────────────
 
-export const CONDO_SUBSCRIPTION_CENTS = money(750);
+/**
+ * Both products run the same $500 plan. The Condo's bill stops at its
+ * floor, so $500 less the $100 floor is $400 of discount to earn - the
+ * figure the pricing spec quotes as the max offset.
+ */
+export const CONDO_SUBSCRIPTION_CENTS = money(500);
 
 /** A Condo's bill never falls below this, however much it earns. */
 export const CONDO_FLOOR_CENTS = money(100);

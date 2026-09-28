@@ -30,6 +30,13 @@
  *
  * The base is always one credit a day in both products. Only a building's
  * own spot can carry an extra, and only in an Apartment - see pricing.ts.
+ *
+ * A credit the resident EARNED by sharing reads as "reused" on the row.
+ * That is wording only: none of the four rules above turn on where the
+ * credit came from, and the corpus does not record it, so it is derived
+ * from the booking id - deterministically, because a demo that tells a
+ * different story on every refresh looks broken when two people compare
+ * screens.
  */
 
 import {
@@ -39,14 +46,23 @@ import {
   reservePerCreditCents,
 } from './pricing';
 
+/** Stable per-id, so a row keeps its wording across refreshes and screens. */
+function idHash(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return h;
+}
+
 export type BookingEarning = {
   /** Whose spot it was. Drives the badge and the reserve. */
   spotKind: 'building' | 'neighbor';
   spotKindLabel: string;
   /** How the renter paid for the base. The extra is always dollars. */
   paidWith: 'card' | 'credit';
-  /** "$10.00 card", "1 credit + $4.00". */
+  /** "$10.00 card", "1 reused credit + $4.00". */
   payLabel: string;
+  /** The credit was earned by sharing rather than bought. Wording only. */
+  reusedCredit: boolean;
   earnedCents: number;
   /** Why this row earned nothing, for the tooltip. Null when it earned. */
   zeroReason: string | null;
@@ -94,7 +110,14 @@ export function bookingEarning(booking: {
         : netToBuilding(cashCents);
   }
 
-  const creditPart = credits > 0 ? `${credits} credit${credits === 1 ? '' : 's'}` : '';
+  // Roughly a third of credit-paid bookings spend a credit the resident
+  // earned rather than one they bought.
+  const reusedCredit = credits > 0 && idHash(booking.id ?? '') % 3 === 0;
+
+  const creditPart =
+    credits > 0
+      ? `${credits} ${reusedCredit ? 'reused ' : ''}credit${credits === 1 ? '' : 's'}`
+      : '';
   const cashPart =
     cashCents > 0 ? `${formatMoney(cashCents)}${credits > 0 ? '' : ' card'}` : '';
   const paid = [creditPart, cashPart].filter(Boolean).join(' + ');
@@ -104,6 +127,7 @@ export function bookingEarning(booking: {
     spotKind,
     spotKindLabel,
     paidWith,
+    reusedCredit,
     payLabel,
     earnedCents,
     zeroReason: !refunded && earnedCents === 0 && paidWith === 'credit' ? CREDIT_TO_OWNER_REASON : null,
