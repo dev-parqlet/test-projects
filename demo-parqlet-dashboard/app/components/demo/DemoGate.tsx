@@ -15,8 +15,10 @@
  */
 
 import React, { useSyncExternalStore } from "react";
+import { usePathname } from "next/navigation";
 
 import { ShareLinkList } from "./ShareLinks";
+import { isUnscopedPath } from "../../lib/demo/product-path";
 import {
   DEMO_IDENTITIES,
   hasChosenVariant,
@@ -25,6 +27,7 @@ import {
 } from "../../lib/demo/variants";
 
 export function DemoGate({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   // Rendered on the server too, where localStorage does not exist, so the
   // answer has to come from a client-only source without tripping a
   // hydration mismatch. useSyncExternalStore is the sanctioned way to read
@@ -40,6 +43,11 @@ export function DemoGate({ children }: { children: React.ReactNode }) {
     () => hasChosenVariant(),
     () => null,
   );
+
+  // A page belonging to neither product has nothing to gate: asking a
+  // visitor to choose Condo or Apartments before showing it would be a
+  // question about something the page does not use.
+  if (isUnscopedPath(pathname)) return <>{children}</>;
 
   if (decided === null) return null;
   if (decided) return <>{children}</>;

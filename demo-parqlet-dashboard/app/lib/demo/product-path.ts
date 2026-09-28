@@ -48,3 +48,17 @@ export function productFromPath(pathname: string): 'condo' | 'apartment' | null 
 export function productPrefix(pathname: string): string {
   return productFromPath(pathname) === 'apartment' ? APARTMENT_PREFIX : CONDO_PREFIX;
 }
+
+/**
+ * Paths that belong to NEITHER product.
+ *
+ * Standalone pages, reached by typing the URL and linked from nothing.
+ * They carry no building, no identity and no sidebar, so the front door
+ * must let them through rather than asking a visitor to pick a product
+ * before showing them a page that has nothing to do with either.
+ */
+const UNSCOPED_PATHS = ['/demo-home'];
+
+export function isUnscopedPath(pathname: string): boolean {
+  return UNSCOPED_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));
+}
