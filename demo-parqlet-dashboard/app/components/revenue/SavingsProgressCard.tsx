@@ -211,7 +211,7 @@ const st: Record<string, React.CSSProperties> = {
   maxed: {
     display: "inline-flex",
     alignItems: "center",
-    gap: "var(--spacing-8)",
+    gap: "var(--spacing-6)",
     fontFamily: "var(--font-family-body)",
     fontSize: "var(--font-size-tiny)",
     fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
@@ -229,6 +229,6 @@ const st: Record<string, React.CSSProperties> = {
     color: "var(--color-text-weak)",
   },
   supportingStrong: { color: "var(--color-text-strong)" },
-  chipArrow: { marginRight: "var(--spacing-4)" },
-  chipTail: { marginLeft: "var(--spacing-4)" },
+  chipArrow: { marginRight: "var(--spacing-6)" },
+  chipTail: { marginLeft: "var(--spacing-6)" },
 };

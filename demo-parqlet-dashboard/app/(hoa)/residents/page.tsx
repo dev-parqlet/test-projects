@@ -304,7 +304,7 @@ return (
           </div>
           {autoInviteOn ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "var(--spacing-4)", flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-6)" }}>
                 <span style={{
                   fontSize:   "var(--font-size-body)",
                   color:      "var(--color-text-strong)",
