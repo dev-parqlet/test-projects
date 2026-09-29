@@ -19,7 +19,12 @@ import React from "react";
 import { Card } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import { TableHeadLabel } from "../ui/TableHeadLabel";
-import { formatMoney, type OffsetResult } from "../../lib/demo/pricing";
+import {
+  formatMoney,
+  savingsBarFill,
+  type CondoSavings,
+  type OffsetResult,
+} from "../../lib/demo/pricing";
 
 // ── A single number with a label ──────────────────────────────────────
 
@@ -129,6 +134,58 @@ export function OffsetBar({
           </span>
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * How much of the POSSIBLE saving a Condo has taken.
+ *
+ * Deliberately not <OffsetBar>. That one measures the discount against the
+ * whole subscription, which is the right picture for an Apartment - its
+ * bill really can reach zero. A Condo's stops at a floor, so the same bar
+ * can never fill, and a building that has saved every cent it is allowed to
+ * sees a bar sitting short with a marker explaining why. This one measures
+ * against the maximum instead, so "as cheap as this gets" looks like it.
+ *
+ * Shared by the dashboard card and the Savings page so the two cannot draw
+ * the same claim differently.
+ */
+export function SavingsBar({
+  savings,
+  showFoot = true,
+}: {
+  savings: CondoSavings;
+  /** Off for a caller that states the same two facts in its own layout. */
+  showFoot?: boolean;
+}) {
+  const fill = savingsBarFill(savings);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-8)" }}>
+      <div
+        style={st.track}
+        role="img"
+        aria-label={`${Math.round(fill * 100)}% of the most you can save`}
+      >
+        <div style={{ ...st.fill, width: `${fill * 100}%` }} />
+      </div>
+      {showFoot && (
+        <div style={st.trackLegend}>
+          {savings.atMax ? (
+            <span style={{ color: "var(--color-text-success)", fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"] }}>
+              Max savings reached
+            </span>
+          ) : (
+            <span style={{ color: "var(--color-text-weak)" }}>
+              {formatMoney(savings.maxSavingsCents - savings.savingsCents)} more to reach the max
+            </span>
+          )}
+          <span style={{ color: "var(--color-text-weak)" }}>
+            Minimum bill {formatMoney(savings.floorCents)}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

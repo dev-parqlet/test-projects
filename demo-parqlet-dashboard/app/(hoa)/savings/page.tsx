@@ -23,7 +23,7 @@ import {
   Figure,
   FigureRow,
   HistoryTable,
-  OffsetBar,
+  SavingsBar,
   RevenueCard,
   RevenueHeader,
   st,
@@ -33,7 +33,7 @@ import {
   COMMISSION_PCT,
   CONDO_FLOOR_CENTS,
   PITCH,
-  applyOffset,
+  applyCondoSavings,
   formatMoney,
 } from "../../lib/demo/pricing";
 import { currentCondoMonth, recentCondoMonths } from "../../lib/demo/condo-revenue";
@@ -45,7 +45,7 @@ export default function CondoRevenuePage() {
   const month = useMemo(() => currentCondoMonth(now), [now]);
   const history = useMemo(() => recentCondoMonths(5, now), [now]);
 
-  const offset = applyOffset({
+  const savings = applyCondoSavings({
     subscriptionCents: month.subscriptionCents,
     earningsCents: month.earningsCents,
     floorCents: CONDO_FLOOR_CENTS,
@@ -58,7 +58,7 @@ export default function CondoRevenuePage() {
     feesCents: m.feesCents,
     netCents: m.dueCents,
     status: m.status,
-    trailing: m.surplusCents > 0 ? `+ ${formatMoney(m.surplusCents)}` : "—",
+    trailing: m.surplusCents > 0 ? `${formatMoney(m.surplusCents)} carried` : "—",
   }));
 
   return (
@@ -67,43 +67,58 @@ export default function CondoRevenuePage() {
 
       {/* ── This month ───────────────────────────────────────────────── */}
       <RevenueCard title={`${month.period} so far`} badge={<Badge variant="active">Open</Badge>}>
+        {/* The bill first. A board opens this page to answer "what do we
+            pay this month", and it used to have to read three figures and
+            do the subtraction itself. */}
         <FigureRow>
-          <Figure label="Residents bought" value={formatMoney(month.grossCents)} note="in credits this month" />
-          <Figure
-            label={`Commission + card fees`}
-            value={`− ${formatMoney(month.feesCents)}`}
-            tone="muted"
-          />
-          <Figure label="You earned" value={formatMoney(month.earningsCents)} />
-        </FigureRow>
-
-        <OffsetBar offset={offset} />
-
-        <FigureRow>
-          <Figure label="Subscription" value={formatMoney(offset.subscriptionCents)} note="per month" />
           <Figure
             label="Your bill this month"
-            value={formatMoney(offset.dueCents)}
+            value={formatMoney(savings.dueCents)}
             tone="strong"
             note={
-              offset.dueCents <= CONDO_FLOOR_CENTS
-                ? `At the ${formatMoney(CONDO_FLOOR_CENTS)} minimum`
-                : `${formatMoney(offset.appliedCents)} taken off by your residents' activity`
+              savings.atMax
+                ? `At the ${formatMoney(savings.floorCents)} minimum, the lowest it can go`
+                : `${formatMoney(savings.subscriptionCents)} subscription, less what your residents saved you`
             }
           />
-          {offset.surplusCents > 0 && (
+          <Figure
+            label="You saved"
+            value={formatMoney(savings.savingsCents)}
+            note="thanks to resident sharing"
+          />
+          <Figure
+            label="Subscription"
+            value={formatMoney(savings.subscriptionCents)}
+            tone="muted"
+            note="before savings"
+          />
+        </FigureRow>
+
+        <SavingsBar savings={savings} />
+
+        <FigureRow>
+          <Figure
+            label="From resident sharing"
+            value={formatMoney(savings.availableCents)}
+            note={
+              savings.carriedInCents > 0
+                ? `includes ${formatMoney(savings.carriedInCents)} carried in from last month`
+                : "collected this month"
+            }
+          />
+          {savings.carriedOverCents > 0 && (
             <Figure
-              label="Additional revenue"
-              value={formatMoney(offset.surplusCents)}
-              note="earned beyond the discount"
+              label="Carries over"
+              value={formatMoney(savings.carriedOverCents)}
+              note="applied to next month's bill"
             />
           )}
         </FigureRow>
 
         <span style={st.hint}>
-          {offset.surplusCents > 0
-            ? `Your bill is already at the ${formatMoney(CONDO_FLOOR_CENTS)} minimum, so everything your residents book from here is additional revenue.`
-            : `Every booking your residents pay for takes more off this bill, down to ${formatMoney(CONDO_FLOOR_CENTS)}.`}
+          {savings.atMax
+            ? `Your bill is at the ${formatMoney(savings.floorCents)} minimum, so anything more your residents book carries over to next month rather than being lost.`
+            : `Every booking your residents pay for takes more off this bill, down to ${formatMoney(savings.floorCents)}.`}
         </span>
       </RevenueCard>
 

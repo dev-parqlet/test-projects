@@ -32,11 +32,8 @@ import Link from "next/link";
 
 import { Badge } from "../ui/Badge";
 import { Card } from "../ui/Card";
-import {
-  applyCondoSavings,
-  formatMoney,
-  savingsBarFill,
-} from "../../lib/demo/pricing";
+import { SavingsBar } from "./index";
+import { applyCondoSavings, formatMoney } from "../../lib/demo/pricing";
 
 export function SavingsProgressCard({
   earningsCents,
@@ -63,7 +60,6 @@ export function SavingsProgressCard({
     subscriptionCents,
     floorCents,
   });
-  const fill = savingsBarFill(s);
 
   return (
     <Card>
@@ -91,9 +87,9 @@ export function SavingsProgressCard({
           </div>
         </div>
 
-        <div style={st.track} role="img" aria-label={`${Math.round(fill * 100)}% of the most you can save`}>
-          <div style={{ ...st.fill, width: `${fill * 100}%` }} />
-        </div>
+        {/* The same bar the Savings page draws, so the card and the page
+            cannot make the same claim differently. */}
+        <SavingsBar savings={s} showFoot={false} />
 
         <div style={st.barFoot}>
           {s.atMax ? (
