@@ -8,6 +8,7 @@ import { useAutoInvite } from "../../components/auto-invite-context";
 import { useBuildingFilter } from "../../components/context/building-filter-context";
 import {
   buildingKeys,
+  getBuilding,
   getBuildingSettings,
   updateBuildingSettings,
   type BuildingSettings,
@@ -21,6 +22,7 @@ import { Button } from "../../components/ui/Button";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
 import { CREDIT_PRICE_CENTS, formatMoney, netToBuilding, reservePerCreditCents } from "../../lib/demo/pricing";
 import { productFromPath } from "../../lib/demo/product-path";
+import { DEMO_IDENTITIES } from "../../lib/demo/variants";
 import "../../tokens.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -876,9 +878,16 @@ type ImportPhase = "drop" | "parsing" | "preview" | "importing" | "done";
  * upload by stripping spaces, so "First Name" and "FirstName" both
  * work — but the spelling must match, since matching is strict.
  *
- * Two example rows rather than one: an Owner and a Renter, because
- * `ResidentType` only distinguishes those two and a single row leaves
- * that ambiguous.
+ * PRE-FILLED WITH THE BUILDING'S OWN NAME, ADDRESS, CITY AND STATE. The
+ * import correlates each row to a building by matching those exactly, so a
+ * template that said "Your Building Name" produced files where every row
+ * skipped with `no_building_match` - the most likely way for an upload to
+ * fail, and one the uploader cannot diagnose from the result.
+ *
+ * RESIDENT TYPE follows the product. `ResidentType` maps "Renter" to Renter
+ * and EVERYTHING ELSE to Owner, so an apartment manager copying an "Owner"
+ * example would file every tenant under the one role an apartment resident
+ * is not. A Condo's residents own their spots; an Apartment's rent them.
  */
 const IMPORT_TEMPLATE_COLUMNS = [
   "Email",
@@ -897,40 +906,36 @@ const IMPORT_TEMPLATE_COLUMNS = [
   "LeaseEndDate",
 ] as const;
 
-const IMPORT_TEMPLATE_ROWS = [
-  [
-    "jane.doe@example.com",
-    "Jane",
-    "Doe",
-    "+1 512 555 0101",
-    "101",
-    "Your Building Name",
-    "123 Main Street",
-    "Austin",
-    "TX",
-    "Owner",
-    "R-1001",
-    "O-2001",
-    "",
-    "",
-  ],
-  [
-    "sam.lee@example.com",
-    "Sam",
-    "Lee",
-    "+1 512 555 0102",
-    "102",
-    "Your Building Name",
-    "123 Main Street",
-    "Austin",
-    "TX",
-    "Renter",
-    "R-1002",
-    "O-2002",
-    "",
-    "2027-06-30",
-  ],
-];
+/** The property columns a row must carry for the import to find the building. */
+type TemplateBuilding = {
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+};
+
+function importTemplateRows(
+  building: TemplateBuilding,
+  buildingType: "condo" | "apartment",
+): string[][] {
+  const { name, address, city, state } = building;
+  // Two rows, because one leaves the reader guessing whether anything
+  // varies per row. A Condo shows one of each, since ResidentType is the
+  // field that genuinely has two meanings there. An Apartment shows two
+  // Renters: everyone there rents, and an "Owner" example would be copied.
+  const first = buildingType === "apartment" ? "Renter" : "Owner";
+  const second = "Renter";
+  return [
+    [
+      "jane.doe@example.com", "Jane", "Doe", "+1 512 555 0101", "101",
+      name, address, city, state, first, "R-1001", "O-2001", "", "",
+    ],
+    [
+      "sam.lee@example.com", "Sam", "Lee", "+1 512 555 0102", "102",
+      name, address, city, state, second, "R-1002", "O-2002", "", "2027-06-30",
+    ],
+  ];
+}
 
 /** RFC 4180: quote every field, double any embedded quote. Phone numbers
  *  and addresses contain commas, and an unquoted template would teach
@@ -941,8 +946,11 @@ function toCsv(rows: readonly (readonly string[])[]): string {
     .join("\r\n");
 }
 
-function downloadImportTemplate() {
-  const csv = toCsv([IMPORT_TEMPLATE_COLUMNS, ...IMPORT_TEMPLATE_ROWS]);
+function downloadImportTemplate(
+  building: TemplateBuilding,
+  buildingType: "condo" | "apartment",
+) {
+  const csv = toCsv([IMPORT_TEMPLATE_COLUMNS, ...importTemplateRows(building, buildingType)]);
   // BOM so Excel opens it as UTF-8 rather than mangling accented names.
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -955,9 +963,10 @@ function downloadImportTemplate() {
   URL.revokeObjectURL(url);
 }
 
-function ResidentMgmtTab({ savedPreferences, onSave }: {
+function ResidentMgmtTab({ savedPreferences, onSave, product }: {
   savedPreferences: UserPreferences | null;
   onSave: (updates: Partial<UserPreferences>) => void;
+  product: "condo" | "apartment";
 }) {
   const { autoInviteOn, setAutoInviteOn } = useAutoInvite();
   const [phase, setPhase] = useState<ImportPhase>("drop");
@@ -970,6 +979,17 @@ function ResidentMgmtTab({ savedPreferences, onSave }: {
   const [overwritePhones, setOverwritePhones] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // The template is pre-filled with the building of whichever demo is
+  // open, because the import matches a row to a building on name +
+  // address + city + state exactly. The id comes from DEMO_IDENTITIES so
+  // it cannot drift from the mock data the rest of the page reads.
+  const demoBuilding = DEMO_IDENTITIES[product].user.buildings[0];
+  const { data: buildingDetail } = useQuery({
+    queryKey: ["building", demoBuilding?.id],
+    queryFn: () => getBuilding(demoBuilding!.id),
+    enabled: !!demoBuilding?.id,
+  });
 
   React.useEffect(() => {
     if (savedPreferences?.autoInviteEnabled !== undefined && savedPreferences.autoInviteEnabled !== autoInviteOn) {
@@ -1312,7 +1332,20 @@ function ResidentMgmtTab({ savedPreferences, onSave }: {
             <button style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "var(--font-family-body)", fontSize: "var(--font-size-extra-tiny)", fontWeight: "var(--font-weight-regular)" as React.CSSProperties["fontWeight"], lineHeight: "var(--line-height-extra-tiny)", color: "var(--color-text-weak)", textDecoration: "underline", textUnderlineOffset: 2 }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-text-strong)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-text-weak)"; }}
-              onClick={downloadImportTemplate}>Download template</button>
+              onClick={() =>
+                downloadImportTemplate(
+                  {
+                    // Falls back to the placeholders when the detail
+                    // request has not landed, so the button never does
+                    // nothing - but the common case hands back real values.
+                    name: buildingDetail?.name ?? demoBuilding?.name ?? "Your Building Name",
+                    address: buildingDetail?.address ?? "123 Main Street",
+                    city: buildingDetail?.city ?? "Austin",
+                    state: buildingDetail?.state ?? "TX",
+                  },
+                  product,
+                )
+              }>Download template</button>
           </div>
         </div>
 
@@ -1855,7 +1888,7 @@ export default function SettingsPage() {
           <ProfilePreferencesTab savedPreferences={preferences} onSave={savePreferences} />
         )}
         {!loading && activeTab === "resident-mgmt" && (
-          <ResidentMgmtTab savedPreferences={preferences} onSave={savePreferences} />
+          <ResidentMgmtTab savedPreferences={preferences} onSave={savePreferences} product={product} />
         )}
         {!loading && activeTab === "notifications" && (
           <NotificationsTab savedPreferences={preferences} onSave={savePreferences} />
