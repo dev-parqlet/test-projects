@@ -101,12 +101,27 @@ function parseLocalDate(dateStr: string): Date {
  *  this stays a generic chart utility. */
 interface BookingLike {
   bookingStartIso: string;
+  /** Set when the spot belongs to a RESIDENT rather than the building.
+   *  Same predicate the Week and Month series use for their split. */
+  spotOwnerName?: string | null;
 }
+
+/**
+ * The most bars a custom range is drawn with.
+ *
+ * Past this the buckets get WIDER rather than the range getting shorter.
+ * It used to cap at 8 weekly buckets and simply stop, so a range longer
+ * than 56 days was drawn as its first 56 days with nothing to say the
+ * rest existed - the axis claimed to show the range the user picked and
+ * did not.
+ */
+const MAX_CUSTOM_BARS = 12;
 
 export function generateCustomData(
   from: string,
   to: string,
-  bookings: BookingLike[]
+  bookings: BookingLike[],
+  splitBySpotKind = false
 ): ChartPoint[] {
   if (!from || !to) return [];
   const start = parseLocalDate(from);
@@ -116,34 +131,63 @@ export function generateCustomData(
   if (days <= 0) return [];
   const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const countOnDay = (dayDate: Date) =>
-    bookings.filter((b) => {
-      const d = new Date(b.bookingStartIso);
-      return !isNaN(d.getTime()) && d.toDateString() === dayDate.toDateString();
-    }).length;
+  /** Bookings that START inside [a, b] — b is exclusive. */
+  const inWindow = (a: Date, b: Date) =>
+    bookings.filter((bk) => {
+      const d = new Date(bk.bookingStartIso);
+      return !isNaN(d.getTime()) && d >= a && d < b;
+    });
+
+  // The split is computed the same way for every tab, or a bar would
+  // change meaning when the user switched range.
+  const point = (label: string, rows: BookingLike[]): ChartPoint => ({
+    day: label,
+    value: rows.length,
+    neighbor: splitBySpotKind
+      ? rows.filter((b) => b.spotOwnerName).length
+      : undefined,
+  });
 
   if (days <= 14) {
     return Array.from({ length: days }, (_, i) => {
       const d = new Date(start);
       d.setDate(d.getDate() + i);
+      const next = new Date(d);
+      next.setDate(d.getDate() + 1);
       const label = days <= 7
         ? DAY_NAMES[d.getDay()]
         : `${d.getMonth() + 1}/${d.getDate()}`;
-      return { day: label, value: countOnDay(d) };
+      return point(label, inWindow(d, next));
     });
   }
 
-  const weeks = Math.min(Math.ceil(days / 7), 8);
-  return Array.from({ length: weeks }, (_, i) => {
-    const weekStart = new Date(start);
-    weekStart.setDate(start.getDate() + i * 7);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
-    const value = bookings.filter((b) => {
-      const bd = new Date(b.bookingStartIso);
-      return !isNaN(bd.getTime()) && bd >= weekStart && bd <= weekEnd;
-    }).length;
-    return { day: `W${i + 1}`, value };
+  // Bucket width is chosen so the buckets COVER the range, rather than
+  // the count being fixed and the tail dropped.
+  const bucketDays = Math.max(7, Math.ceil(days / MAX_CUSTOM_BARS));
+  const buckets = Math.ceil(days / bucketDays);
+
+  // One past the last day the user picked. The final bucket is CLAMPED to
+  // it: `days` is rarely a whole number of buckets, so without this the
+  // last bar reaches past the range and counts bookings from after the
+  // end date - 30 days in weekly buckets would report 35 days of them.
+  const rangeEnd = new Date(start);
+  rangeEnd.setDate(start.getDate() + days);
+
+  return Array.from({ length: buckets }, (_, i) => {
+    const bucketStart = new Date(start);
+    bucketStart.setDate(start.getDate() + i * bucketDays);
+    const bucketEnd = new Date(bucketStart);
+    bucketEnd.setDate(bucketStart.getDate() + bucketDays);
+    if (bucketEnd > rangeEnd) bucketEnd.setTime(rangeEnd.getTime());
+
+    // Whole weeks keep the familiar W1..Wn. Anything wider is labelled by
+    // the date it starts, because "W1" over a 19-day bucket would be a
+    // lie about what the bar covers.
+    const label =
+      bucketDays === 7
+        ? `W${i + 1}`
+        : `${bucketStart.getMonth() + 1}/${bucketStart.getDate()}`;
+    return point(label, inWindow(bucketStart, bucketEnd));
   });
 }
 

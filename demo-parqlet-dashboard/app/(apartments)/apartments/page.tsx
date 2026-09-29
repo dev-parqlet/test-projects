@@ -123,19 +123,17 @@ export default function ApartmentsDashboardPage() {
       </div>
 
       <div style={st.stats}>
-        <StatCard variant="apartment" label="Bookings today" value={stats.today} tag="today" />
-        <StatCard variant="apartment" label="Bookings this month" value={stats.month} tag="this month" />
+        <StatCard label="Bookings today" value={stats.today} tag="today" />
+        <StatCard label="Bookings this month" value={stats.month} tag="this month" />
         {/* The split only means something where the building owns spots of
             its own, which is why a Condo never shows this card. */}
         <StatCard
-          variant="apartment"
           label="Bookings by spot type"
           value={`${stats.community} Comm · ${stats.neighbor} Res`}
           tag="this month"
           split={{ primary: stats.community, secondary: stats.neighbor }}
         />
         <StatCard
-          variant="apartment"
           label="Avg. earned per community spot"
           value={formatMoney(stats.avgPerCommunitySpot)}
           tag="this month"

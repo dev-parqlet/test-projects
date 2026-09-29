@@ -107,8 +107,10 @@ export function RecentActivityCard({ buildingId, splitBySpotKind = false }: Rece
   const chartData = useMemo(() => {
     if (activeTab === "Week") return staticData.weekly;
     if (activeTab === "Month") return staticData.monthly;
-    return generateCustomData(fromDate, toDate, bookings);
-  }, [activeTab, staticData, fromDate, toDate, bookings]);
+    // Pass the split through, or the bars lose their two colours the
+    // moment someone picks Custom while the legend above still shows them.
+    return generateCustomData(fromDate, toDate, bookings, splitBySpotKind);
+  }, [activeTab, staticData, fromDate, toDate, bookings, splitBySpotKind]);
 
   const avgLabel =
     activeTab === "Week"

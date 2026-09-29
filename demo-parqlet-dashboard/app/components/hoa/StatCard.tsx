@@ -3,22 +3,11 @@
 import { IcCalendar, IcArrowUp } from "../icons";
 import { colors } from "../ui/chart-utils";
 
-export type StatCardVariant = "hoa" | "apartment";
-
 interface StatCardProps {
   label: string;
   /** Pre-formatted when it is money or a pair; a plain count otherwise. */
   value: number | string;
   tag: string;
-  /**
-   * `hoa` is the card the production dashboard already ships - calendar
-   * glyph, arrow in the pill - and the Condo keeps it unchanged.
-   *
-   * `apartment` is the redesign: no glyphs, a heavier figure, and room
-   * for a split bar. Kept as a variant rather than replacing the other,
-   * because changing the Condo's statistics was never the ask.
-   */
-  variant?: StatCardVariant;
   /**
    * Turns the card into a split bar: two shares of one total, drawn in the
    * same two tones the Recent Activity chart uses for the same two things.
@@ -28,8 +17,14 @@ interface StatCardProps {
   split?: { primary: number; secondary: number };
 }
 
-export function StatCard({ label, value, tag, variant = "hoa", split }: StatCardProps) {
-  const isApartment = variant === "apartment";
+/**
+ * ONE card, both products. There used to be an `apartment` variant that
+ * dropped the glyphs and used its own size, weight and letter-spacing;
+ * the result was that the two dashboards' statistics did not look like
+ * each other, which was never the intent. The only real difference is
+ * the split bar, and `split` already says when to draw one.
+ */
+export function StatCard({ label, value, tag, split }: StatCardProps) {
   const total = split ? split.primary + split.secondary : 0;
   const pct = total > 0 ? (split!.primary / total) * 100 : 0;
 
@@ -61,7 +56,7 @@ export function StatCard({ label, value, tag, variant = "hoa", split }: StatCard
         >
           {label}
         </span>
-        {!isApartment && <IcCalendar />}
+        <IcCalendar />
       </div>
 
       <span
@@ -98,7 +93,7 @@ export function StatCard({ label, value, tag, variant = "hoa", split }: StatCard
           }}
         >
           {tag}
-          {!isApartment && <IcArrowUp />}
+          <IcArrowUp />
         </div>
       </div>
     </div>
