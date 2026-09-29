@@ -491,7 +491,7 @@ function MessageThread({ messages, ticketId }: { messages: TicketMessage[]; tick
               border: row.isInternal ? "1px dashed var(--color-accent-400)" : "none",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", rowGap: 4, marginBottom: "var(--spacing-6)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", rowGap: 4, marginBottom: "var(--spacing-4)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flexWrap: "wrap", rowGap: 4 }}>
                 <span style={{
                   fontSize: "var(--font-size-tiny)",
@@ -546,7 +546,7 @@ function MessageThread({ messages, ticketId }: { messages: TicketMessage[]; tick
             </p>
             {row.hasAttachment && (
               <p style={{
-                margin: "var(--spacing-6) 0 0",
+                margin: "var(--spacing-4) 0 0",
                 fontSize: "var(--font-size-extra-tiny)",
                 color: "var(--color-text-weaker)",
                 fontFamily: "var(--font-family-body)",

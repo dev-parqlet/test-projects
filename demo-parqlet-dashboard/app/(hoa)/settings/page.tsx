@@ -828,9 +828,9 @@ function DataTable({ headers, rows }: { headers: string[]; rows: Record<string, 
         <tbody>
           {rows.map((row, i) => (
             <tr key={i}>
-              <td style={{ padding: "var(--spacing-6) var(--spacing-12)", color: "var(--color-text-weak)", borderBottom: "1px solid var(--color-stroke-weak)", whiteSpace: "nowrap", verticalAlign: "top" }}>{i + 1}</td>
+              <td style={{ padding: "var(--spacing-4) var(--spacing-12)", color: "var(--color-text-weak)", borderBottom: "1px solid var(--color-stroke-weak)", whiteSpace: "nowrap", verticalAlign: "top" }}>{i + 1}</td>
               {headers.map((h) => (
-                <td key={h} style={{ padding: "var(--spacing-6) var(--spacing-12)", color: "var(--color-text-strong)", borderBottom: "1px solid var(--color-stroke-weak)", whiteSpace: "nowrap", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", verticalAlign: "top" }}>
+                <td key={h} style={{ padding: "var(--spacing-4) var(--spacing-12)", color: "var(--color-text-strong)", borderBottom: "1px solid var(--color-stroke-weak)", whiteSpace: "nowrap", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", verticalAlign: "top" }}>
                   {row[h] || <span style={{ color: "var(--color-text-disabled)" }}>&mdash;</span>}
                 </td>
               ))}
@@ -1262,7 +1262,7 @@ function ResidentMgmtTab({ savedPreferences, onSave, product }: {
                     <div style={{ width: 28, height: 28, borderRadius: "var(--radius-6)", background: "var(--color-fill-weak)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="2" stroke="var(--color-icon-weak)" strokeWidth="1.3" /><line x1="2" y1="7" x2="16" y2="7" stroke="var(--color-icon-weak)" strokeWidth="1.3" /><line x1="7" y1="2" x2="7" y2="16" stroke="var(--color-icon-weak)" strokeWidth="1.3" /></svg>
                     </div>
-                    <p style={{ margin: 0, minWidth: 0, flexShrink: 1, fontFamily: "var(--font-family-body)", fontSize: "var(--font-size-tiny)", fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"], lineHeight: "var(--line-height-tiny)", color: "var(--color-text-strong)", display: "flex", alignItems: "center", gap: "var(--spacing-6)" }}>
+                    <p style={{ margin: 0, minWidth: 0, flexShrink: 1, fontFamily: "var(--font-family-body)", fontSize: "var(--font-size-tiny)", fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"], lineHeight: "var(--line-height-tiny)", color: "var(--color-text-strong)", display: "flex", alignItems: "center", gap: "var(--spacing-8)" }}>
                       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>{sheet.sheetName}</span>
                       <EntityBadge entity={sheet.guessedEntity} />
                     </p>
@@ -1270,7 +1270,7 @@ function ResidentMgmtTab({ savedPreferences, onSave, product }: {
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--spacing-4)", marginBottom: "var(--spacing-12)" }}>
                     {sheet.headers.map((h) => (
-                      <span key={h} style={{ display: "inline-flex", alignItems: "center", padding: "2px var(--spacing-6)", background: "var(--color-fill-weak)", borderRadius: "var(--radius-4)", fontSize: "var(--font-size-extra-tiny)", fontWeight: "var(--font-weight-regular)" as React.CSSProperties["fontWeight"], fontFamily: "var(--font-family-body)", color: "var(--color-text-weak)", lineHeight: "var(--line-height-extra-tiny)" }}>{h}</span>
+                      <span key={h} style={{ display: "inline-flex", alignItems: "center", padding: "2px var(--spacing-4)", background: "var(--color-fill-weak)", borderRadius: "var(--radius-4)", fontSize: "var(--font-size-extra-tiny)", fontWeight: "var(--font-weight-regular)" as React.CSSProperties["fontWeight"], fontFamily: "var(--font-family-body)", color: "var(--color-text-weak)", lineHeight: "var(--line-height-extra-tiny)" }}>{h}</span>
                     ))}
                   </div>
                   <DataTable headers={sheet.headers} rows={sheet.sample} />
@@ -1289,7 +1289,7 @@ function ResidentMgmtTab({ savedPreferences, onSave, product }: {
                     onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-fill-weak)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = "var(--color-fill-white)"; }}>Cancel</button>
                   <button onClick={handleImport}
-                    style={{ height: 36, padding: "0 var(--spacing-16)", background: "var(--color-button-neutral)", color: "white", border: "none", borderRadius: "var(--radius-8)", cursor: "pointer", fontFamily: "var(--font-family-body)", fontSize: "var(--font-size-tiny)", fontWeight: "var(--font-weight-regular)" as React.CSSProperties["fontWeight"], transition: "background 0.12s", display: "flex", alignItems: "center", gap: "var(--spacing-6)" }}
+                    style={{ height: 36, padding: "0 var(--spacing-16)", background: "var(--color-button-neutral)", color: "white", border: "none", borderRadius: "var(--radius-8)", cursor: "pointer", fontFamily: "var(--font-family-body)", fontSize: "var(--font-size-tiny)", fontWeight: "var(--font-weight-regular)" as React.CSSProperties["fontWeight"], transition: "background 0.12s", display: "flex", alignItems: "center", gap: "var(--spacing-8)" }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-gray-90)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = "var(--color-button-neutral)"; }}>
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 11V2M8 2l-4 4M8 2l4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /><path d="M1 12v.5A1.5 1.5 0 0 0 2.5 14h11a1.5 1.5 0 0 0 1.5-1.5V12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /></svg>
@@ -1327,7 +1327,7 @@ function ResidentMgmtTab({ savedPreferences, onSave, product }: {
           )}
 
           {/* Template download */}
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-6)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)" }}>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M7 9l-3-3M7 9l3-3" stroke="var(--color-text-weak)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /><path d="M1 11v.5A1.5 1.5 0 0 0 2.5 13h9a1.5 1.5 0 0 0 1.5-1.5V11" stroke="var(--color-text-weak)" strokeWidth="1.2" strokeLinecap="round" /></svg>
             <button style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "var(--font-family-body)", fontSize: "var(--font-size-extra-tiny)", fontWeight: "var(--font-weight-regular)" as React.CSSProperties["fontWeight"], lineHeight: "var(--line-height-extra-tiny)", color: "var(--color-text-weak)", textDecoration: "underline", textUnderlineOffset: 2 }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-text-strong)"; }}

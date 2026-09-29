@@ -200,7 +200,7 @@ const st: Record<string, React.CSSProperties> = {
   legendItem: {
     display: "inline-flex",
     alignItems: "center",
-    gap: "var(--spacing-6)",
+    gap: "var(--spacing-8)",
     fontFamily: "var(--font-family-body)",
     fontSize: "var(--font-size-tiny)",
     color: "var(--color-text-weak)",

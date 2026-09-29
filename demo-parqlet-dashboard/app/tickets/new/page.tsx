@@ -106,7 +106,7 @@ const labelStyle: React.CSSProperties = {
   color: "var(--color-text-strong)",
   fontFamily: "var(--font-family-body)",
   lineHeight: "var(--line-height-extra-tiny)",
-  marginBottom: "var(--spacing-6)",
+  marginBottom: "var(--spacing-4)",
 };
 
 const sectionCard: React.CSSProperties = {
