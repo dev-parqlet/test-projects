@@ -263,11 +263,12 @@ function AddWindowModal({
 }
 
 const st: Record<string, React.CSSProperties> = {
-  h1: { margin: 0, fontSize: 24, fontWeight: 600, color: "var(--color-text-strong)" },
   sub: { margin: "6px 0 0", fontSize: 14, color: "var(--color-text-weak)", maxWidth: 560 },
   card: { padding: 24, borderRadius: 16, border: "1px solid var(--color-stroke-medium)", background: "var(--color-fill-white)" },
   table: { width: "100%", borderCollapse: "collapse" },
-  th: { textAlign: "left", fontSize: 12, fontWeight: 500, color: "var(--color-text-weak)", padding: "8px 12px 8px 0", borderBottom: "1px solid var(--color-stroke-medium)", whiteSpace: "nowrap" },
+  // The canonical table header, as every other table on the dashboard
+  // renders it. This one was plain 12px medium and read as a body row.
+  th: { textAlign: "left", fontFamily: "var(--font-family-body)", fontSize: "var(--font-size-uppercase)", lineHeight: "var(--line-height-uppercase)", fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"], color: "var(--color-text-weak)", textTransform: "uppercase" as const, padding: "8px 12px 8px 0", borderBottom: "1px solid var(--color-stroke-medium)", whiteSpace: "nowrap" },
   td: { fontSize: 14, color: "var(--color-text-strong)", padding: "12px 12px 12px 0", borderBottom: "1px solid var(--color-stroke-medium)" },
   link: { background: "none", border: "none", cursor: "pointer", fontSize: 13, textDecoration: "underline", fontFamily: "inherit" },
   form: { display: "flex", flexDirection: "column", gap: "var(--spacing-12)" },

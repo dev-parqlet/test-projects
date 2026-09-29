@@ -23,6 +23,9 @@ interface CurrentBookingsCardProps {
   showEarnings?: boolean;
 }
 
+/** How many bookings fit beside the activity chart without overrunning it. */
+const MAX_ROWS = 5;
+
 export function CurrentBookingsCard({ buildingId, showEarnings = false }: CurrentBookingsCardProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -72,7 +75,11 @@ export function CurrentBookingsCard({ buildingId, showEarnings = false }: Curren
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {bookings.slice(0, 7).map((booking, i) => {
+          {/* Five, not seven. This column sits beside the activity chart,
+              and at seven rows it ran past the bottom of the chart and left
+              the row of cards uneven. "See all activity" below carries
+              anyone who wants the rest. */}
+          {bookings.slice(0, MAX_ROWS).map((booking, i) => {
             // Completed = green. Assigned = blue "Upcoming" everywhere else in
             // the app (see bookings/page.tsx's STATUS_BADGE) — but this widget
             // is specifically bookings happening now/soon, so an Assigned

@@ -39,6 +39,8 @@ import {
   netToBuilding,
 } from "../../../lib/demo/pricing";
 import { currentPeriod, recentPayouts } from "../../../lib/demo/apartments-data";
+import { CreditPriceCard } from "../../../components/pricing/CreditPriceCard";
+import { APARTMENT_PRICE_FOOTNOTE, apartmentPriceRows } from "../../../lib/demo/price-rows";
 
 export default function ApartmentsRevenuePage() {
   const now = useMemo(() => new Date(), []);
@@ -97,7 +99,10 @@ export default function ApartmentsRevenuePage() {
 
   return (
     <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 24 }}>
-      <RevenueHeader pitch={PITCH.apartments}>
+      <RevenueHeader
+        pitch={PITCH.apartments}
+        aside={<CreditPriceCard rows={apartmentPriceRows()} footnote={APARTMENT_PRICE_FOOTNOTE} />}
+      >
         Every spot rents for a base of {BASE_PRICE_CREDITS} credit
         ({formatMoney(BASE_PRICE_CENTS)} a day), plus whatever extra you
         set on the spots you own. On a {formatMoney(BASE_PRICE_CENTS)}{" "}

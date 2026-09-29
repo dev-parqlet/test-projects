@@ -7,6 +7,7 @@ import { IcPerson } from "../icons/IcPerson";
 import { IcShield } from "../icons/IcShield";
 import { IcSignOut } from "../icons/IcSignOut";
 import { FloatingMenu } from "./FloatingMenu";
+import { pathForVariant, readVariant } from "../../lib/demo/variants";
 
 // Only these roles manage building access/permissions — Concierge and
 // Security are operational roles with no reason to see this link.
@@ -21,6 +22,15 @@ export function UserMenuDropdown({
 }) {
   const { signOut, user } = useAuth();
   const canSeeAccessManagement = !!user?.role && ACCESS_MANAGEMENT_ROLES.has(user.role);
+
+  // Both links MUST carry the product prefix. In the demo the path is what
+  // says which product you are in, and a bare "/profile" rewrites to the
+  // same page but drops that prefix - so an Apartment visitor who arrived
+  // by link (and therefore has nothing in localStorage) would come back
+  // from Profile into the Condo demo. These are now the only entries to
+  // either page, the sidebar having dropped them, so the prefix is no
+  // longer a detail that only affects a rarely used link.
+  const prefix = pathForVariant(readVariant());
 
   const [hoveredItem, setHoveredItem] = useState<null | string>(null);
 
@@ -66,7 +76,7 @@ export function UserMenuDropdown({
         overflow: "hidden",
       }}
     >
-      <Link href="/profile" style={{ textDecoration: "none", display: "block" }} onClick={onClose}>
+      <Link href={`${prefix}/profile`} style={{ textDecoration: "none", display: "block" }} onClick={onClose}>
         <div
           onMouseEnter={() => setHoveredItem("profile")}
           onMouseLeave={() => setHoveredItem(null)}
@@ -89,7 +99,7 @@ export function UserMenuDropdown({
       </Link>
       {canSeeAccessManagement && (
         <Link
-          href="/access"
+          href={`${prefix}/access`}
           style={{ textDecoration: "none", display: "block" }}
           onClick={onClose}
         >

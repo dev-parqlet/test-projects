@@ -263,7 +263,7 @@ export function RecentActivityCard({ buildingId, splitBySpotKind = false }: Rece
         <div style={{ display: "flex", gap: 20, fontSize: 13, color: "var(--color-text-strong)" }}>
           {([
             ["Community Spots", "var(--color-spot-community)"],
-            ["Neighbor spots", "var(--color-spot-neighbor)"],
+            ["Residents Spots", "var(--color-spot-neighbor)"],
           ] as const).map(([label, colour]) => (
             <span key={label} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
               <span style={{ width: 12, height: 12, borderRadius: 3, background: colour, flex: "none" }} />

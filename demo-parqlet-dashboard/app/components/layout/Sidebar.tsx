@@ -72,7 +72,12 @@ export function Sidebar({ active, onClose, overlay, navItems }: { active?: NavId
                   transition: "background 0.15s, color 0.15s",
                 }}
               >
-                <Icon color={textColor} />
+                {/* Fixed-width slot. The icon set mixes 24px and 20px
+                    artwork, so without it every 20px icon pulled its label
+                    4px left of the others and the nav read as ragged. */}
+                <span style={{ width: 24, display: "flex", justifyContent: "center", flexShrink: 0 }}>
+                  <Icon color={textColor} />
+                </span>
                 <span style={{ fontSize: 16, lineHeight: "20px", fontWeight: 400 }}>{label}</span>
               </Link>
             );
