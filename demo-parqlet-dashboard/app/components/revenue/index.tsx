@@ -194,17 +194,46 @@ export function HistoryTable({
 
 // ── Page header ───────────────────────────────────────────────────────
 
-export function RevenueHeader({ pitch, children }: { pitch: string; children?: React.ReactNode }) {
+/**
+ * `aside` is the right-hand column: the "What a spot costs" card, which
+ * used to sit lower down on the Dashboard. It is the arithmetic behind
+ * every figure on this page, so it reads better beside the explanation
+ * than a screen away from it.
+ *
+ * The row wraps rather than shrinking, because the card is a small table
+ * and squeezing it into a phone-width column would put each row on three
+ * lines. Below the wrap it simply falls under the text.
+ */
+export function RevenueHeader({
+  pitch,
+  children,
+  aside,
+}: {
+  pitch: string;
+  children?: React.ReactNode;
+  aside?: React.ReactNode;
+}) {
   return (
-    <div>
-      <h1 style={st.h1}>Earnings</h1>
-      <p style={st.pitch}>{pitch}</p>
-      {children && <p style={st.sub}>{children}</p>}
+    <div style={st.headerRow}>
+      <div style={st.headerText}>
+        <h1 style={st.h1}>Earnings</h1>
+        <p style={st.pitch}>{pitch}</p>
+        {children && <p style={st.sub}>{children}</p>}
+      </div>
+      {aside && <div style={st.headerAside}>{aside}</div>}
     </div>
   );
 }
 
 export const st: Record<string, React.CSSProperties> = {
+  headerRow: {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "flex-start",
+    gap: "var(--spacing-24)",
+  },
+  headerText: { flex: "1 1 320px", minWidth: 0 },
+  headerAside: { flex: "1 1 420px", minWidth: 0 },
   h1: {
     margin: 0,
     fontSize: "var(--font-size-heading-1)",

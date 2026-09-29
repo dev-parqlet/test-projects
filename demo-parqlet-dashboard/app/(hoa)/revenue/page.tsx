@@ -37,6 +37,8 @@ import {
   formatMoney,
 } from "../../lib/demo/pricing";
 import { currentCondoMonth, recentCondoMonths } from "../../lib/demo/condo-revenue";
+import { CreditPriceCard } from "../../components/pricing/CreditPriceCard";
+import { CONDO_PRICE_FOOTNOTE, CONDO_PRICE_ROWS } from "../../lib/demo/price-rows";
 
 export default function CondoRevenuePage() {
   const now = useMemo(() => new Date(), []);
@@ -61,7 +63,10 @@ export default function CondoRevenuePage() {
 
   return (
     <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 24 }}>
-      <RevenueHeader pitch={PITCH.condo}>
+      <RevenueHeader
+        pitch={PITCH.condo}
+        aside={<CreditPriceCard rows={CONDO_PRICE_ROWS} footnote={CONDO_PRICE_FOOTNOTE} />}
+      >
         Your residents pay each other in credits. You earn when they buy
         those credits, less our {COMMISSION_PCT}% commission and card fees,
         and what you earn comes off your subscription. The discount stops

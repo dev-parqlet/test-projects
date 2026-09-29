@@ -119,22 +119,10 @@ export default function NotificationsPage() {
             padding: "24px 32px 0",
           }}
         >
-          {/* Breadcrumb */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16 }}>
-            <a href="/" style={{ fontSize: 13, color: "var(--color-text-weaker)", textDecoration: "none" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text-weak)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-weaker)")}
-            >
-              Dashboard
-            </a>
-            <span style={{ fontSize: 13, color: "var(--color-text-weaker)" }}>/</span>
-            <span style={{ fontSize: 13, color: "var(--color-text-strong)", fontWeight: 500 }}>Updates</span>
-          </div>
-
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 20 }}>
             <div style={{ minWidth: 0 }}>
-              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, lineHeight: "28px", color: "var(--color-text-strong)" }}>Updates</h1>
-              <p style={{ margin: "6px 0 0", fontSize: 14, color: "var(--color-text-weak)", lineHeight: "20px" }}>
+              <h1 style={{ margin: 0, fontSize: "var(--font-size-heading-1)", lineHeight: "var(--line-height-heading-1)", fontWeight: "var(--font-weight-regular)" as React.CSSProperties["fontWeight"], fontFamily: "var(--font-family-heading)", color: "var(--color-text-strong)" }}>Updates</h1>
+              <p style={{ margin: "var(--spacing-8) 0 0", fontSize: 16, color: "var(--color-text-weak)", lineHeight: "20px" }}>
                 Keep track of all activity and notifications for your community.
               </p>
             </div>

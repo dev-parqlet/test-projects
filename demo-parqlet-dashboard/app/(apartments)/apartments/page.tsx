@@ -18,21 +18,16 @@ import { StatCard } from "../../components/hoa/StatCard";
 import { TopContributorsCard } from "../../components/hoa/TopContributorsCard";
 import { useWindowWidth } from "../../components/hooks/useWindowSize";
 import { TopEarningSpotsCard } from "../../components/demo/TopEarningSpotsCard";
-import { CreditPriceCard, type PriceRow } from "../../components/pricing/CreditPriceCard";
 import { EarningsProgressCard } from "../../components/revenue/EarningsProgressCard";
 import {
   COMMISSION_PCT,
   currentPeriod,
-  DEMO_SPOTS,
   formatMoney,
-  netToBuilding,
 } from "../../lib/demo/apartments-data";
 import { bookingEarning } from "../../lib/demo/booking-earnings";
 import {
   APARTMENT_FLOOR_CENTS,
   APARTMENT_SUBSCRIPTION_CENTS,
-  BASE_PRICE_CENTS,
-  BASE_PRICE_CREDITS,
 } from "../../lib/demo/pricing";
 
 type Booking = {
@@ -114,40 +109,6 @@ export default function ApartmentsDashboardPage() {
 
   // Read off the spots themselves rather than restating the constants, so
   // the card cannot drift from what the Parking Spots screen charges.
-  const priceRows = useMemo<PriceRow[]>(() => {
-    const owned = DEMO_SPOTS.filter((sp) => sp.owner === "building");
-    const extras = owned.map((sp) => sp.extraCents);
-    const lo = Math.min(...extras, 0);
-    const hi = Math.max(...extras, 0);
-    const hasExtra = hi > 0;
-    return [
-      {
-        label: "A resident's own spot",
-        note: "They share it, you never price it",
-        price: `${BASE_PRICE_CREDITS} credit`,
-        total: formatMoney(BASE_PRICE_CENTS),
-      },
-      {
-        label: "A spot your building owns",
-        note: hasExtra
-          ? `The base, plus whatever you set - yours run ${formatMoney(lo)} to ${formatMoney(hi)}`
-          : "The base, plus whatever you set - yours are all at the base today",
-        price: hasExtra
-          ? `${BASE_PRICE_CREDITS} credit + ${formatMoney(lo)}-${formatMoney(hi)}`
-          : `${BASE_PRICE_CREDITS} credit`,
-        total: hasExtra
-          ? `${formatMoney(BASE_PRICE_CENTS + lo)}-${formatMoney(BASE_PRICE_CENTS + hi)}`
-          : formatMoney(BASE_PRICE_CENTS),
-      },
-      {
-        label: "You receive",
-        note: `After our ${COMMISSION_PCT}% commission and card fees`,
-        price: "on the base",
-        total: formatMoney(netToBuilding(BASE_PRICE_CENTS)),
-      },
-    ];
-  }, []);
-
   return (
     <div style={{ padding: "var(--spacing-24)", display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
       <div>
@@ -202,10 +163,6 @@ export default function ApartmentsDashboardPage() {
         <TopEarningSpotsCard buildingId={buildingId} />
       </div>
 
-      <CreditPriceCard
-        rows={priceRows}
-        footnote="Everyone pays in credits, the same as a Condo. The difference is that you own some of the spots, and only those can carry an extra on top of the base."
-      />
     </div>
   );
 }
