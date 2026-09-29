@@ -6,14 +6,14 @@
  * Two kinds of spot live in one list, and the difference between them is
  * the whole point of the screen:
  *
- *   The BUILDING's own spots. It can add, edit, unlist and delete them,
- *   and it can charge an EXTRA on top of the base credit, because a
- *   covered space by the lift is worth more than one on the roof.
+ *   The BUILDING's own spots. It can add, edit and delete them, and it
+ *   can charge an EXTRA on top of the base credit, because one space is
+ *   worth more than another.
  *
- *   A RESIDENT's own spot. The building can see it and can unlist it, but
- *   it cannot price it or delete it. A resident's spot costs the base
- *   credit and nothing else - the same deal residents get in a Condo.
- *   Residents never set prices in either product.
+ *   A RESIDENT's own spot. The building can see it but cannot price or
+ *   delete it, so that row carries no action at all. A resident's spot
+ *   costs the base credit and nothing else - the same deal residents get
+ *   in a Condo. Residents never set prices in either product.
  *
  * Both appear here rather than on separate screens so the rule is visible
  * rather than documented: the price column simply has nothing to edit on a
@@ -28,7 +28,6 @@
 import React, { useMemo, useState } from "react";
 
 import { Button } from "../../../components/ui/Button";
-import { Badge } from "../../../components/ui/Badge";
 import { Modal } from "../../../components/ui/Modal";
 import { Input } from "../../../components/ui/Input";
 import { FilterDropdown } from "../../../components/ui/FilterDropdown";
@@ -48,14 +47,11 @@ type Draft = Omit<DemoSpot, "id">;
 
 const EMPTY: Draft = {
   number: "",
-  level: "P1",
   type: "Standard",
-  covered: true,
   evCharger: false,
   // Anything the building adds by hand is its own, so it starts priceable.
   owner: "building",
   extraCents: 0,
-  status: "Listed",
 };
 
 function IcSearch() {
@@ -96,30 +92,18 @@ export function SpotsPanel({
 
   // ── Filters ───────────────────────────────────────────────────────────
   const [query, setQuery] = useState("");
-  const [level, setLevel] = useState("All levels");
   const [type, setType] = useState("All types");
   const [owner, setOwner] = useState("All spots");
-  const [status, setStatus] = useState("All");
-  const [covered, setCovered] = useState("Covered: All");
   const [ev, setEv] = useState("EV: All");
   const [sort, setSort] = useState("Spot number");
-
-  const levels = useMemo(
-    () => ["All levels", ...Array.from(new Set(DEMO_SPOTS.map((s) => s.level)))],
-    [],
-  );
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     const rows = spots.filter((s) => {
-      if (q && !`${s.number} ${s.level} ${s.type}`.toLowerCase().includes(q)) return false;
-      if (level !== "All levels" && s.level !== level) return false;
+      if (q && !`${s.number} ${s.type}`.toLowerCase().includes(q)) return false;
       if (type !== "All types" && s.type !== type) return false;
       if (owner === "Building owned" && s.owner !== "building") return false;
       if (owner === "Resident shared" && s.owner !== "resident") return false;
-      if (status !== "All" && s.status !== status) return false;
-      if (covered === "Covered only" && !s.covered) return false;
-      if (covered === "Uncovered only" && s.covered) return false;
       if (ev === "EV only" && !s.evCharger) return false;
       if (ev === "No EV" && s.evCharger) return false;
       return true;
@@ -137,7 +121,7 @@ export function SpotsPanel({
     if (sort === "Price: high to low") return [...rows].sort((a, b) => spotPriceCents(b) - spotPriceCents(a));
     if (sort === "Price: low to high") return [...rows].sort((a, b) => spotPriceCents(a) - spotPriceCents(b));
     return [...rows].sort(byNumber);
-  }, [spots, query, level, type, owner, status, covered, ev, sort]);
+  }, [spots, query, type, owner, ev, sort]);
 
   const save = (draft: Draft, id?: string) => {
     setSpots((prev) =>
@@ -150,7 +134,7 @@ export function SpotsPanel({
   /**
    * Add a numbered range of spots at once.
    *
-   * A garage is built in blocks - "level 2 is 201 to 230" - so adding them
+   * A garage is built in blocks - 201 to 230 - so adding them
    * one at a time is the sort of thing that makes an operator abandon
    * onboarding. Numbers already in use are SKIPPED rather than failing the
    * whole range: a manager extending a garage means "make the rest", and
@@ -159,9 +143,7 @@ export function SpotsPanel({
   const addRange = (params: {
     from: number;
     to: number;
-    level: string;
     type: DemoSpot["type"];
-    covered: boolean;
     evCharger: boolean;
     extraCents: number;
   }) => {
@@ -176,15 +158,12 @@ export function SpotsPanel({
         made.push({
           id: `s${number}-${Date.now()}`,
           number,
-          level: params.level,
           type: params.type,
-          covered: params.covered,
           evCharger: params.evCharger,
           // Anything the building adds by hand is its own, so it starts
           // priceable - the same rule the single Add spot form uses.
           owner: "building",
           extraCents: params.extraCents,
-          status: "Listed",
         });
       }
       const skipped = hi - lo + 1 - made.length;
@@ -200,14 +179,9 @@ export function SpotsPanel({
     setBulkAdding(false);
   };
 
-  const toggleListed = (id: string) =>
-    setSpots((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: s.status === "Listed" ? "Unlisted" : "Listed" } : s)),
-    );
-
   /**
    * Price a whole block at once, by spot NUMBER. This is how a building
-   * actually prices - everything on level 1 at one rate, the roof at
+   * actually prices - one block at one rate, another at
    * another - and setting a hundred spots one at a time is the sort of
    * thing that makes an operator abandon onboarding.
    *
@@ -264,17 +238,14 @@ export function SpotsPanel({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by spot number, level or type"
+            placeholder="Search by spot number or type"
             style={st.searchInput}
           />
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)", flexWrap: "wrap", flexShrink: 0 }}>
           <FilterDropdown label="Owner" options={["All spots", "Building owned", "Resident shared"]} value={owner} onChange={setOwner} />
-          <FilterDropdown label="Level" options={levels} value={level} onChange={setLevel} />
           <FilterDropdown label="Type" options={["All types", "Compact", "Standard", "Large SUV"]} value={type} onChange={setType} />
-          <FilterDropdown label="Status" options={["All", "Listed", "Unlisted"]} value={status} onChange={setStatus} />
-          <FilterDropdown label="Covered" options={["Covered: All", "Covered only", "Uncovered only"]} value={covered} onChange={setCovered} />
           <FilterDropdown label="EV" options={["EV: All", "EV only", "No EV"]} value={ev} onChange={setEv} />
           <FilterDropdown label="Sort" options={["Spot number", "Price: high to low", "Price: low to high"]} value={sort} onChange={setSort} />
         </div>
@@ -289,8 +260,8 @@ export function SpotsPanel({
 
       <div style={st.card}>
         <div style={{ ...st.row, ...st.headRow }}>
-          {["Spot", "Level", "Type", "Covered", "EV", "Shared by", "Price / day", "You receive", "Status", ""].map((h, i) => (
-            <div key={h || i} style={{ ...st.cellBase, flex: COL_FLEX[i], justifyContent: i === 9 ? "flex-end" : "flex-start" }}>
+          {["Spot", "Type", "EV", "Shared by", "Price / day", "You receive", ""].map((h, i) => (
+            <div key={h || i} style={{ ...st.cellBase, flex: COL_FLEX[i], justifyContent: i === 6 ? "flex-end" : "flex-start" }}>
               <TableHeadLabel>{h}</TableHeadLabel>
             </div>
           ))}
@@ -301,16 +272,14 @@ export function SpotsPanel({
           return (
             <div key={sp.id} style={st.row}>
               <Cell i={0}><span style={{ ...st.txt, fontWeight: 600 }}>{sp.number}</span></Cell>
-              <Cell i={1}><span style={st.txt}>{sp.level}</span></Cell>
-              <Cell i={2}><span style={st.txt}>{sp.type}</span></Cell>
-              <Cell i={3}><span style={st.txt}>{sp.covered ? "Yes" : "No"}</span></Cell>
-              <Cell i={4}><span style={st.txt}>{sp.evCharger ? "Yes" : "No"}</span></Cell>
-              <Cell i={5}>
+              <Cell i={1}><span style={st.txt}>{sp.type}</span></Cell>
+              <Cell i={2}><span style={st.txt}>{sp.evCharger ? "Yes" : "No"}</span></Cell>
+              <Cell i={3}>
                 <span style={{ ...st.txt, color: sp.owner === "building" ? "var(--color-text-strong)" : "var(--color-text-weak)" }}>
                   {sp.owner === "building" ? "Building" : "Resident"}
                 </span>
               </Cell>
-              <Cell i={6}>
+              <Cell i={4}>
                 <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
                   <span style={{ ...st.txt, fontWeight: 600 }}>{formatMoney(total)}</span>
                   <span style={st.subTxt}>
@@ -320,12 +289,11 @@ export function SpotsPanel({
                   </span>
                 </span>
               </Cell>
-              <Cell i={7}><span style={{ ...st.txt, color: "var(--color-text-weak)" }}>{formatMoney(netToBuilding(total))}</span></Cell>
-              <Cell i={8}>
-                <Badge as="span" variant={sp.status === "Listed" ? "active" : "inactive"}>{sp.status}</Badge>
-              </Cell>
-              <div style={{ ...st.cellBase, flex: COL_FLEX[9], justifyContent: "flex-end", gap: "var(--spacing-12)" }}>
-                {canPrice(sp) ? (
+              <Cell i={5}><span style={{ ...st.txt, color: "var(--color-text-weak)" }}>{formatMoney(netToBuilding(total))}</span></Cell>
+              <div style={{ ...st.cellBase, flex: COL_FLEX[6], justifyContent: "flex-end", gap: "var(--spacing-12)" }}>
+                {/* A resident's spot is theirs: the building can neither
+                    reprice nor remove it, so its row offers nothing. */}
+                {canPrice(sp) && (
                   <>
                     <button style={st.link} onClick={() => setEditing(sp)}>Edit</button>
                     <button
@@ -335,12 +303,6 @@ export function SpotsPanel({
                       Delete
                     </button>
                   </>
-                ) : (
-                  // A resident's spot is theirs. The building can take it
-                  // off the market, but it cannot reprice or remove it.
-                  <button style={st.link} onClick={() => toggleListed(sp.id)}>
-                    {sp.status === "Listed" ? "Unlist" : "List"}
-                  </button>
                 )}
               </div>
             </div>
@@ -385,8 +347,8 @@ export function SpotsPanel({
 }
 
 const COL_FLEX = [
-  "7 1 70px", "6 1 60px", "8 1 90px", "6 1 70px", "5 1 55px",
-  "7 1 80px", "9 1 120px", "8 1 100px", "8 1 100px", "8 1 120px",
+  "7 1 70px", "8 1 90px", "5 1 55px", "7 1 80px",
+  "9 1 120px", "8 1 100px", "8 1 120px",
 ];
 
 function Cell({ i, children }: { i: number; children: React.ReactNode }) {
@@ -410,9 +372,9 @@ function PriceBreakdown({ extraCents }: { extraCents: number }) {
  * Add a whole block of spots at once.
  *
  * Pricing is offered here rather than left to a second step, because a
- * manager adding "201 to 230, level 2" already knows what that level
- * costs - and a range added at the base and priced later is two chances
- * to get it wrong instead of one.
+ * manager adding "201 to 230" already knows what that block costs - and a
+ * range added at the base and priced later is two chances to get it wrong
+ * instead of one.
  */
 function BulkAddModal({
   open,
@@ -424,18 +386,14 @@ function BulkAddModal({
   onAdd: (p: {
     from: number;
     to: number;
-    level: string;
     type: DemoSpot["type"];
-    covered: boolean;
     evCharger: boolean;
     extraCents: number;
   }) => void;
 }) {
   const [from, setFrom] = useState("201");
   const [to, setTo] = useState("230");
-  const [level, setLevel] = useState("P2");
   const [type, setType] = useState<DemoSpot["type"]>("Standard");
-  const [covered, setCovered] = useState(true);
   const [ev, setEv] = useState(false);
   const [extra, setExtra] = useState("4");
 
@@ -462,7 +420,6 @@ function BulkAddModal({
           <Input label="From" inputMode="numeric" value={from} onChange={(e) => setFrom(e.target.value)} />
           <Input label="To" inputMode="numeric" value={to} onChange={(e) => setTo(e.target.value)} />
         </div>
-        <Input label="Level" value={level} onChange={(e) => setLevel(e.target.value)} placeholder="P2" />
         <label style={st.field}>
           <span style={st.fieldLabel}>Vehicle type</span>
           <select style={st.input} value={type} onChange={(e) => setType(e.target.value as DemoSpot["type"])}>
@@ -472,9 +429,6 @@ function BulkAddModal({
           </select>
         </label>
         <div style={{ display: "flex", gap: "var(--spacing-16)" }}>
-          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
-            <input type="checkbox" checked={covered} onChange={(e) => setCovered(e.target.checked)} /> Covered
-          </label>
           <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
             <input type="checkbox" checked={ev} onChange={(e) => setEv(e.target.checked)} /> EV charger
           </label>
@@ -497,7 +451,7 @@ function BulkAddModal({
             size="small"
             style={{ width: "auto" }}
             disabled={invalid}
-            onClick={() => onAdd({ from: f, to: t, level, type, covered, evCharger: ev, extraCents })}
+            onClick={() => onAdd({ from: f, to: t, type, evCharger: ev, extraCents })}
           >
             Add spots
           </Button>
@@ -587,7 +541,6 @@ function SpotModal({
     <Modal open={open} onClose={onClose} title={title} size="small">
       <div style={st.form}>
         <Input label="Spot number" value={d.number} onChange={(e) => setD({ ...d, number: e.target.value })} />
-        <Input label="Level" value={d.level} onChange={(e) => setD({ ...d, level: e.target.value })} />
 
         <label style={st.selectWrap}>
           <span style={st.selectLabel}>Type</span>
@@ -612,20 +565,8 @@ function SpotModal({
         <PriceBreakdown extraCents={extraCents} />
 
         <label style={st.check}>
-          <input type="checkbox" checked={d.covered} onChange={(e) => setD({ ...d, covered: e.target.checked })} />
-          Covered
-        </label>
-        <label style={st.check}>
           <input type="checkbox" checked={d.evCharger} onChange={(e) => setD({ ...d, evCharger: e.target.checked })} />
           EV charger
-        </label>
-        <label style={st.check}>
-          <input
-            type="checkbox"
-            checked={d.status === "Listed"}
-            onChange={(e) => setD({ ...d, status: e.target.checked ? "Listed" : "Unlisted" })}
-          />
-          Listed for booking
         </label>
 
         <div style={st.actions}>

@@ -23,9 +23,7 @@ export { COMMISSION_PCT, formatMoney, netToBuilding };
 export type DemoSpot = {
   id: string;
   number: string;
-  level: string;
   type: 'Compact' | 'Standard' | 'Large SUV';
-  covered: boolean;
   evCharger: boolean;
   /**
    * Who is sharing the spot, which decides whether it can carry an extra.
@@ -42,14 +40,13 @@ export type DemoSpot = {
   /**
    * Dollars added on top of the base credit. Always zero on a resident's
    * spot. On the building's own spots it is whatever the building wants:
-   * a covered space by the lift is worth more than one on the roof.
+   * a space by the lift is worth more than one on the roof.
    *
    * Stored as the extra rather than the total, so raising the base
    * reprices the whole garage in one edit - which is what a building
    * actually wants when it changes rates.
    */
   extraCents: number;
-  status: 'Listed' | 'Unlisted';
 };
 
 /** What a renter pays for this spot: the base credit, plus any extra. */
@@ -83,16 +80,14 @@ export type DemoPayout = {
  * something visible to do.
  *
  * The 400s are residents' own spots. They are in the list on purpose: the
- * building can see them and can unlist one, but the price column is fixed
- * at the base, which is the rule made visible.
+ * building can see them, but the price column is fixed at the base, which
+ * is the rule made visible.
  */
 function buildSpots(): DemoSpot[] {
   const out: DemoSpot[] = [];
   const block = (
     from: number,
     count: number,
-    level: string,
-    covered: boolean,
     owner: DemoSpot['owner'],
     extra: number,
   ) => {
@@ -101,26 +96,22 @@ function buildSpots(): DemoSpot[] {
       out.push({
         id: `s${number}`,
         number: String(number),
-        level,
         type: n % 7 === 0 ? 'Large SUV' : n % 3 === 0 ? 'Compact' : 'Standard',
-        covered,
         evCharger: n % 6 === 0,
         owner,
         extraCents: owner === 'building' ? money(extra) : 0,
-        status: n % 11 === 0 ? 'Unlisted' : 'Listed',
       });
     }
   };
-  // The building's own spots. Level 1 is covered and closest to the lifts,
-  // so it carries the largest extra; the roof carries the smallest.
-  // On the $6 base these come to $15, $10 and $8 a day - the prices the
-  // pricing spec uses as its example and the design puts on screen.
-  block(1, 40, 'P1', true, 'building', 9);
-  block(201, 30, 'P2', true, 'building', 4);
-  block(301, 20, 'Roof', false, 'building', 2);
+  // The building's own spots, in three price bands. On the $6 base these
+  // come to $15, $10 and $8 a day - the prices the pricing spec uses as its
+  // example and the design puts on screen.
+  block(1, 40, 'building', 9);
+  block(201, 30, 'building', 4);
+  block(301, 20, 'building', 2);
   // Residents sharing their own assigned spaces. Base credit, no extra.
-  block(401, 24, 'P1', true, 'resident', 0);
-  block(431, 11, 'P2', true, 'resident', 0);
+  block(401, 24, 'resident', 0);
+  block(431, 11, 'resident', 0);
   return out;
 }
 

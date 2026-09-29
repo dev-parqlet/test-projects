@@ -37,10 +37,9 @@ export type EarningsSource = {
  * than from ten at the base.
  */
 function communityShare(): number {
-  const listed = DEMO_SPOTS.filter((s) => s.status === 'Listed');
-  const total = listed.reduce((sum, s) => sum + spotPriceCents(s), 0);
+  const total = DEMO_SPOTS.reduce((sum, s) => sum + spotPriceCents(s), 0);
   if (total === 0) return 0;
-  const owned = listed
+  const owned = DEMO_SPOTS
     .filter((s) => s.owner === 'building')
     .reduce((sum, s) => sum + spotPriceCents(s), 0);
   return owned / total;

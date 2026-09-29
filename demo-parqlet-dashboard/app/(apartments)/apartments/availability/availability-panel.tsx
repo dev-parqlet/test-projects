@@ -176,7 +176,7 @@ function AddWindowModal({
 }) {
   // The building's own spots only. A resident's spot is shared from their
   // phone, so offering it here would imply a control the building has not got.
-  const listed = DEMO_SPOTS.filter((s) => s.status === "Listed" && canPrice(s));
+  const listed = DEMO_SPOTS.filter((s) => canPrice(s));
   const [spotId, setSpotId] = useState(listed[0]?.id ?? "");
   const start = new Date(now);
   start.setHours(start.getHours() + 1, 0, 0, 0);
@@ -207,7 +207,7 @@ function AddWindowModal({
           >
             {listed.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.number} — {s.level} — {formatMoney(windowTotal(s.extraCents))}/day
+                {s.number} — {formatMoney(windowTotal(s.extraCents))}/day
               </option>
             ))}
           </select>
