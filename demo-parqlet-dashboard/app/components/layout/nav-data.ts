@@ -24,7 +24,7 @@ export type NavId =
   | "reward-redemption"
   | "spots"
   | "availability"
-  | "revenue"
+  | "earnings"
   | "none";
 
 export interface NavItem {
@@ -64,7 +64,7 @@ export const navItems: readonly NavItem[] = [
   { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard,    href: "/condo" },
   { id: "residents",     label: "Resident Directory", Icon: IcResidentDirectory, href: "/condo/residents" },
   { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: "/condo/bookings" },
-  { id: "revenue",       label: "Earnings",           Icon: IcCredit,       href: "/condo/revenue" },
+  { id: "earnings",      label: "Earnings",           Icon: IcCredit,       href: "/condo/earnings" },
   { id: "reward-redemption", label: "Reward Redemption", Icon: IcGiftCard, href: "/condo/reward-redemption", enabled: HOA_GIFT_CARDS_VISIBLE },
   { id: "tickets",       label: "Support Tickets",    Icon: IcQuestion,     href: "/condo/tickets" },
   { id: "subscription",  label: "Subscription",       Icon: IcSubscription, href: "/condo/subscription", requiredAction: Actions.ViewSubscription },
@@ -95,7 +95,7 @@ export const apartmentsNavItems: readonly NavItem[] = [
   { id: "residents",     label: "Resident Directory", Icon: IcResidentDirectory, href: "/apartment/residents" },
   { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: "/apartment/bookings" },
   { id: "availability",  label: "Parking Spots",      Icon: IcParking,      href: "/apartment/availability" },
-  { id: "revenue",       label: "Earnings",           Icon: IcCredit,       href: "/apartment/revenue" },
+  { id: "earnings",      label: "Earnings",           Icon: IcCredit,       href: "/apartment/earnings" },
   { id: "reward-redemption", label: "Reward Redemption", Icon: IcGiftCard, href: "/apartment/reward-redemption" },
   { id: "tickets",       label: "Support Tickets",    Icon: IcQuestion,     href: "/apartment/tickets" },
   { id: "subscription",  label: "Subscription",       Icon: IcSubscription, href: "/apartment/subscription" },

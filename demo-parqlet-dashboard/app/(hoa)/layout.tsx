@@ -25,7 +25,7 @@ function pathnameToNavId(raw: string): NavId {
   if (pathname === "/reward-redemption")                           return "reward-redemption";
   if (pathname === "/spots")                                       return "spots";
   if (pathname === "/availability")                                return "availability";
-  if (pathname === "/revenue")                                     return "revenue";
+  if (pathname === "/earnings")                                    return "earnings";
   return "none";
 }
 

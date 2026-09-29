@@ -146,7 +146,7 @@ export default function ApartmentsDashboardPage() {
         earningsCents={period.netCents}
         subscriptionCents={APARTMENT_SUBSCRIPTION_CENTS}
         floorCents={APARTMENT_FLOOR_CENTS}
-        revenueHref="/apartment/revenue"
+        revenueHref="/apartment/earnings"
       />
 
       {/* Activity against the bookings that produced it */}

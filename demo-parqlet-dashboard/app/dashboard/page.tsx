@@ -86,7 +86,7 @@ export default function DashboardPage() {
             earningsCents={month.earningsCents}
             subscriptionCents={month.subscriptionCents}
             floorCents={CONDO_FLOOR_CENTS}
-            revenueHref="/condo/revenue"
+            revenueHref="/condo/earnings"
           />
 
           {/* Recent Activity + Current Bookings */}

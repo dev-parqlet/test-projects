@@ -30,7 +30,7 @@ function pathnameToNavId(raw: string): NavId {
   // while its redirect runs.
   if (pathname.startsWith("/spots"))                    return "availability";
   if (pathname.startsWith("/availability"))             return "availability";
-  if (pathname.startsWith("/revenue"))                  return "revenue";
+  if (pathname.startsWith("/earnings"))                 return "earnings";
   return "none";
 }
 
