@@ -107,24 +107,27 @@ export function TopContributorsCard({ buildingId }: TopContributorsCardProps) {
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <div style={RANK_STYLE}>{c.rank}</div>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-family-body)",
-                    fontSize: 14,
-                    fontWeight: 400,
-                    color: colors.textStrong,
-                    lineHeight: "18px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap" as const,
-                  }}
-                >
-                  {c.name}
-                </span>
-                <span style={{ fontFamily: "var(--font-family-body)", fontSize: 12, color: colors.textWeak, lineHeight: "16px" }}>
-                  {c.unit}
-                </span>
+              {/* Name and unit on ONE line. Stacked, the unit read as a
+                  second field about the resident; beside the name it reads
+                  as part of who they are, which is how the rest of the
+                  dashboard names a resident. */}
+              <div
+                style={{
+                  fontFamily: "var(--font-family-body)",
+                  fontSize: 14,
+                  fontWeight: 400,
+                  color: colors.textStrong,
+                  lineHeight: "18px",
+                  minWidth: 0,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap" as const,
+                }}
+              >
+                {c.name}
+                {c.unit ? (
+                  <span style={{ color: colors.textWeak }}> &middot; {c.unit}</span>
+                ) : null}
               </div>
               <div style={{ textAlign: "right" }}>
                 <span style={{ fontFamily: "var(--font-family-body)", fontSize: 13, color: colors.textStrong, lineHeight: "18px" }}>

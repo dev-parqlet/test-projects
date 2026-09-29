@@ -100,7 +100,7 @@ export function EarningsProgressCard({
 
         <span style={s.line}>
           Subscription <strong>{formatMoney(subscriptionCents)}</strong> ·{" "}
-          <strong style={{ color: "var(--color-tag-text-active)" }}>
+          <strong style={{ color: "var(--color-text-success)" }}>
             Covered {coveredPct}%
           </strong>{" "}
           · Next invoice <strong>{formatMoney(offset.dueCents)}</strong>

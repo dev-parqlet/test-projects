@@ -146,7 +146,7 @@ export function CurrentBookingsCard({ buildingId, showEarnings = false }: Curren
                         </span>
                       </InfoTooltip>
                     ) : (
-                      <span style={{ ...earnedStyle, color: "var(--color-tag-text-active)" }}>
+                      <span style={{ ...earnedStyle, color: "var(--color-text-success)" }}>
                         +{formatMoney(earning.earnedCents)}
                       </span>
                     )

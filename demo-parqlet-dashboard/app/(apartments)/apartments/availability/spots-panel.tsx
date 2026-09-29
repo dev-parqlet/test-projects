@@ -67,12 +67,31 @@ function IcSearch() {
   );
 }
 
-export function SpotsPanel() {
+/**
+ * The three "open a modal" flags are OWNED BY THE PAGE, not by this panel.
+ * Their buttons belong on the title row, which the page renders, and the
+ * modals belong here next to the state they change - so the flags are
+ * passed down rather than the buttons being lifted out with them.
+ */
+export type SpotsPanelProps = {
+  creating: boolean;
+  setCreating: (v: boolean) => void;
+  bulkAdding: boolean;
+  setBulkAdding: (v: boolean) => void;
+  pricingRange: boolean;
+  setPricingRange: (v: boolean) => void;
+};
+
+export function SpotsPanel({
+  creating,
+  setCreating,
+  bulkAdding,
+  setBulkAdding,
+  pricingRange,
+  setPricingRange,
+}: SpotsPanelProps) {
   const [spots, setSpots] = useState<DemoSpot[]>(DEMO_SPOTS);
   const [editing, setEditing] = useState<DemoSpot | null>(null);
-  const [creating, setCreating] = useState(false);
-  const [bulkAdding, setBulkAdding] = useState(false);
-  const [pricingRange, setPricingRange] = useState(false);
   const [lastBulk, setLastBulk] = useState<string | null>(null);
 
   // ── Filters ───────────────────────────────────────────────────────────
@@ -235,17 +254,6 @@ export function SpotsPanel() {
             your residents share stay at the base. Parqlet keeps{" "}
             {COMMISSION_PCT}% and the rest is paid to you.
           </p>
-        </div>
-        <div style={{ display: "flex", gap: "var(--spacing-8)", flexShrink: 0 }}>
-          <Button variant="secondary" size="small" style={{ width: "auto", whiteSpace: "nowrap" }} onClick={() => setPricingRange(true)}>
-            Set prices by range
-          </Button>
-          <Button variant="secondary" size="small" style={{ width: "auto", whiteSpace: "nowrap" }} onClick={() => setBulkAdding(true)}>
-            Add spots in bulk
-          </Button>
-          <Button variant="primary" size="small" style={{ width: "auto", whiteSpace: "nowrap" }} onClick={() => setCreating(true)}>
-            Add spot
-          </Button>
         </div>
       </div>
 

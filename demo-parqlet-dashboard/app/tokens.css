@@ -21,6 +21,17 @@
   --color-text-white: #ffffff;
   --color-text-accent: #c7e51f;
   --color-text-error: #c73a3a;
+  /**
+   * Figma `Text/Success` — money a building EARNED, and the percentage of
+   * its subscription that covers.
+   *
+   * Distinct from `--color-tag-text-active`, which these used to borrow.
+   * That token is the label colour inside a green status TAG, where it
+   * sits on a light-green pill; as free-standing text on a white card it
+   * was a different, darker green from the one the design system calls
+   * Success. Same family as `--color-icon-success` / `--color-fill-success`.
+   */
+  --color-text-success: #69be38;
   --color-text-link: #222222;
   --color-text-active-tag: #69be38;
 

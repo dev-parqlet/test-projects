@@ -80,6 +80,7 @@ html[data-theme="dark"] {
   --color-icon-disabled: #6b6b6b;
   --color-icon-inverse: #ffffff;
   --color-icon-success: #7ecb4a;
+  --color-text-success: #7ecb4a;
   --color-icon-error: #e57373;
 
   /* Fill */

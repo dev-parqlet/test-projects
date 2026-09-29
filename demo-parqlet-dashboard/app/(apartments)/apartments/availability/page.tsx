@@ -18,9 +18,10 @@
  * falls back to Parking Spots rather than rendering nothing.
  */
 
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { Button } from "../../../components/ui/Button";
 import { TabBar } from "../../../components/ui/TabBar";
 import { AvailabilityPanel } from "./availability-panel";
 import { SpotsPanel } from "./spots-panel";
@@ -46,21 +47,56 @@ function AvailabilityTabs() {
   const select = (tab: ParkingTab) =>
     router.replace(tab === "availability" ? "?tab=availability" : "?", { scroll: false });
 
+  // Owned here because the buttons that set them sit on the title row,
+  // which this component renders. The modals themselves stay in the panel.
+  const [creating, setCreating] = useState(false);
+  const [bulkAdding, setBulkAdding] = useState(false);
+  const [pricingRange, setPricingRange] = useState(false);
+
   return (
     <div style={{ padding: "var(--spacing-24)", display: "flex", flexDirection: "column" }}>
-      <div>
-        <h1 style={st.h1}>Parking Spots</h1>
-        <p style={st.sub}>
-          The spots your building owns, and the windows they are free to
-          book in.
-        </p>
+      {/* Title and actions on ONE row, the way every other screen with
+          actions does it. They were under the tab bar, which put three
+          buttons between the tabs and the table they act on. */}
+      <div style={st.titleRow}>
+        <div>
+          <h1 style={st.h1}>Parking Spots</h1>
+          <p style={st.sub}>
+            The spots your building owns, and the windows they are free to
+            book in.
+          </p>
+        </div>
+        {active === "spots" && (
+          <div style={st.actions}>
+            <Button variant="secondary" size="small" style={st.action} onClick={() => setPricingRange(true)}>
+              Set prices by range
+            </Button>
+            <Button variant="secondary" size="small" style={st.action} onClick={() => setBulkAdding(true)}>
+              Add spots in bulk
+            </Button>
+            <Button variant="primary" size="small" style={st.action} onClick={() => setCreating(true)}>
+              Add spot
+            </Button>
+          </div>
+        )}
       </div>
 
       <div style={{ marginTop: "var(--spacing-16)" }}>
         <TabBar active={active} onChange={select} tabs={TABS} />
       </div>
 
-      {active === "availability" ? <AvailabilityPanel /> : <SpotsPanel />}
+      {active === "availability" ? (
+        <AvailabilityPanel />
+      ) : (
+        <SpotsPanel
+          creating={creating}
+          setCreating={setCreating}
+          bulkAdding={bulkAdding}
+          setBulkAdding={setBulkAdding}
+          pricingRange={pricingRange}
+          setPricingRange={setPricingRange}
+        />
+      )}
     </div>
   );
 }
@@ -75,6 +111,15 @@ export default function AvailabilityPage() {
 }
 
 const st: Record<string, React.CSSProperties> = {
+  titleRow: {
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: "var(--spacing-16)",
+    flexWrap: "wrap",
+  },
+  actions: { display: "flex", gap: "var(--spacing-8)", flexShrink: 0 },
+  action: { width: "auto", whiteSpace: "nowrap" },
   h1: {
     margin: 0,
     fontSize: "var(--font-size-heading-1)",
