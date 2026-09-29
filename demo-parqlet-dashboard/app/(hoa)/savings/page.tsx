@@ -34,10 +34,12 @@ import {
   formatMoney,
 } from "../../lib/demo/pricing";
 import {
+  condoContributions,
   condoSavingsHistory,
   currentCondoMonth,
   savedThisYearCents,
 } from "../../lib/demo/condo-revenue";
+import { ContributingBookings } from "../../components/revenue/ContributingBookings";
 import { MonthlySavingsChart } from "../../components/revenue/MonthlySavingsChart";
 
 /**
@@ -70,6 +72,7 @@ export default function CondoRevenuePage() {
   const now = useMemo(() => new Date(), []);
   const month = useMemo(() => currentCondoMonth(now), [now]);
   const savingsMonths = useMemo(() => condoSavingsHistory(6, now), [now]);
+  const contributions = useMemo(() => condoContributions(8, now), [now]);
   const thisMonth = savingsMonths[0];
   const savedThisYear = useMemo(() => savedThisYearCents(savingsMonths), [savingsMonths]);
 
@@ -77,7 +80,7 @@ export default function CondoRevenuePage() {
 
   return (
     <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 24 }}>
-      <RevenueHeader />
+      <RevenueHeader title="Savings" subtitle="How resident sharing lowers your monthly bill" />
 
       {/* ── The four figures a board asks for, in that order ──────────── */}
       <div style={st.tiles}>
@@ -181,6 +184,9 @@ export default function CondoRevenuePage() {
           </table>
         </div>
       </RevenueCard>
+
+      {/* ── Where it came from ────────────────────────────────────────── */}
+      <ContributingBookings rows={contributions} />
 
       {/* Nothing below the history on purpose.
 

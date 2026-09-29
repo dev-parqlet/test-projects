@@ -259,15 +259,35 @@ export function HistoryTable({
  * the top they pushed the figures a building opens Earnings to see below
  * the fold.
  */
-export function RevenueHeader() {
+/**
+ * The page heading, which is not the same word in both products.
+ *
+ * A Condo is never paid, so its page is Savings and says what it is for. An
+ * Apartment earns, and keeps Earnings. Shared rather than duplicated
+ * because everything else about the heading is the same.
+ */
+export function RevenueHeader({
+  title = "Earnings",
+  subtitle,
+}: {
+  title?: string;
+  subtitle?: string;
+}) {
   return (
     <div>
-      <h1 style={st.h1}>Earnings</h1>
+      <h1 style={st.h1}>{title}</h1>
+      {subtitle && <p style={st.headerSub}>{subtitle}</p>}
     </div>
   );
 }
 
 export const st: Record<string, React.CSSProperties> = {
+  headerSub: {
+    margin: "var(--spacing-4) 0 0",
+    fontFamily: "var(--font-family-body)",
+    fontSize: "var(--font-size-body)",
+    color: "var(--color-text-weak)",
+  },
   // ── Savings page layout ───────────────────────────────────────────
   tiles: {
     display: "grid",

@@ -16,6 +16,7 @@
  */
 
 import {
+  BASE_PRICE_CENTS,
   CONDO_FLOOR_CENTS,
   applyCondoSavings,
   CONDO_SUBSCRIPTION_CENTS,
@@ -201,4 +202,54 @@ export function condoSavingsHistory(count = 6, now = new Date()): SavingsMonth[]
 /** Everything saved across the months shown, for the year-to-date tile. */
 export function savedThisYearCents(history: SavingsMonth[]): number {
   return history.reduce((sum, m) => sum + m.savedCents, 0);
+}
+
+/**
+ * The bookings behind this month's savings.
+ *
+ * Deterministic, like the rest of the demo: two people comparing screens
+ * must see the same rows. The pattern alternates card-funded and reused so
+ * both halves of the rule are visible without scrolling - a demo where
+ * every row earned the same thing teaches nothing, and the $0.00 row is
+ * the one a prospect asks about.
+ *
+ * The share on a card booking is the real arithmetic: one credit at the
+ * demo's price, less Stripe, our commission and the gift-card reserve
+ * (lib/demo/pricing.ts), which is why it is not a round number.
+ */
+export type DemoContribution = {
+  bookingId: string;
+  at: string;
+  unitNumber: string;
+  spotNumber: string;
+  cardCredits: number;
+  reusedCredits: number;
+  kind: 'card' | 'reused';
+  chargedCents: number;
+  savedCents: number;
+};
+
+const CONTRIB_UNITS = ['6F', '7A', '5E', '3C', '2B', '4D', '1A', '8C'];
+const CONTRIB_SPOTS = ['330', '112', '108', '222', '251', '141', '309', '218'];
+
+export function condoContributions(count = 8, now = new Date()): DemoContribution[] {
+  const perCredit = netToBuilding(BASE_PRICE_CENTS);
+  const out: DemoContribution[] = [];
+  for (let i = 0; i < count; i++) {
+    // Newest first, roughly every other day.
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - Math.floor(i / 2));
+    const card = i % 2 === 0;
+    out.push({
+      bookingId: `demo-contrib-${i}`,
+      at: d.toISOString(),
+      unitNumber: CONTRIB_UNITS[i % CONTRIB_UNITS.length],
+      spotNumber: CONTRIB_SPOTS[i % CONTRIB_SPOTS.length],
+      cardCredits: card ? 1 : 0,
+      reusedCredits: card ? 0 : 1,
+      kind: card ? 'card' : 'reused',
+      chargedCents: card ? BASE_PRICE_CENTS : 0,
+      savedCents: card ? perCredit : 0,
+    });
+  }
+  return out;
 }
