@@ -16,6 +16,7 @@ import { useAuth } from "../../../components/auth/auth-provider";
 import { Badge } from "../../../components/ui/Badge";
 import { FilterDropdown } from "../../../components/ui/FilterDropdown";
 import { TableHeadLabel } from "../../../components/ui/TableHeadLabel";
+import { TabBar } from "../../../components/ui/TabBar";
 import { InfoTooltip } from "../../../components/ui/InfoTooltip";
 import { formatMoney, COMMISSION_PCT } from "../../../lib/demo/apartments-data";
 import { bookingEarning } from "../../../lib/demo/booking-earnings";
@@ -36,11 +37,14 @@ type Row = {
   spotOwnerName?: string | null;
 };
 
+type BookingTab = "current" | "future" | "past";
+
+/** Same labels and same order as the Condo's bookings page. */
 const TABS = [
-  { label: "Current", value: "current" },
-  { label: "Upcoming", value: "future" },
-  { label: "Past", value: "past" },
-];
+  { id: "current", label: "Current bookings" },
+  { id: "future", label: "Upcoming bookings" },
+  { id: "past", label: "Past bookings" },
+] as const satisfies readonly { id: BookingTab; label: string }[];
 
 // "Paid" carries a sentence now ("1 reused credit + $9.00"), not just a
 // figure, so it is given room the other columns do not need.
@@ -49,7 +53,7 @@ const COL = ["7 1 90px", "7 1 80px", "10 1 130px", "9 1 110px", "10 1 120px", "1
 export default function ApartmentsBookingsPage() {
   const { user } = useAuth();
   const buildingId = user?.buildingId ?? "";
-  const [tab, setTab] = useState("current");
+  const [tab, setTab] = useState<BookingTab>("current");
   const [status, setStatus] = useState("All");
   const [query, setQuery] = useState("");
 
@@ -102,17 +106,10 @@ export default function ApartmentsBookingsPage() {
         </p>
       </div>
 
-      <div style={{ display: "flex", gap: "var(--spacing-8)" }}>
-        {TABS.map((t) => (
-          <button
-            key={t.value}
-            onClick={() => setTab(t.value)}
-            style={{ ...st.tab, ...(tab === t.value ? st.tabActive : null) }}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      {/* The shared underlined tab row, the same control the Condo's
+          bookings page and every other tabbed screen uses. These were
+          pills, which read as filters rather than as views of one list. */}
+      <TabBar active={tab} onChange={setTab} tabs={TABS} />
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--spacing-12)", flexWrap: "wrap" }}>
         <div style={st.search}>
@@ -132,10 +129,10 @@ export default function ApartmentsBookingsPage() {
       </div>
 
       <div style={st.card}>
-        <div style={st.row}>
+        <div style={{ ...st.row, ...st.headRow }}>
           {["Booking ID", "Spot", "Guest", "Plate", "From", "Until", "Paid", "You receive", "Status"].map((h, i) => (
             <div key={h} style={{ ...st.cell, flex: COL[i] }}>
-              <TableHeadLabel style={{ color: "var(--color-text-weak)" }}>{h}</TableHeadLabel>
+              <TableHeadLabel>{h}</TableHeadLabel>
             </div>
           ))}
         </div>
@@ -209,13 +206,6 @@ const st: Record<string, React.CSSProperties> = {
     color: "var(--color-text-strong)",
   },
   sub: { margin: "var(--spacing-8) 0 0", fontSize: 16, lineHeight: "20px", color: "var(--color-text-weak)" },
-  tab: {
-    padding: "8px 14px", borderRadius: "var(--radius-8)",
-    border: "1px solid var(--color-stroke-medium)", background: "var(--color-fill-white)",
-    color: "var(--color-text-weak)", fontSize: "var(--font-size-tiny)",
-    fontFamily: "var(--font-family-body)", cursor: "pointer",
-  },
-  tabActive: { background: "var(--color-fill-weak)", color: "var(--color-text-strong)", fontWeight: 600 },
   search: {
     display: "flex", alignItems: "center", gap: 10,
     background: "var(--color-fill-white)", border: "1px solid var(--color-stroke-medium)",
@@ -230,6 +220,16 @@ const st: Record<string, React.CSSProperties> = {
   card: {
     border: "1px solid var(--color-stroke-medium)", borderRadius: "var(--radius-12)",
     background: "var(--color-fill-white)", overflow: "hidden",
+  },
+  // The canonical table header, as every other table on the dashboard
+  // renders it. On the ROW because TableHeadLabel owns only the size and
+  // the wrapping; with just a colour this read as a body row.
+  headRow: {
+    fontFamily: "var(--font-family-body)",
+    fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
+    lineHeight: "var(--line-height-uppercase)",
+    color: "var(--color-text-weak)",
+    textTransform: "uppercase" as const,
   },
   row: {
     display: "flex", alignItems: "center", gap: "var(--spacing-8)",

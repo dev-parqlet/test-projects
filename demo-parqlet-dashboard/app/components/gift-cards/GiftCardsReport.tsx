@@ -647,6 +647,15 @@ export function GiftCardsReport({ isSuperAdmin = false }: { isSuperAdmin?: boole
               minHeight: 48,
               borderBottom: "1px solid var(--color-stroke-medium)",
               background: "var(--color-fill-white)",
+              // The canonical table header, as every other table on the
+              // dashboard renders it. Set on the ROW because TableHeadLabel
+              // owns only the size and the wrapping; without it this header
+              // read as a body row.
+              fontFamily: "var(--font-family-body)",
+              fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
+              lineHeight: "var(--line-height-uppercase)",
+              color: "var(--color-text-weak)",
+              textTransform: "uppercase" as const,
             }}>
             {columns.map((col) => (
               <div key={col.key} style={cellStyle(col)}>
