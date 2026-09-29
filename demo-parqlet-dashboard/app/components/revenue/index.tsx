@@ -195,45 +195,22 @@ export function HistoryTable({
 // ── Page header ───────────────────────────────────────────────────────
 
 /**
- * `aside` is the right-hand column: the "What a spot costs" card, which
- * used to sit lower down on the Dashboard. It is the arithmetic behind
- * every figure on this page, so it reads better beside the explanation
- * than a screen away from it.
+ * Just the title now.
  *
- * The row wraps rather than shrinking, because the card is a small table
- * and squeezing it into a phone-width column would put each row on three
- * lines. Below the wrap it simply falls under the text.
+ * The pitch and the explanation moved into the "What a spot costs" card
+ * at the foot of the page - they explain that card's arithmetic, and at
+ * the top they pushed the figures a building opens Earnings to see below
+ * the fold.
  */
-export function RevenueHeader({
-  pitch,
-  children,
-  aside,
-}: {
-  pitch: string;
-  children?: React.ReactNode;
-  aside?: React.ReactNode;
-}) {
+export function RevenueHeader() {
   return (
-    <div style={st.headerRow}>
-      <div style={st.headerText}>
-        <h1 style={st.h1}>Earnings</h1>
-        <p style={st.pitch}>{pitch}</p>
-        {children && <p style={st.sub}>{children}</p>}
-      </div>
-      {aside && <div style={st.headerAside}>{aside}</div>}
+    <div>
+      <h1 style={st.h1}>Earnings</h1>
     </div>
   );
 }
 
 export const st: Record<string, React.CSSProperties> = {
-  headerRow: {
-    display: "flex",
-    flexWrap: "wrap",
-    alignItems: "flex-start",
-    gap: "var(--spacing-24)",
-  },
-  headerText: { flex: "1 1 320px", minWidth: 0 },
-  headerAside: { flex: "1 1 420px", minWidth: 0 },
   h1: {
     margin: 0,
     fontSize: "var(--font-size-heading-1)",
@@ -241,19 +218,6 @@ export const st: Record<string, React.CSSProperties> = {
     fontWeight: "var(--font-weight-regular)" as React.CSSProperties["fontWeight"],
     color: "var(--color-text-strong)",
     fontFamily: "var(--font-family-heading)",
-  },
-  pitch: {
-    margin: "var(--spacing-8) 0 0",
-    fontSize: "var(--font-size-body)",
-    color: "var(--color-text-strong)",
-    maxWidth: 620,
-  },
-  sub: {
-    margin: "var(--spacing-4) 0 0",
-    fontSize: "var(--font-size-tiny)",
-    color: "var(--color-text-weak)",
-    maxWidth: 620,
-    lineHeight: 1.6,
   },
   cardTitle: { fontSize: "var(--font-size-body)", fontWeight: 600, color: "var(--color-text-strong)" },
   figures: { display: "flex", gap: 48, flexWrap: "wrap" },

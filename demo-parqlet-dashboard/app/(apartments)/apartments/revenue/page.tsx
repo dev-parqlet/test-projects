@@ -99,18 +99,7 @@ export default function ApartmentsRevenuePage() {
 
   return (
     <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 24 }}>
-      <RevenueHeader
-        pitch={PITCH.apartments}
-        aside={<CreditPriceCard rows={apartmentPriceRows()} footnote={APARTMENT_PRICE_FOOTNOTE} />}
-      >
-        Every spot rents for a base of {BASE_PRICE_CREDITS} credit
-        ({formatMoney(BASE_PRICE_CENTS)} a day), plus whatever extra you
-        set on the spots you own. On a {formatMoney(BASE_PRICE_CENTS)}{" "}
-        booking you receive{" "}
-        <strong>{formatMoney(netToBuilding(BASE_PRICE_CENTS))}</strong> and
-        we keep {formatMoney(BASE_PRICE_CENTS - netToBuilding(BASE_PRICE_CENTS))}{" "}
-        as our {COMMISSION_PCT}% commission and card fees.
-      </RevenueHeader>
+      <RevenueHeader />
 
       {/* ── This month ───────────────────────────────────────────────── */}
       <RevenueCard title={`${period.period} so far`} badge={<Badge variant="active">Open</Badge>}>
@@ -175,6 +164,28 @@ export default function ApartmentsRevenuePage() {
           rows={rows}
         />
       </RevenueCard>
+      {/* Full width, and last: it explains the arithmetic above rather
+          than introducing it, so it reads better after the figures. */}
+      <CreditPriceCard
+        rows={apartmentPriceRows()}
+        footnote={APARTMENT_PRICE_FOOTNOTE}
+        intro={
+          <>
+            <span>{PITCH.apartments}</span>
+            <span>
+              Every spot rents for a base of {BASE_PRICE_CREDITS} credit
+              ({formatMoney(BASE_PRICE_CENTS)} a day), plus whatever extra you
+              set on the spots you own. On a {formatMoney(BASE_PRICE_CENTS)}{" "}
+              booking you receive{" "}
+              <strong>{formatMoney(netToBuilding(BASE_PRICE_CENTS))}</strong>{" "}
+              and we keep{" "}
+              {formatMoney(BASE_PRICE_CENTS - netToBuilding(BASE_PRICE_CENTS))}{" "}
+              as our {COMMISSION_PCT}% commission and card fees.
+            </span>
+          </>
+        }
+      />
+
     </div>
   );
 }

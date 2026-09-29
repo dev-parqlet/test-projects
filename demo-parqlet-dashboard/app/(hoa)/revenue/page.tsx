@@ -63,16 +63,7 @@ export default function CondoRevenuePage() {
 
   return (
     <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 24 }}>
-      <RevenueHeader
-        pitch={PITCH.condo}
-        aside={<CreditPriceCard rows={CONDO_PRICE_ROWS} footnote={CONDO_PRICE_FOOTNOTE} />}
-      >
-        Your residents pay each other in credits. You earn when they buy
-        those credits, less our {COMMISSION_PCT}% commission and card fees,
-        and what you earn comes off your subscription. The discount stops
-        at {formatMoney(CONDO_FLOOR_CENTS)} a month; anything you earn
-        beyond that is yours on top.
-      </RevenueHeader>
+      <RevenueHeader />
 
       {/* ── This month ───────────────────────────────────────────────── */}
       <RevenueCard title={`${month.period} so far`} badge={<Badge variant="active">Open</Badge>}>
@@ -130,6 +121,25 @@ export default function CondoRevenuePage() {
           rows={rows}
         />
       </RevenueCard>
+      {/* Full width, and last: it explains the arithmetic above rather
+          than introducing it, so it reads better after the figures. */}
+      <CreditPriceCard
+        rows={CONDO_PRICE_ROWS}
+        footnote={CONDO_PRICE_FOOTNOTE}
+        intro={
+          <>
+            <span>{PITCH.condo}</span>
+            <span>
+              Your residents pay each other in credits. You earn when they buy
+              those credits, less our {COMMISSION_PCT}% commission and card
+              fees, and what you earn comes off your subscription. The discount
+              stops at {formatMoney(CONDO_FLOOR_CENTS)} a month; anything you
+              earn beyond that is yours on top.
+            </span>
+          </>
+        }
+      />
+
     </div>
   );
 }

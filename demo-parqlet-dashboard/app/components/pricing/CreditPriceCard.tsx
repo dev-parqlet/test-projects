@@ -34,9 +34,19 @@ export type PriceRow = {
 export function CreditPriceCard({
   rows,
   footnote,
+  intro,
 }: {
   rows: readonly PriceRow[];
   footnote: string;
+  /**
+   * The paragraph that used to sit under the Earnings title.
+   *
+   * It belongs here rather than in the page header: it is an explanation
+   * of the arithmetic in this card, and at the top of the page it was
+   * competing with the figures a building actually opens Earnings to see.
+   * Small, because it is reference material now, not a lead.
+   */
+  intro?: React.ReactNode;
 }) {
   return (
     <Card style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
@@ -46,6 +56,8 @@ export function CreditPriceCard({
           {BASE_PRICE_CREDITS} credit = <strong>{formatMoney(CREDIT_PRICE_CENTS)}</strong>
         </span>
       </div>
+
+      {intro && <div style={s.intro}>{intro}</div>}
 
       <div style={s.rows}>
         {rows.map((r) => (
@@ -81,4 +93,5 @@ const s: Record<string, React.CSSProperties> = {
   rowPrice: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)", whiteSpace: "nowrap" },
   rowTotal: { fontSize: "var(--font-size-body)", fontWeight: 600, color: "var(--color-text-strong)", whiteSpace: "nowrap" },
   footnote: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)", lineHeight: 1.6 },
+  intro: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)", lineHeight: 1.6, display: "flex", flexDirection: "column", gap: "var(--spacing-8)" },
 };
