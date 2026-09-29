@@ -151,7 +151,10 @@ export default function ApartmentsDashboardPage() {
   return (
     <div style={{ padding: "var(--spacing-24)", display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
       <div>
-        <h1 style={st.h1}>{user?.buildings?.[0]?.name ?? "Your building"}</h1>
+        {/* "Dashboard", not the building's name. The header already shows
+            which building you are in, and printing it again as the page
+            title left the screen as the only one with no title at all. */}
+        <h1 style={st.h1}>Dashboard</h1>
         <p style={st.sub}>
           Public parking. Parqlet keeps {COMMISSION_PCT}% of every booking;
           the rest is paid to you monthly.
@@ -208,7 +211,14 @@ export default function ApartmentsDashboardPage() {
 }
 
 const st: Record<string, React.CSSProperties> = {
-  h1: { margin: 0, fontSize: "var(--font-size-heading-3)", fontWeight: 600, color: "var(--color-text-strong)" },
-  sub: { margin: "var(--spacing-4) 0 0", fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)" },
+  h1: {
+    margin: 0,
+    fontSize: "var(--font-size-heading-1)",
+    lineHeight: "var(--line-height-heading-1)",
+    fontWeight: "var(--font-weight-regular)" as React.CSSProperties["fontWeight"],
+    fontFamily: "var(--font-family-heading)",
+    color: "var(--color-text-strong)",
+  },
+  sub: { margin: "var(--spacing-8) 0 0", fontSize: 16, lineHeight: "20px", color: "var(--color-text-weak)" },
   stats: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "var(--spacing-12)" },
 };

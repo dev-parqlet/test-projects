@@ -100,7 +100,22 @@ export function BarChart({ data }: BarChartProps) {
                       pointerEvents: "none",
                     }}
                   >
-                    {value} bookings
+                    {neighbor == null ? (
+                      `${value} ${value === 1 ? "booking" : "bookings"}`
+                    ) : (
+                      // Both categories, always, including a zero. A bar that
+                      // is entirely one colour still needs to say which, and
+                      // showing only the non-zero half would leave the reader
+                      // guessing whether the other was zero or just omitted.
+                      <>
+                        <span style={{ display: "block" }}>
+                          Community Spots <strong>{value - neighbor}</strong>
+                        </span>
+                        <span style={{ display: "block" }}>
+                          Residents Spots <strong>{neighbor}</strong>
+                        </span>
+                      </>
+                    )}
                     <div
                       style={{
                         position: "absolute",

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Availability — Apartments only.
+ * Parking Spots — Apartments only.
  *
  * Two tabs over one subject: which of the building's spots can be booked,
  * and when. They were two sidebar entries until an operator pricing a
@@ -9,10 +9,13 @@
  * just repriced were even open - the spot list and the windows it is free
  * in are the same job, so they are now one screen.
  *
+ * The route is still /availability because the URL has been in the nav and
+ * in sent links for months; only what it is CALLED changed.
+ *
  * The tab is in the URL rather than in state alone, so /apartment/spots
  * still opens the spot list (see ../spots/page.tsx) and so an operator can
  * send a colleague a link to the tab they mean. An unknown ?tab= value
- * falls back to Availability rather than rendering nothing.
+ * falls back to Parking Spots rather than rendering nothing.
  */
 
 import React, { Suspense } from "react";
@@ -25,24 +28,28 @@ import { SpotsPanel } from "./spots-panel";
 type ParkingTab = "availability" | "spots";
 
 const TABS = [
-  { id: "availability", label: "Availability" },
   { id: "spots", label: "Parking Spots" },
+  { id: "availability", label: "Availability" },
 ] as const satisfies readonly { id: ParkingTab; label: string }[];
 
 function AvailabilityTabs() {
   const router = useRouter();
   const params = useSearchParams();
-  const active: ParkingTab = params.get("tab") === "spots" ? "spots" : "availability";
+  // Spots is the default: it is the list an operator opens this screen to
+  // see, and the windows only make sense once you know which spots they
+  // belong to. An unknown ?tab= falls back here rather than rendering
+  // nothing.
+  const active: ParkingTab = params.get("tab") === "availability" ? "availability" : "spots";
 
   // replace(), not push(): flicking between two tabs of one screen should
   // not fill the back button with steps that all look like the same page.
   const select = (tab: ParkingTab) =>
-    router.replace(tab === "spots" ? "?tab=spots" : "?", { scroll: false });
+    router.replace(tab === "availability" ? "?tab=availability" : "?", { scroll: false });
 
   return (
     <div style={{ padding: "var(--spacing-24)", display: "flex", flexDirection: "column" }}>
       <div>
-        <h1 style={st.h1}>Availability</h1>
+        <h1 style={st.h1}>Parking Spots</h1>
         <p style={st.sub}>
           The spots your building owns, and the windows they are free to
           book in.

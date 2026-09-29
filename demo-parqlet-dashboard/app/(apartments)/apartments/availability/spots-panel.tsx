@@ -283,7 +283,7 @@ export function SpotsPanel() {
         <div style={{ ...st.row, ...st.headRow }}>
           {["Spot", "Level", "Type", "Covered", "EV", "Shared by", "Price / day", "You receive", "Status", ""].map((h, i) => (
             <div key={h || i} style={{ ...st.cellBase, flex: COL_FLEX[i], justifyContent: i === 9 ? "flex-end" : "flex-start" }}>
-              <TableHeadLabel style={{ color: "var(--color-text-weak)" }}>{h}</TableHeadLabel>
+              <TableHeadLabel>{h}</TableHeadLabel>
             </div>
           ))}
         </div>
@@ -630,7 +630,6 @@ function SpotModal({
 }
 
 const st: Record<string, React.CSSProperties> = {
-  h1: { margin: 0, fontSize: "var(--font-size-heading-3)", fontWeight: 600, color: "var(--color-text-strong)" },
   sub: { margin: "var(--spacing-4) 0 0", fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)", maxWidth: 620 },
   search: {
     display: "flex", alignItems: "center", gap: 10,
@@ -655,7 +654,7 @@ const st: Record<string, React.CSSProperties> = {
     padding: "var(--spacing-8) var(--spacing-24)", minHeight: 48,
     borderBottom: "1px solid var(--color-stroke-medium)",
   },
-  headRow: { background: "var(--color-fill-white)" },
+  headRow: { background: "var(--color-fill-white)", fontFamily: "var(--font-family-body)", fontSize: "var(--font-size-uppercase)", lineHeight: "var(--line-height-uppercase)", fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"], color: "var(--color-text-weak)", textTransform: "uppercase" as const },
   cellBase: { display: "flex", alignItems: "center", minWidth: 0 },
   txt: { fontSize: "var(--font-size-tiny)", color: "var(--color-text-strong)", whiteSpace: "nowrap" },
   subTxt: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)", whiteSpace: "nowrap" },

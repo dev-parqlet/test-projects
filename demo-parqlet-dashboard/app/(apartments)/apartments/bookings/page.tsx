@@ -200,8 +200,15 @@ function badgeFor(status: string): string {
 }
 
 const st: Record<string, React.CSSProperties> = {
-  h1: { margin: 0, fontSize: "var(--font-size-heading-3)", fontWeight: 600, color: "var(--color-text-strong)" },
-  sub: { margin: "var(--spacing-4) 0 0", fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)" },
+  h1: {
+    margin: 0,
+    fontSize: "var(--font-size-heading-1)",
+    lineHeight: "var(--line-height-heading-1)",
+    fontWeight: "var(--font-weight-regular)" as React.CSSProperties["fontWeight"],
+    fontFamily: "var(--font-family-heading)",
+    color: "var(--color-text-strong)",
+  },
+  sub: { margin: "var(--spacing-8) 0 0", fontSize: 16, lineHeight: "20px", color: "var(--color-text-weak)" },
   tab: {
     padding: "8px 14px", borderRadius: "var(--radius-8)",
     border: "1px solid var(--color-stroke-medium)", background: "var(--color-fill-white)",

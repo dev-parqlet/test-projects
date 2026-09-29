@@ -68,9 +68,10 @@ export const navItems: readonly NavItem[] = [
   { id: "gift-cards",    label: "Reward Redemption",  Icon: IcGiftCard,     href: "/condo/gift-cards", enabled: HOA_GIFT_CARDS_VISIBLE },
   { id: "tickets",       label: "Support Tickets",    Icon: IcQuestion,     href: "/condo/tickets" },
   { id: "subscription",  label: "Subscription",       Icon: IcSubscription, href: "/condo/subscription", requiredAction: Actions.ViewSubscription },
-  { id: "access",        label: "Access Management",  Icon: IcPerson,       href: "/condo/access", requiredAction: Actions.InviteTeamMember },
   { id: "settings",      label: "Settings",           Icon: IcSettings,     href: "/condo/settings" },
-  { id: "profile",       label: "Profile",            Icon: IcPerson,       href: "/condo/profile" },
+  // Profile and Access Management are NOT here. Both live in the avatar
+  // menu in the header, and carrying them in the sidebar as well made the
+  // nav longer without making anything reachable that was not already.
   { id: "notifications", label: "Notifications",      Icon: IcNotification, href: "/condo/notifications" },
 ] as const;
 
@@ -93,14 +94,15 @@ export const apartmentsNavItems: readonly NavItem[] = [
   { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard,    href: "/apartment" },
   { id: "parking",       label: "Resident Directory", Icon: IcResidentDirectory, href: "/apartment/parking" },
   { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: "/apartment/bookings" },
-  { id: "availability",  label: "Availability",       Icon: IcParking,      href: "/apartment/availability" },
+  { id: "availability",  label: "Parking Spots",      Icon: IcParking,      href: "/apartment/availability" },
   { id: "revenue",       label: "Earnings",           Icon: IcCredit,       href: "/apartment/revenue" },
   { id: "gift-cards",    label: "Reward Redemption",  Icon: IcGiftCard,     href: "/apartment/gift-cards" },
   { id: "tickets",       label: "Support Tickets",    Icon: IcQuestion,     href: "/apartment/tickets" },
   { id: "subscription",  label: "Subscription",       Icon: IcSubscription, href: "/apartment/subscription" },
-  { id: "access",        label: "Access Management",  Icon: IcPerson,       href: "/apartment/access" },
   { id: "settings",      label: "Settings",           Icon: IcSettings,     href: "/apartment/settings" },
-  { id: "profile",       label: "Profile",            Icon: IcPerson,       href: "/apartment/profile" },
+  // Profile and Access Management are NOT here. Both live in the avatar
+  // menu in the header, and carrying them in the sidebar as well made the
+  // nav longer without making anything reachable that was not already.
   { id: "notifications", label: "Notifications",      Icon: IcNotification, href: "/apartment/notifications" },
 ];
 

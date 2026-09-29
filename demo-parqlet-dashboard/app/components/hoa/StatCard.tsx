@@ -55,9 +55,8 @@ export function StatCard({ label, value, tag, variant = "hoa", split }: StatCard
             fontSize: "var(--font-size-uppercase)",
             lineHeight: "var(--line-height-uppercase)",
             fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
-            color: isApartment ? "var(--color-text-strong)" : "var(--color-text-weak)",
+            color: "var(--color-text-weak)",
             textTransform: "uppercase" as const,
-            letterSpacing: isApartment ? "0.04em" : undefined,
           }}
         >
           {label}
@@ -67,9 +66,9 @@ export function StatCard({ label, value, tag, variant = "hoa", split }: StatCard
 
       <span
         style={{
-          fontSize: isApartment ? 26 : 24,
-          fontWeight: isApartment ? 600 : 500,
-          lineHeight: isApartment ? "30px" : "28px",
+          fontSize: 24,
+          fontWeight: 500,
+          lineHeight: "28px",
           color: colors.textStrong,
           whiteSpace: "nowrap",
         }}
@@ -92,7 +91,7 @@ export function StatCard({ label, value, tag, variant = "hoa", split }: StatCard
             gap: 4,
             background: colors.tagBg,
             borderRadius: 47,
-            padding: isApartment ? "4px 10px" : "4px 8px",
+            padding: "4px 8px",
             fontSize: 12,
             color: colors.textStrong,
             lineHeight: "16px",

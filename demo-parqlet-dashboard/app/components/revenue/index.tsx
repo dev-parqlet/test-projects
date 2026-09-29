@@ -207,8 +207,9 @@ export function RevenueHeader({ pitch, children }: { pitch: string; children?: R
 export const st: Record<string, React.CSSProperties> = {
   h1: {
     margin: 0,
-    fontSize: "var(--font-size-heading-3)",
-    fontWeight: 600,
+    fontSize: "var(--font-size-heading-1)",
+    lineHeight: "var(--line-height-heading-1)",
+    fontWeight: "var(--font-weight-regular)" as React.CSSProperties["fontWeight"],
     color: "var(--color-text-strong)",
     fontFamily: "var(--font-family-heading)",
   },

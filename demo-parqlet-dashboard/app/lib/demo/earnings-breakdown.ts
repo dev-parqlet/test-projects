@@ -22,19 +22,10 @@
  */
 
 import { DEMO_SPOTS, spotPriceCents } from './apartments-data';
-import { CREDIT_PRICE_CENTS, reservePerCreditCents } from './pricing';
 
-/**
- * Credits whose reserve expired unclaimed this month.
- *
- * DEMO FIGURE. Really this is counted from the reserve ledger - a reserve
- * is released when the resident has not put it towards a card within the
- * expiry window - and there is no ledger in mock mode.
- */
-const RESERVES_RELEASED_CREDITS = 12;
 
 export type EarningsSource = {
-  id: 'community' | 'neighbor' | 'reserves';
+  id: 'community' | 'neighbor';
   label: string;
   cents: number;
 };
@@ -59,11 +50,11 @@ export function earningsBreakdown(
   product: 'condo' | 'apartment',
   earningsCents: number,
 ): EarningsSource[] {
-  const reserves = Math.min(
-    Math.max(0, earningsCents),
-    RESERVES_RELEASED_CREDITS * reservePerCreditCents(CREDIT_PRICE_CENTS),
-  );
-  const fromBookings = Math.max(0, earningsCents - reserves);
+  // Every chip is a share of what BOOKINGS earned, and together they add
+  // up to the headline. Released reserves used to be a third chip, but a
+  // reserve expiring unclaimed is not something the building did, and it
+  // read as a third way to earn rather than as an accounting detail.
+  const fromBookings = Math.max(0, earningsCents);
 
   // A Condo's residents own every spot, so nothing here is the building's.
   const community =
@@ -73,8 +64,7 @@ export function earningsBreakdown(
 
   const sources: EarningsSource[] = [
     { id: 'community', label: 'Community Spots', cents: community },
-    { id: 'neighbor', label: 'Neighbor shares', cents: neighbor },
-    { id: 'reserves', label: 'Reserves released', cents: reserves },
+    { id: 'neighbor', label: 'Resident shares', cents: neighbor },
   ];
 
   // An empty chip says nothing and costs a row of space on a phone.
