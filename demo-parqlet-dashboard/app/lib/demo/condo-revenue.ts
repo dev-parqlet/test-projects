@@ -17,6 +17,7 @@
 
 import {
   CONDO_FLOOR_CENTS,
+  applyCondoSavings,
   CONDO_SUBSCRIPTION_CENTS,
   applyOffset,
   money,
@@ -120,4 +121,84 @@ export function recentCondoMonths(count = 5, now = new Date()): CondoMonth[] {
     out.push(monthFrom(money(gross), d, `c${i}`, 'Paid'));
   }
   return out;
+}
+
+/**
+ * A Condo's savings month by month, with the carryover folded forward.
+ *
+ * Carryover only means anything in sequence: what one month could not
+ * spend is what the next one starts with. So this walks OLDEST FIRST,
+ * feeding each month's remainder into the one after it - the same order
+ * api-backend's earnings route replays the ledger in.
+ *
+ * Returned newest-first, which is how both the table and the chart read.
+ */
+export type SavingsMonth = {
+  id: string;
+  /** "Sep 2026". */
+  period: string;
+  /** Short axis label, "Sep". */
+  short: string;
+  fromSharingCents: number;
+  carriedInCents: number;
+  savedCents: number;
+  invoiceCents: number;
+  carriedOverCents: number;
+  maxSavingsCents: number;
+  atMax: boolean;
+};
+
+/**
+ * What resident sharing brought in, month by month.
+ *
+ * A DELIBERATE RAMP rather than the spread `recentCondoMonths` uses. That
+ * one is tuned so the invoice table shows a bill that moves; fed through
+ * the savings arithmetic it puts EVERY month on the floor, which draws six
+ * identical bars and a carryover climbing past $400 - true, and useless as
+ * a picture. A building that grows into its savings is the story worth
+ * showing, and it is the common one: sharing builds as residents join.
+ *
+ * The last entry is the month in progress, and is the only one that
+ * exceeds the cap - so the chart shows exactly one carried-over cap, which
+ * is what makes that part of the legend mean anything.
+ */
+const SHARING_RAMP_CENTS = [9_600, 14_300, 17_600, 18_800, 31_200, 46_924];
+
+export function condoSavingsHistory(count = 6, now = new Date()): SavingsMonth[] {
+  const ramp = SHARING_RAMP_CENTS.slice(-count);
+  const out: SavingsMonth[] = [];
+  let carriedInCents = 0;
+
+  // Oldest first: what one month cannot spend is what the next one starts
+  // with, so the fold only means anything in order. Reversed at the end,
+  // because both the chart and the table read newest-first.
+  ramp.forEach((fromSharingCents, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (ramp.length - 1 - i), 1);
+    const s = applyCondoSavings({
+      earningsCents: fromSharingCents,
+      carriedInCents,
+      subscriptionCents: CONDO_SUBSCRIPTION_CENTS,
+      floorCents: CONDO_FLOOR_CENTS,
+    });
+    out.push({
+      id: `s${i}`,
+      period: `${MONTHS[d.getMonth()]} ${d.getFullYear()}`,
+      short: MONTHS[d.getMonth()].slice(0, 3),
+      fromSharingCents,
+      carriedInCents,
+      savedCents: s.savingsCents,
+      invoiceCents: s.dueCents,
+      carriedOverCents: s.carriedOverCents,
+      maxSavingsCents: s.maxSavingsCents,
+      atMax: s.atMax,
+    });
+    carriedInCents = s.carriedOverCents;
+  });
+
+  return out.reverse();
+}
+
+/** Everything saved across the months shown, for the year-to-date tile. */
+export function savedThisYearCents(history: SavingsMonth[]): number {
+  return history.reduce((sum, m) => sum + m.savedCents, 0);
 }
