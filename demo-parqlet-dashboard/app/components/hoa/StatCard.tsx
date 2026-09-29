@@ -62,7 +62,10 @@ export function StatCard({ label, value, tag, split }: StatCardProps) {
       <span
         style={{
           fontSize: 24,
-          fontWeight: 500,
+          // 400, not 500. The figure is already carried by its size; at
+          // medium weight a value that is a phrase rather than a numeral
+          // ("22 Comm / 6 Res") read heavier than the rest of the row.
+          fontWeight: 400,
           lineHeight: "28px",
           color: colors.textStrong,
           whiteSpace: "nowrap",
