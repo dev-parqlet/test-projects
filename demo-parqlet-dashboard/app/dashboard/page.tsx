@@ -12,7 +12,7 @@ import {
   TopGuestParkingBookersCard,
   DocumentModal,
 } from "../components/hoa";
-import { EarningsProgressCard } from "../components/revenue/EarningsProgressCard";
+import { SavingsProgressCard } from "../components/revenue/SavingsProgressCard";
 import {
   CONDO_FLOOR_CENTS,
 } from "../lib/demo/pricing";
@@ -80,13 +80,15 @@ export default function DashboardPage() {
             <StatCard label="Year to Date Bookings" value={statsLoading ? 0 : safeStats.ytd} tag={statsLoading ? "Loading…" : "all time"} />
           </div>
 
-          {/* This month's earnings against the subscription */}
-          <EarningsProgressCard
-            product="condo"
+          {/* What this month's sharing took off the bill. A Condo is never
+              paid, so the card leads with the invoice rather than with
+              earnings - see SavingsProgressCard. */}
+          <SavingsProgressCard
             earningsCents={month.earningsCents}
             subscriptionCents={month.subscriptionCents}
             floorCents={CONDO_FLOOR_CENTS}
-            revenueHref="/condo/savings"
+            savingsHref="/condo/savings"
+            dueLabel={month.dueLabel}
           />
 
           {/* Recent Activity + Current Bookings */}

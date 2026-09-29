@@ -45,7 +45,20 @@ export type CondoMonth = {
   surplusCents: number;
   status: 'Paid' | 'Processing';
   invoicedOn: string | null;
+  /**
+   * When this month's invoice falls due, e.g. "Due Oct 1".
+   *
+   * The first of the FOLLOWING month: the bill is raised once the month it
+   * covers has finished, which is also why a month in progress shows a
+   * figure that can still move.
+   */
+  dueLabel: string;
 };
+
+const MONTHS_SHORT = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
 
 function monthFrom(grossCents: number, d: Date, id: string, status: CondoMonth['status']): CondoMonth {
   const earningsCents = netToBuilding(grossCents);
@@ -65,6 +78,7 @@ function monthFrom(grossCents: number, d: Date, id: string, status: CondoMonth['
     dueCents: offset.dueCents,
     surplusCents: offset.surplusCents,
     status,
+    dueLabel: `Due ${MONTHS_SHORT[(d.getMonth() + 1) % 12]} 1`,
     invoicedOn:
       status === 'Processing'
         ? null

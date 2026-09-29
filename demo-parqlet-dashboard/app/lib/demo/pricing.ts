@@ -172,6 +172,76 @@ export function applyOffset(params: {
   };
 }
 
+/**
+ * What a CONDO saved this month, and what rolls into the next.
+ *
+ * Mirrors api-backend's `applyCondoSavings` (src/lib/building-earnings.ts),
+ * which is the real implementation - this exists so the demo shows the same
+ * arithmetic without a backend.
+ *
+ *   savings     = min(earnings + carried in, subscription - floor)
+ *   due         = subscription - savings
+ *   carried out = (earnings + carried in) - savings
+ *
+ * The difference from `applyOffset` is the carryover: a Condo's surplus is
+ * not lost at the floor, it spends itself next month. An Apartment's
+ * surplus is a payout instead, so it keeps `applyOffset`.
+ */
+export type CondoSavings = {
+  earningsCents: number;
+  carriedInCents: number;
+  availableCents: number;
+  maxSavingsCents: number;
+  savingsCents: number;
+  dueCents: number;
+  carriedOverCents: number;
+  subscriptionCents: number;
+  floorCents: number;
+  atMax: boolean;
+};
+
+export function applyCondoSavings(params: {
+  earningsCents: number;
+  carriedInCents?: number;
+  subscriptionCents: number;
+  floorCents?: number;
+}): CondoSavings {
+  const earningsCents = Math.max(0, Math.round(params.earningsCents));
+  const carriedInCents = Math.max(0, Math.round(params.carriedInCents ?? 0));
+  const subscriptionCents = Math.max(0, Math.round(params.subscriptionCents));
+  const floorCents = params.floorCents ?? CONDO_FLOOR_CENTS;
+
+  // Never negative: a subscription already at the floor can save nothing,
+  // and a negative cap would turn a saving into a charge.
+  const maxSavingsCents = Math.max(0, subscriptionCents - floorCents);
+  const availableCents = earningsCents + carriedInCents;
+  const savingsCents = Math.min(availableCents, maxSavingsCents);
+
+  return {
+    earningsCents,
+    carriedInCents,
+    availableCents,
+    maxSavingsCents,
+    savingsCents,
+    dueCents: subscriptionCents - savingsCents,
+    carriedOverCents: availableCents - savingsCents,
+    subscriptionCents,
+    floorCents,
+    atMax: maxSavingsCents > 0 && savingsCents >= maxSavingsCents,
+  };
+}
+
+/** How full the savings bar is, 0..1 - against the MAXIMUM saving, so a
+ *  building at its floor reads as full rather than as a fraction of a bill
+ *  it can never clear. */
+export function savingsBarFill(s: {
+  savingsCents: number;
+  maxSavingsCents: number;
+}): number {
+  if (s.maxSavingsCents <= 0) return 0;
+  return Math.min(1, s.savingsCents / s.maxSavingsCents);
+}
+
 /** The line each product leads with. */
 export const PITCH = {
   condo:
