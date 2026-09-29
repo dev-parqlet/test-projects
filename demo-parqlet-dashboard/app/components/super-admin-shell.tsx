@@ -25,6 +25,7 @@ export {
 // ─── Re-export: Nav data ───────────────────────────────────────────────────────
 export { SUPER_ADMIN_NAV_ITEMS } from "./super-admin-nav-data";
 export type { SuperAdminNavId } from "./super-admin-nav-data";
+import { SUPER_ADMIN_NAV_ITEMS, type SuperAdminNavId } from "./super-admin-nav-data";
 
 // ─── Re-export: UI components ──────────────────────────────────────────────────
 export { BuildingFilterDropdown } from "./ui/BuildingFilterDropdown";
@@ -34,39 +35,18 @@ export { AccountMenu }             from "./ui/AccountMenu";
 // SuperAdminShell is too intertwined with NAV_ITEMS and inline sidebar to extract
 // cleanly today. It will be addressed in Phase 1.5 (AdminShellBase extraction).
 // Import extracted icons directly from their modules for use inside this component.
-import {
-  IcOverview, IcAlerts, IcBuildings, IcRevenue, IcCredits,
-  IcSync, IcTickets, IcSettings, IcBookings, IcBroadcast,
-} from "./super-admin-icons";
-import { IcGiftCard } from "./icons/IcGiftCard";
-import { IcPerson } from "./icons/IcPerson";
-import { IcResidentDirectory } from "./icons/IcResidentDirectory";
+// The nav's icons now live with the nav itself, in super-admin-nav-data.ts.
 import { BuildingFilterDropdown } from "./ui/BuildingFilterDropdown";
 import { AccountMenu }             from "./ui/AccountMenu";
 import { HeaderThemeToggle }       from "./ui/HeaderThemeToggle";
 
-const SUPER_ADMIN_NAV_ITEMS = [
-  { id: "overview" as const,  label: "Overview",          href: "/super-admin",              Icon: IcOverview  },
-  { id: "alerts"   as const,  label: "Alerts",             href: "/alerts",                   Icon: IcAlerts    },
-  { id: "buildings" as const, label: "Buildings",          href: "/buildings",                Icon: IcBuildings },
-  { id: "revenue"   as const, label: "Revenue",            href: "/revenue",                  Icon: IcRevenue   },
-  { id: "credits"   as const, label: "Credits",           href: "/credits",                  Icon: IcCredits   },
-  { id: "sync"      as const, label: "Sync Monitor",       href: "/sync",                     Icon: IcSync      },
-  { id: "tickets"   as const, label: "Support Tickets",   href: "/tickets",                  Icon: IcTickets   },
-  { id: "settings"  as const, label: "Settings",          href: "/super-admin-settings",      Icon: IcSettings  },
-  { id: "access-management" as const, label: "Access Management", href: "/access-management",   Icon: IcPerson },
-  { id: "residents" as const, label: "Residents",         href: "/super-admin/residents",     Icon: IcResidentDirectory },
-  { id: "bookings"  as const, label: "Bookings",          href: "/super-admin/bookings",       Icon: IcBookings },
-  { id: "broadcasts" as const, label: "Broadcasts",       href: "/super-admin/broadcasts",     Icon: IcBroadcast },
-  { id: "gift-cards" as const, label: "Gift Cards",       href: "/super-admin/gift-cards",     Icon: IcGiftCard },
-];
 
 export function SuperAdminShell({
   active,
   children,
   alertCount = 0,
 }: {
-  active?: "overview" | "alerts" | "buildings" | "revenue" | "credits" | "sync" | "tickets" | "settings" | "access-management" | "residents" | "bookings" | "broadcasts" | "gift-cards" | "profile";
+  active?: SuperAdminNavId;
   children: React.ReactNode;
   alertCount?: number;
 }) {

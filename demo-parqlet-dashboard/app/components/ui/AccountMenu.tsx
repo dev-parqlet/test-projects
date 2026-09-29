@@ -94,8 +94,21 @@ export function AccountMenu() {
             { key: "settings",  label: "Settings",          href: "/super-admin-settings"      },
             { key: "privacy",   label: "Privacy Policy",     href: "https://parqlet-terms-and-privacy.notion.site/Privacy-Policy-35d38574a76480a0be27c1cac5735ebe" },
             { key: "terms",     label: "Terms of Service",  href: "https://parqlet-terms-and-privacy.notion.site/Terms-of-Service-35d38574a76480228d7bc194bc23c6de"  },
-          ].map(({ key, label, href }) => (
-            <Link key={key} href={href} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", display: "block" }} onClick={() => setOpen(false)}>
+          ].map(({ key, label, href }) => {
+            // Only the policy links leave the app. The three above them are
+            // pages in this dashboard, and opening those in a new tab left a
+            // trail of tabs behind - which now matters more, because the
+            // sidebar no longer carries Profile or Access Management and
+            // this menu is the only way in.
+            const external = href.startsWith("http");
+            return (
+            <Link
+              key={key}
+              href={href}
+              target={external ? "_blank" : undefined}
+              rel={external ? "noopener noreferrer" : undefined}
+              style={{ textDecoration: "none", display: "block" }}
+              onClick={() => setOpen(false)}>
               <div
                 onMouseEnter={() => setHoveredItem(key)}
                 onMouseLeave={() => setHoveredItem(null)}
@@ -112,7 +125,8 @@ export function AccountMenu() {
                 {label}
               </div>
             </Link>
-          ))}
+            );
+          })}
 
           <div style={{ borderTop: "1px solid var(--color-stroke-medium)", margin: "4px 0" }} />
 
