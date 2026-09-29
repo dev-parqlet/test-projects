@@ -1,13 +1,13 @@
-Property Name,Property Address,Property City,Property State,Unit Number,First Name,Last Name,Resident Id,Email,Cell Phone,Occupancy Id,Move Out Date,Lease End Date,Resident Type
-Harborview Apartments,1400 E Riverside Dr,Austin,TX,101,Test,Resident One,HV-3001,resident1@harborview.test,(555) 301-0001,OCC-3001,,2027-06-30,Renter
-Harborview Apartments,1400 E Riverside Dr,Austin,TX,102,Test,Resident Two,HV-3002,resident2@harborview.test,(555) 301-0002,OCC-3002,,2027-06-30,Renter
-Harborview Apartments,1400 E Riverside Dr,Austin,TX,103,Maya,Chen,HV-3003,maya.chen@email.com,(555) 301-0003,OCC-3003,,2027-04-30,Renter
-Harborview Apartments,1400 E Riverside Dr,Austin,TX,104,Liam,Carter,HV-3004,liam.carter@email.com,(555) 301-0004,OCC-3004,,2027-05-31,Renter
-Harborview Apartments,1400 E Riverside Dr,Austin,TX,201,Priya,Patel,HV-3005,priya.patel@email.com,(555) 301-0005,OCC-3005,,2027-09-30,Renter
-Harborview Apartments,1400 E Riverside Dr,Austin,TX,202,Owen,Brooks,HV-3006,owen.brooks@email.com,(555) 301-0006,OCC-3006,,2027-01-31,Renter
-Harborview Apartments,1400 E Riverside Dr,Austin,TX,203,Jordan,Reyes,HV-3007,jordan.reyes@email.com,(555) 301-0007,OCC-3007,,2027-03-31,Renter
-Harborview Apartments,1400 E Riverside Dr,Austin,TX,204,Sofia,Nguyen,HV-3008,sofia.nguyen@email.com,(555) 301-0008,OCC-3008,,2027-08-31,Renter
-Harborview Apartments,1400 E Riverside Dr,Austin,TX,301,Ethan,Walsh,HV-3009,ethan.walsh@email.com,(555) 301-0009,OCC-3009,,2027-02-28,Renter
-Harborview Apartments,1400 E Riverside Dr,Austin,TX,302,Amara,Okafor,HV-3010,amara.okafor@email.com,(555) 301-0010,OCC-3010,,2027-07-31,Renter
-Harborview Apartments,1400 E Riverside Dr,Austin,TX,303,Noah,Feldman,HV-3011,noah.feldman@email.com,(555) 301-0011,OCC-3011,,2027-10-31,Renter
-Harborview Apartments,1400 E Riverside Dr,Austin,TX,304,Isabel,Moreno,HV-3012,isabel.moreno@email.com,(555) 301-0012,OCC-3012,,2027-11-30,Renter
+"Property Name","Property Address","Property City","Property State","Unit Number","First Name","Last Name","Resident Id","Email","Cell Phone","Occupancy Id","Move Out Date","Lease End Date","Resident Type"
+"Harborview Apartments","1400 E Riverside Dr","Austin","TX","101","Test","Resident One","HV-3001","resident1@harborview.test","(555) 301-0001","OCC-3001","","2027-06-30","Renter"
+"Harborview Apartments","1400 E Riverside Dr","Austin","TX","102","Test","Resident Two","HV-3002","resident2@harborview.test","(555) 301-0002","OCC-3002","","2027-06-30","Renter"
+"Harborview Apartments","1400 E Riverside Dr","Austin","TX","103","Maya","Chen","HV-3003","maya.chen@email.com","(555) 301-0003","OCC-3003","","2027-04-30","Renter"
+"Harborview Apartments","1400 E Riverside Dr","Austin","TX","104","Liam","Carter","HV-3004","liam.carter@email.com","(555) 301-0004","OCC-3004","","2027-05-31","Renter"
+"Harborview Apartments","1400 E Riverside Dr","Austin","TX","201","Priya","Patel","HV-3005","priya.patel@email.com","(555) 301-0005","OCC-3005","","2027-09-30","Renter"
+"Harborview Apartments","1400 E Riverside Dr","Austin","TX","202","Owen","Brooks","HV-3006","owen.brooks@email.com","(555) 301-0006","OCC-3006","","2027-01-31","Renter"
+"Harborview Apartments","1400 E Riverside Dr","Austin","TX","203","Jordan","Reyes","HV-3007","jordan.reyes@email.com","(555) 301-0007","OCC-3007","","2027-03-31","Renter"
+"Harborview Apartments","1400 E Riverside Dr","Austin","TX","204","Sofia","Nguyen","HV-3008","sofia.nguyen@email.com","(555) 301-0008","OCC-3008","","2027-08-31","Renter"
+"Harborview Apartments","1400 E Riverside Dr","Austin","TX","301","Ethan","Walsh","HV-3009","ethan.walsh@email.com","(555) 301-0009","OCC-3009","","2027-02-28","Renter"
+"Harborview Apartments","1400 E Riverside Dr","Austin","TX","302","Amara","Okafor","HV-3010","amara.okafor@email.com","(555) 301-0010","OCC-3010","","2027-07-31","Renter"
+"Harborview Apartments","1400 E Riverside Dr","Austin","TX","303","Noah","Feldman","HV-3011","noah.feldman@email.com","(555) 301-0011","OCC-3011","","2027-10-31","Renter"
+"Harborview Apartments","1400 E Riverside Dr","Austin","TX","304","Isabel","Moreno","HV-3012","isabel.moreno@email.com","(555) 301-0012","OCC-3012","","2027-11-30","Renter"
