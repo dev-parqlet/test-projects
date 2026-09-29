@@ -17,7 +17,7 @@
  *
  * `isSuperAdmin` is passed by the caller — see
  * app/(superadmin)/super-admin/gift-cards/page.tsx vs.
- * app/(hoa)/gift-cards/page.tsx. The backend re-checks the role
+ * app/(hoa)/reward-redemption/page.tsx. The backend re-checks the role
  * independently, so this prop is a UI convenience, not a security
  * boundary.
  *

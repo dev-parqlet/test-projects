@@ -15,14 +15,14 @@ function pathnameToNavId(raw: string): NavId {
   const pathname = stripProductPrefix(raw);
   if (pathname === "/")                                            return "dashboard";
   if (pathname === "/bookings")                                    return "bookings";
-  if (pathname === "/parking")                                     return "parking";
+  if (pathname === "/residents")                                   return "residents";
   if (pathname === "/tickets" || pathname.startsWith("/tickets/")) return "tickets";
   if (pathname === "/subscription")                                return "subscription";
   if (pathname === "/access")                                      return "access";
   if (pathname === "/settings")                                    return "settings";
   if (pathname === "/profile")                                     return "profile";
   if (pathname === "/notifications")                               return "notifications";
-  if (pathname === "/gift-cards")                                  return "gift-cards";
+  if (pathname === "/reward-redemption")                           return "reward-redemption";
   if (pathname === "/spots")                                       return "spots";
   if (pathname === "/availability")                                return "availability";
   if (pathname === "/revenue")                                     return "revenue";

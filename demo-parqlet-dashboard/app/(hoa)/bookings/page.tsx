@@ -15,7 +15,7 @@ import { IdDisplay } from "../../components/ui/IdDisplay";
 import { Pagination } from "../../components/ui/Pagination";
 import { TableHeadLabel } from "../../components/ui/TableHeadLabel";
 import { CopyableCell } from "../../components/ui/CopyableCell";
-import { PhoneWithTooltip } from "../parking/components/phone-tooltip";
+import { PhoneWithTooltip } from "../residents/components/phone-tooltip";
 import { NAME_TEXT_WIDTH, NAME_COLUMN_WIDTH } from "../../lib/name-cell";
 import { compareNamesIgnoringLeadingSymbols } from "../../lib/sort-utils";
 import "../../tokens.css";

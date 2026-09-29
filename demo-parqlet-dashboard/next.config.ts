@@ -30,13 +30,13 @@ const APARTMENT_SHARED = [
   "settings",
   "profile",
   "notifications",
-  // The resident list and the gift-card ledger are the same screens in both
+  // The resident list and the reward ledger are the same screens in both
   // products - a resident is a resident and a $25 card is a $25 card - so
   // Apartments links at them rather than growing a second copy. The nav they
   // render with comes from the URL (see lib/demo/nav-for-path.ts), so an
   // Apartments visitor keeps the Apartments sidebar on them.
-  "parking",
-  "gift-cards",
+  "residents",
+  "reward-redemption",
 ];
 
 const nextConfig: NextConfig = {

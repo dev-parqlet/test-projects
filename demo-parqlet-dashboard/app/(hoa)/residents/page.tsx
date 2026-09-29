@@ -37,7 +37,7 @@ function useDebounce<T>(value: T, delay: number): T {
 // ─── Column defs ──────────────────────────────────────────────────────────────
 
 // Column header flex widths MUST mirror the cell widths rendered by
-// ResidentRow (see app/(hoa)/parking/components/resident-row.tsx).
+// ResidentRow (see app/(hoa)/residents/components/resident-row.tsx).
 // Keep in sync with app/(superadmin)/super-admin/residents/page.tsx#COLUMNS.
 const COLUMNS: { label: string; flex: number | string }[] = [
   { label: "Unit #",           flex: 5  },
