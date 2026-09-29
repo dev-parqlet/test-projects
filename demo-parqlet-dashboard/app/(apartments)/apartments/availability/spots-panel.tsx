@@ -71,6 +71,7 @@ export function SpotsPanel() {
   const [spots, setSpots] = useState<DemoSpot[]>(DEMO_SPOTS);
   const [editing, setEditing] = useState<DemoSpot | null>(null);
   const [creating, setCreating] = useState(false);
+  const [bulkAdding, setBulkAdding] = useState(false);
   const [pricingRange, setPricingRange] = useState(false);
   const [lastBulk, setLastBulk] = useState<string | null>(null);
 
@@ -125,6 +126,59 @@ export function SpotsPanel() {
     );
     setEditing(null);
     setCreating(false);
+  };
+
+  /**
+   * Add a numbered range of spots at once.
+   *
+   * A garage is built in blocks - "level 2 is 201 to 230" - so adding them
+   * one at a time is the sort of thing that makes an operator abandon
+   * onboarding. Numbers already in use are SKIPPED rather than failing the
+   * whole range: a manager extending a garage means "make the rest", and
+   * refusing would leave them working out which ones are missing.
+   */
+  const addRange = (params: {
+    from: number;
+    to: number;
+    level: string;
+    type: DemoSpot["type"];
+    covered: boolean;
+    evCharger: boolean;
+    extraCents: number;
+  }) => {
+    const lo = Math.min(params.from, params.to);
+    const hi = Math.max(params.from, params.to);
+    setSpots((prev) => {
+      const taken = new Set(prev.map((s) => s.number));
+      const made: DemoSpot[] = [];
+      for (let n = lo; n <= hi; n++) {
+        const number = String(n);
+        if (taken.has(number)) continue;
+        made.push({
+          id: `s${number}-${Date.now()}`,
+          number,
+          level: params.level,
+          type: params.type,
+          covered: params.covered,
+          evCharger: params.evCharger,
+          // Anything the building adds by hand is its own, so it starts
+          // priceable - the same rule the single Add spot form uses.
+          owner: "building",
+          extraCents: params.extraCents,
+          status: "Listed",
+        });
+      }
+      const skipped = hi - lo + 1 - made.length;
+      setLastBulk(
+        made.length === 0
+          ? `Every number from ${lo} to ${hi} already exists.`
+          : `Added ${made.length} spot${made.length === 1 ? "" : "s"} (${lo}-${hi})` +
+            (params.extraCents > 0 ? ` at ${formatMoney(BASE_PRICE_CENTS + params.extraCents)} a day` : "") +
+            (skipped > 0 ? `. ${skipped} already existed and were left alone.` : "."),
+      );
+      return [...prev, ...made];
+    });
+    setBulkAdding(false);
   };
 
   const toggleListed = (id: string) =>
@@ -185,6 +239,9 @@ export function SpotsPanel() {
         <div style={{ display: "flex", gap: "var(--spacing-8)", flexShrink: 0 }}>
           <Button variant="secondary" size="small" style={{ width: "auto", whiteSpace: "nowrap" }} onClick={() => setPricingRange(true)}>
             Set prices by range
+          </Button>
+          <Button variant="secondary" size="small" style={{ width: "auto", whiteSpace: "nowrap" }} onClick={() => setBulkAdding(true)}>
+            Add spots in bulk
           </Button>
           <Button variant="primary" size="small" style={{ width: "auto", whiteSpace: "nowrap" }} onClick={() => setCreating(true)}>
             Add spot
@@ -293,6 +350,12 @@ export function SpotsPanel() {
         Showing {visible.length} of {spots.length} spots
       </span>
 
+      <BulkAddModal
+        open={bulkAdding}
+        onClose={() => setBulkAdding(false)}
+        onAdd={addRange}
+      />
+
       <RangePriceModal
         open={pricingRange}
         onClose={() => setPricingRange(false)}
@@ -332,6 +395,107 @@ function PriceBreakdown({ extraCents }: { extraCents: number }) {
       {formatMoney(total - netToBuilding(total))} ({COMMISSION_PCT}% and card fees) ·
       you receive <strong>{formatMoney(netToBuilding(total))}</strong>
     </span>
+  );
+}
+
+/**
+ * Add a whole block of spots at once.
+ *
+ * Pricing is offered here rather than left to a second step, because a
+ * manager adding "201 to 230, level 2" already knows what that level
+ * costs - and a range added at the base and priced later is two chances
+ * to get it wrong instead of one.
+ */
+function BulkAddModal({
+  open,
+  onClose,
+  onAdd,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onAdd: (p: {
+    from: number;
+    to: number;
+    level: string;
+    type: DemoSpot["type"];
+    covered: boolean;
+    evCharger: boolean;
+    extraCents: number;
+  }) => void;
+}) {
+  const [from, setFrom] = useState("201");
+  const [to, setTo] = useState("230");
+  const [level, setLevel] = useState("P2");
+  const [type, setType] = useState<DemoSpot["type"]>("Standard");
+  const [covered, setCovered] = useState(true);
+  const [ev, setEv] = useState(false);
+  const [extra, setExtra] = useState("4");
+
+  if (!open) return null;
+
+  const f = Number.parseInt(from, 10);
+  const t = Number.parseInt(to, 10);
+  const extraDollars = Number.parseFloat(extra);
+  const extraOk = Number.isFinite(extraDollars) && Number.isInteger(extraDollars) && extraDollars >= 0;
+  const count = Number.isInteger(f) && Number.isInteger(t) ? Math.abs(t - f) + 1 : 0;
+  const tooMany = count > 500;
+  const invalid = !Number.isInteger(f) || !Number.isInteger(t) || f < 0 || t < 0 || !extraOk || tooMany;
+  const extraCents = extraOk ? Math.round(extraDollars * 100) : 0;
+
+  return (
+    <Modal open onClose={onClose} title="Add spots in bulk" size="small">
+      <div style={st.form}>
+        <span style={{ fontSize: 12, color: "var(--color-text-weak)", lineHeight: 1.6 }}>
+          Creates every number in the range. Numbers already in use are left
+          alone, so you can extend a garage without working out which ones
+          are missing.
+        </span>
+        <div style={{ display: "flex", gap: "var(--spacing-12)" }}>
+          <Input label="From" inputMode="numeric" value={from} onChange={(e) => setFrom(e.target.value)} />
+          <Input label="To" inputMode="numeric" value={to} onChange={(e) => setTo(e.target.value)} />
+        </div>
+        <Input label="Level" value={level} onChange={(e) => setLevel(e.target.value)} placeholder="P2" />
+        <label style={st.field}>
+          <span style={st.fieldLabel}>Vehicle type</span>
+          <select style={st.input} value={type} onChange={(e) => setType(e.target.value as DemoSpot["type"])}>
+            {(["Standard", "Compact", "Large SUV", "Motorcycle"] as const).map((o) => (
+              <option key={o} value={o}>{o}</option>
+            ))}
+          </select>
+        </label>
+        <div style={{ display: "flex", gap: "var(--spacing-16)" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+            <input type="checkbox" checked={covered} onChange={(e) => setCovered(e.target.checked)} /> Covered
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+            <input type="checkbox" checked={ev} onChange={(e) => setEv(e.target.checked)} /> EV charger
+          </label>
+        </div>
+        <Input
+          label="Extra per day (USD), on top of the base credit"
+          inputMode="numeric"
+          value={extra}
+          onChange={(e) => setExtra(e.target.value)}
+        />
+        <span style={{ fontSize: 12, color: tooMany ? "var(--color-tag-text-expired)" : "var(--color-text-weak)" }}>
+          {tooMany
+            ? `That is ${count} spots. A range covers at most 500 at a time.`
+            : `${count} spot${count === 1 ? "" : "s"}, each ${formatMoney(BASE_PRICE_CENTS + extraCents)} a day.`}
+        </span>
+        <div style={st.actions}>
+          <Button variant="secondary" size="small" style={{ width: "auto" }} onClick={onClose}>Cancel</Button>
+          <Button
+            variant="primary"
+            size="small"
+            style={{ width: "auto" }}
+            disabled={invalid}
+            onClick={() => onAdd({ from: f, to: t, level, type, covered, evCharger: ev, extraCents })}
+          >
+            Add spots
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 }
 
