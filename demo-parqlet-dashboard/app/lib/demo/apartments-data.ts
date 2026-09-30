@@ -38,6 +38,12 @@ export type DemoSpot = {
    */
   owner: 'resident' | 'building';
   /**
+   * What it is sold as: Basic / Standard / Premium / Open Air. Standard is
+   * the default, the same as the real dashboard, where a spot with no tier
+   * set is Standard rather than untyped.
+   */
+  tier: SpotTier;
+  /**
    * Dollars added on top of the base credit. Always zero on a resident's
    * spot. On the building's own spots it is whatever the building wants:
    * a space by the lift is worth more than one on the roof.
@@ -55,28 +61,31 @@ export function spotPriceCents(s: Pick<DemoSpot, 'extraCents'>): number {
 }
 
 /**
- * What the building calls a price band.
+ * What a spot is SOLD AS.
  *
- * The garage is priced in three blocks, and the block is what an operator
- * reasons about - "the rooftop is underpriced", never "the spots with a $2
- * extra". Derived from the extra rather than stored beside it, so renaming
- * a band cannot leave a spot filed under a price it no longer charges.
+ * STORED, not derived from the price. It used to be read back out of the
+ * extra - $9 meant "Lower level", $2 meant "Rooftop" - which tied the name
+ * to the rate and meant repricing a level silently renamed it. It is also
+ * not how the real dashboard works: there a manager picks the tier with a
+ * bulk rule and the price is a separate decision, so deriving one from the
+ * other here would demo something the product does not do.
  *
- * `type` (Compact / Standard / Large SUV) is a different axis: it is what
- * FITS in the space, not what it costs, and the two must not be conflated.
+ * `type` (Compact / Standard / Large SUV) is a DIFFERENT axis: what FITS in
+ * the space, not what it is sold as. A Premium spot can be Compact.
  */
-export function spotBandLabel(s: Pick<DemoSpot, 'owner' | 'extraCents'>): string {
-  if (s.owner !== 'building') return 'Resident spot';
-  const extra = s.extraCents;
-  if (extra >= money(9)) return 'Lower level';
-  if (extra >= money(4)) return 'Standard';
-  return 'Rooftop';
+export const SPOT_TIERS = ['Basic', 'Standard', 'Premium', 'Open Air'] as const;
+export type SpotTier = (typeof SPOT_TIERS)[number];
+
+export function spotTierLabel(s: Pick<DemoSpot, 'owner' | 'tier'>): string {
+  // A resident does not price their spot, so there is nothing for a tier
+  // to mean on it.
+  return s.owner === 'building' ? s.tier : 'Resident spot';
 }
 
-/** The band a spot NUMBER falls in, for rows that carry only the number. */
-export function bandForSpotNumber(spotNumber: string): string {
+/** The tier of a spot NUMBER, for rows that carry only the number. */
+export function tierForSpotNumber(spotNumber: string): string {
   const spot = DEMO_SPOTS.find((s) => s.number === spotNumber);
-  return spot ? spotBandLabel(spot) : '—';
+  return spot ? spotTierLabel(spot) : '—';
 }
 
 /** What one day on this spot is listed at, for rows that carry only the number. */
@@ -121,6 +130,7 @@ function buildSpots(): DemoSpot[] {
     count: number,
     owner: DemoSpot['owner'],
     extra: number,
+    tier: SpotTier,
   ) => {
     for (let n = 0; n < count; n++) {
       const number = from + n;
@@ -130,19 +140,28 @@ function buildSpots(): DemoSpot[] {
         type: n % 7 === 0 ? 'Large SUV' : n % 3 === 0 ? 'Compact' : 'Standard',
         evCharger: n % 6 === 0,
         owner,
+        tier,
         extraCents: owner === 'building' ? money(extra) : 0,
       });
     }
   };
-  // The building's own spots, in three price bands. On the $6 base these
-  // come to $15, $10 and $8 a day - the prices the pricing spec uses as its
-  // example and the design puts on screen.
-  block(1, 40, 'building', 9);
-  block(201, 30, 'building', 4);
-  block(301, 20, 'building', 2);
-  // Residents sharing their own assigned spaces. Base credit, no extra.
-  block(401, 24, 'resident', 0);
-  block(431, 11, 'resident', 0);
+  // The building's own spots, one block per tier, so all four appear on
+  // screen rather than three of them. On the $6 base these come to $15,
+  // $10, $8 and $7 a day.
+  //
+  // Price and tier are set together here because that is how a garage is
+  // actually laid out, but they are SEPARATE fields: the dashboard lets a
+  // manager reprice a level without renaming it, and the demo has to be
+  // able to show that.
+  block(1, 40, 'building', 9, 'Premium');
+  block(201, 30, 'building', 4, 'Standard');
+  block(301, 10, 'building', 2, 'Open Air');
+  block(311, 10, 'building', 1, 'Basic');
+  // Residents sharing their own assigned spaces. Base credit, no extra,
+  // and no tier of their own - `spotTierLabel` reports them as resident
+  // spots rather than as Standard.
+  block(401, 24, 'resident', 0, 'Standard');
+  block(431, 11, 'resident', 0, 'Standard');
   return out;
 }
 

@@ -31,7 +31,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { fmtDateTime } from "@/lib/dates";
 import { bookingEarning } from "../../lib/demo/booking-earnings";
-import { bandForSpotNumber, formatMoney } from "../../lib/demo/apartments-data";
+import { tierForSpotNumber, formatMoney } from "../../lib/demo/apartments-data";
 import { dashboardKeys, DASHBOARD_STALE_TIME, BACKEND_URL } from "../hooks/dashboard/queryKeys";
 
 type Filter = "all" | "community" | "resident" | "canceled";
@@ -142,9 +142,9 @@ export function BookingEarnings({ buildingId }: { buildingId: string | null }) {
             </thead>
             <tbody>
               {rows.map(({ booking, earning }) => {
-                const band =
+                const tier =
                   earning.spotKind === "building" && booking.spotNumber
-                    ? bandForSpotNumber(booking.spotNumber)
+                    ? tierForSpotNumber(booking.spotNumber)
                     : null;
                 // The reason a cancelled row earned nothing, said in the
                 // column where the money would have been.
@@ -158,7 +158,7 @@ export function BookingEarnings({ buildingId }: { buildingId: string | null }) {
                       <span style={spotKindTag(earning.spotKind)}>{earning.spotKindLabel}</span>
                     </td>
                     <td style={st.td}>
-                      {band ? `${band} · ` : ""}
+                      {tier ? `${tier} · ` : ""}
                       {cancelNote}
                       {earning.reusedCredit ? (
                         <>

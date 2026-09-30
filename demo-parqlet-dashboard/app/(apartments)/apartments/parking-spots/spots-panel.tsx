@@ -39,6 +39,7 @@ import {
   formatMoney,
   netToBuilding,
   spotPriceCents,
+  spotTierLabel,
   type DemoSpot,
 } from "../../../lib/demo/apartments-data";
 import { BASE_PRICE_CENTS, BASE_PRICE_CREDITS } from "../../../lib/demo/pricing";
@@ -48,6 +49,9 @@ type Draft = Omit<DemoSpot, "id">;
 const EMPTY: Draft = {
   number: "",
   type: "Standard",
+  // Standard is the default tier, the same as the real dashboard, where a
+  // spot with none set is Standard rather than untyped.
+  tier: "Standard",
   evCharger: false,
   // Anything the building adds by hand is its own, so it starts priceable.
   owner: "building",
@@ -159,6 +163,7 @@ export function SpotsPanel({
           id: `s${number}-${Date.now()}`,
           number,
           type: params.type,
+          tier: "Standard",
           evCharger: params.evCharger,
           // Anything the building adds by hand is its own, so it starts
           // priceable - the same rule the single Add spot form uses.
@@ -260,8 +265,8 @@ export function SpotsPanel({
 
       <div style={st.card}>
         <div style={{ ...st.row, ...st.headRow }}>
-          {["Spot", "Type", "EV", "Shared by", "Price / day", "You receive", ""].map((h, i) => (
-            <div key={h || i} style={{ ...st.cellBase, flex: COL_FLEX[i], justifyContent: i === 6 ? "flex-end" : "flex-start" }}>
+          {["Spot", "Size", "Tier", "EV", "Shared by", "Price / day", "You receive", ""].map((h, i) => (
+            <div key={h || i} style={{ ...st.cellBase, flex: COL_FLEX[i], justifyContent: i === 7 ? "flex-end" : "flex-start" }}>
               <TableHeadLabel>{h}</TableHeadLabel>
             </div>
           ))}
@@ -273,13 +278,20 @@ export function SpotsPanel({
             <div key={sp.id} style={st.row}>
               <Cell i={0}><span style={{ ...st.txt, fontWeight: 600 }}>{sp.number}</span></Cell>
               <Cell i={1}><span style={st.txt}>{sp.type}</span></Cell>
-              <Cell i={2}><span style={st.txt}>{sp.evCharger ? "Yes" : "No"}</span></Cell>
-              <Cell i={3}>
+              {/* What it is SOLD AS, beside what FITS in it. Two axes, and
+                  a Premium spot can be Compact. */}
+              <Cell i={2}>
+                <span style={{ ...st.txt, color: sp.owner === "building" ? "var(--color-text-strong)" : "var(--color-text-weak)" }}>
+                  {spotTierLabel(sp)}
+                </span>
+              </Cell>
+              <Cell i={3}><span style={st.txt}>{sp.evCharger ? "Yes" : "No"}</span></Cell>
+              <Cell i={4}>
                 <span style={{ ...st.txt, color: sp.owner === "building" ? "var(--color-text-strong)" : "var(--color-text-weak)" }}>
                   {sp.owner === "building" ? "Building" : "Resident"}
                 </span>
               </Cell>
-              <Cell i={4}>
+              <Cell i={5}>
                 <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
                   <span style={{ ...st.txt, fontWeight: 600 }}>{formatMoney(total)}</span>
                   <span style={st.subTxt}>
@@ -289,8 +301,8 @@ export function SpotsPanel({
                   </span>
                 </span>
               </Cell>
-              <Cell i={5}><span style={{ ...st.txt, color: "var(--color-text-weak)" }}>{formatMoney(netToBuilding(total))}</span></Cell>
-              <div style={{ ...st.cellBase, flex: COL_FLEX[6], justifyContent: "flex-end", gap: "var(--spacing-12)" }}>
+              <Cell i={6}><span style={{ ...st.txt, color: "var(--color-text-weak)" }}>{formatMoney(netToBuilding(total))}</span></Cell>
+              <div style={{ ...st.cellBase, flex: COL_FLEX[7], justifyContent: "flex-end", gap: "var(--spacing-12)" }}>
                 {/* A resident's spot is theirs: the building can neither
                     reprice nor remove it, so its row offers nothing. */}
                 {canPrice(sp) && (
@@ -347,8 +359,8 @@ export function SpotsPanel({
 }
 
 const COL_FLEX = [
-  "7 1 70px", "8 1 90px", "5 1 55px", "7 1 80px",
-  "9 1 120px", "8 1 100px", "8 1 120px",
+  "7 1 70px", "7 1 80px", "8 1 95px", "4 1 50px", "6 1 75px",
+  "9 1 115px", "7 1 95px", "8 1 115px",
 ];
 
 function Cell({ i, children }: { i: number; children: React.ReactNode }) {

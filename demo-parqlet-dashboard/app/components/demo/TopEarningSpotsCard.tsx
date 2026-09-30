@@ -18,7 +18,7 @@ import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import {
-  bandForSpotNumber,
+  tierForSpotNumber,
   formatMoney,
   netToBuilding,
   priceForSpotNumber,
@@ -161,7 +161,7 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
               return (
                 <tr key={r.spotNumber}>
                   <td style={{ ...td, fontWeight: 600 }}>#{r.spotNumber}</td>
-                  <td style={td}>{bandForSpotNumber(r.spotNumber)}</td>
+                  <td style={td}>{tierForSpotNumber(r.spotNumber)}</td>
                   <td style={{ ...td, textAlign: "right", color: colors.weak }}>
                     {price == null ? "—" : `${formatMoney(price)}/day`}
                   </td>
