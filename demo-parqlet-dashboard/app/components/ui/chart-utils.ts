@@ -121,7 +121,14 @@ export function generateCustomData(
   from: string,
   to: string,
   bookings: BookingLike[],
-  splitBySpotKind = false
+  splitBySpotKind = false,
+  /**
+   * What a bucket of bookings is worth. Counting them is the default; the
+   * Earnings metric sums what each one made instead. Passed in rather than
+   * branched on here so this stays a generic chart utility that knows
+   * nothing about money.
+   */
+  measure: (rows: BookingLike[]) => number = (rows) => rows.length,
 ): ChartPoint[] {
   if (!from || !to) return [];
   const start = parseLocalDate(from);
@@ -142,9 +149,9 @@ export function generateCustomData(
   // change meaning when the user switched range.
   const point = (label: string, rows: BookingLike[]): ChartPoint => ({
     day: label,
-    value: rows.length,
+    value: measure(rows),
     neighbor: splitBySpotKind
-      ? rows.filter((b) => b.spotOwnerName).length
+      ? measure(rows.filter((b) => b.spotOwnerName))
       : undefined,
   });
 

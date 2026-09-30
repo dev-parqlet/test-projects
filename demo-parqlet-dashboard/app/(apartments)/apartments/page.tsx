@@ -18,17 +18,11 @@ import { StatCard } from "../../components/hoa/StatCard";
 import { TopContributorsCard } from "../../components/hoa/TopContributorsCard";
 import { useWindowWidth } from "../../components/hooks/useWindowSize";
 import { TopEarningSpotsCard } from "../../components/demo/TopEarningSpotsCard";
-import { EarningsProgressCard } from "../../components/revenue/EarningsProgressCard";
-import {
-  COMMISSION_PCT,
-  currentPeriod,
-  formatMoney,
-} from "../../lib/demo/apartments-data";
+import { MoneyProgressCard } from "../../components/revenue/MoneyProgressCard";
+import { formatMoney } from "../../lib/demo/apartments-data";
+import { currentApartmentMonth } from "../../lib/demo/apartment-earnings";
 import { bookingEarning } from "../../lib/demo/booking-earnings";
-import {
-  APARTMENT_FLOOR_CENTS,
-  APARTMENT_SUBSCRIPTION_CENTS,
-} from "../../lib/demo/pricing";
+import { APARTMENT_SUBSCRIPTION_CENTS } from "../../lib/demo/pricing";
 
 type Booking = {
   status: string;
@@ -52,7 +46,7 @@ export default function ApartmentsDashboardPage() {
     gap: "var(--spacing-16)",
     alignItems: isDesktop ? "stretch" : undefined,
   };
-  const period = useMemo(() => currentPeriod(), []);
+  const month = useMemo(() => currentApartmentMonth(), []);
 
   const { data } = useQuery({
     queryKey: ["apartments", "overview", buildingId],
@@ -116,10 +110,11 @@ export default function ApartmentsDashboardPage() {
             which building you are in, and printing it again as the page
             title left the screen as the only one with no title at all. */}
         <h1 style={st.h1}>Dashboard</h1>
-        <p style={st.sub}>
-          Public parking. Parqlet keeps {COMMISSION_PCT}% of every booking;
-          the rest is paid to you monthly.
-        </p>
+        {/* The same sentence the Condo dashboard opens with, ending in the
+            word that differs. An operator is told what the page is, not what
+            the commercial terms are - those belong on Subscription, and at
+            the top of a dashboard they read as a disclaimer. */}
+        <p style={st.sub}>Overview of parking activity and earnings in your building</p>
       </div>
 
       <div style={st.stats}>
@@ -140,13 +135,22 @@ export default function ApartmentsDashboardPage() {
         />
       </div>
 
-      {/* This month's earnings against the subscription */}
-      <EarningsProgressCard
+      {/* This month's earnings against the subscription. An Apartment's
+          bill reaches zero and the remainder is CASH, so the third column
+          is a payout rather than a carryover - see MoneyProgressCard. */}
+      <MoneyProgressCard
         product="apartment"
-        earningsCents={period.netCents}
         subscriptionCents={APARTMENT_SUBSCRIPTION_CENTS}
-        floorCents={APARTMENT_FLOOR_CENTS}
-        revenueHref="/apartment/earnings"
+        earnedCents={month.totalCents}
+        savedCents={month.appliedCents}
+        remainderCents={month.payoutCents}
+        floorCents={0}
+        dueLabel={month.dueLabel}
+        href="/apartment/earnings"
+        sources={[
+          { id: "community", label: "Community Spots", cents: month.communityCents },
+          { id: "resident", label: "Resident spots", cents: month.residentCents },
+        ]}
       />
 
       {/* Activity against the bookings that produced it */}

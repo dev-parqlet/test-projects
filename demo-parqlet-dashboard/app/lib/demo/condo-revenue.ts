@@ -140,6 +140,8 @@ export type SavingsMonth = {
   period: string;
   /** Short axis label, "Sep". */
   short: string;
+  /** Full month name, "September" - the "since April" tag spells it out. */
+  monthName: string;
   fromSharingCents: number;
   carriedInCents: number;
   savedCents: number;
@@ -163,7 +165,7 @@ export type SavingsMonth = {
  * exceeds the cap - so the chart shows exactly one carried-over cap, which
  * is what makes that part of the legend mean anything.
  */
-const SHARING_RAMP_CENTS = [9_600, 14_300, 17_600, 18_800, 31_200, 46_924];
+const SHARING_RAMP_CENTS = [9_595, 14_300, 17_568, 18_834, 31_218, 46_924];
 
 export function condoSavingsHistory(count = 6, now = new Date()): SavingsMonth[] {
   const ramp = SHARING_RAMP_CENTS.slice(-count);
@@ -183,8 +185,9 @@ export function condoSavingsHistory(count = 6, now = new Date()): SavingsMonth[]
     });
     out.push({
       id: `s${i}`,
-      period: `${MONTHS[d.getMonth()]} ${d.getFullYear()}`,
-      short: MONTHS[d.getMonth()].slice(0, 3),
+      period: `${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`,
+      short: MONTHS_SHORT[d.getMonth()],
+      monthName: MONTHS[d.getMonth()],
       fromSharingCents,
       carriedInCents,
       savedCents: s.savingsCents,

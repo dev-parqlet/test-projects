@@ -17,7 +17,12 @@ import Link from "next/link";
 import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { formatMoney, netToBuilding } from "../../lib/demo/apartments-data";
+import {
+  bandForSpotNumber,
+  formatMoney,
+  netToBuilding,
+  priceForSpotNumber,
+} from "../../lib/demo/apartments-data";
 
 type Row = {
   spotNumber: string;
@@ -87,13 +92,37 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
         minWidth: 0,
       }}
     >
-      <div>
-        <span style={{ fontSize: 15, fontWeight: 600, color: colors.strong }}>
-          Top earning spots
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+        <div>
+          <span
+            style={{
+              fontFamily: "var(--font-family-body)",
+              fontSize: "var(--font-size-uppercase)",
+              lineHeight: "var(--line-height-uppercase)",
+              fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
+              color: colors.weak,
+              textTransform: "uppercase" as const,
+            }}
+          >
+            Top earning spots
+          </span>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: colors.weak }}>
+            Community Spots that earn the most.
+          </p>
+        </div>
+        <span
+          style={{
+            padding: "6px 12px",
+            borderRadius: "var(--radius-8)",
+            border: `1px solid ${colors.border}`,
+            fontFamily: "var(--font-family-body)",
+            fontSize: "var(--font-size-tiny)",
+            color: colors.strong,
+            whiteSpace: "nowrap",
+          }}
+        >
+          All time
         </span>
-        <p style={{ margin: "4px 0 0", fontSize: 12, color: colors.weak }}>
-          After commission, all time.
-        </p>
       </div>
 
       {isLoading ? (
@@ -106,11 +135,11 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              {["#", "Spot", "Bookings", "Collected", "You received"].map((h, i) => (
+              {["Spot", "Type", "Price", "Bookings", "Earned"].map((h, i) => (
                 <th
                   key={h}
                   style={{
-                    textAlign: i === 0 ? "center" : i >= 2 ? "right" : "left",
+                    textAlign: i >= 2 ? "right" : "left",
                     fontSize: 11,
                     fontWeight: 500,
                     color: colors.weak,
@@ -127,19 +156,22 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, i) => (
-              <tr key={r.spotNumber}>
-                <td style={{ ...td, textAlign: "center", color: colors.weak }}>{i + 1}</td>
-                <td style={{ ...td, fontWeight: 600 }}>{r.spotNumber}</td>
-                <td style={{ ...td, textAlign: "right" }}>{r.bookings}</td>
-                <td style={{ ...td, textAlign: "right", color: colors.weak }}>
-                  {formatMoney(r.grossCents)}
-                </td>
-                <td style={{ ...td, textAlign: "right", fontWeight: 600 }}>
-                  {formatMoney(r.netCents)}
-                </td>
-              </tr>
-            ))}
+            {rows.map((r) => {
+              const price = priceForSpotNumber(r.spotNumber);
+              return (
+                <tr key={r.spotNumber}>
+                  <td style={{ ...td, fontWeight: 600 }}>#{r.spotNumber}</td>
+                  <td style={td}>{bandForSpotNumber(r.spotNumber)}</td>
+                  <td style={{ ...td, textAlign: "right", color: colors.weak }}>
+                    {price == null ? "—" : `${formatMoney(price)}/day`}
+                  </td>
+                  <td style={{ ...td, textAlign: "right" }}>{r.bookings}</td>
+                  <td style={{ ...td, textAlign: "right", fontWeight: 600 }}>
+                    {formatMoney(r.netCents)}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}

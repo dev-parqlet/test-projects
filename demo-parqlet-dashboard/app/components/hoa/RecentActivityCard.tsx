@@ -2,14 +2,24 @@
 
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { IcCalendarSm, IcArrowUp } from "../icons";
+import { IcCalendarSm } from "../icons";
 import { ApiBooking } from "../hooks/dashboard/types";
-import { weekData, monthData, avg, generateCustomData, defaultFrom, defaultTo, ChartPoint } from "../ui/chart-utils";
+import { weekData, monthData, generateCustomData, defaultFrom, defaultTo } from "../ui/chart-utils";
+import { bookingEarning } from "../../lib/demo/booking-earnings";
+import { formatMoney } from "../../lib/demo/pricing";
 import { colors } from "../ui/chart-utils";
 import { BarChart } from "./BarChart";
 import { dashboardKeys, DASHBOARD_STALE_TIME, BACKEND_URL } from "../hooks/dashboard/queryKeys";
 
 type TabOption = "Week" | "Month" | "Custom";
+/**
+ * What the bars measure.
+ *
+ * Only a building that EARNS has a second thing to plot. A Condo is never
+ * paid, so bookings are the only series it has and the toggle would be a
+ * control with one position.
+ */
+type Metric = "Bookings" | "Earnings";
 
 const BACKEND = BACKEND_URL;
 
@@ -39,6 +49,7 @@ async function fetchBookings(buildingId: string): Promise<ApiBooking[]> {
 
 export function RecentActivityCard({ buildingId, splitBySpotKind = false }: RecentActivityCardProps) {
   const [activeTab, setActiveTab] = useState<TabOption>("Week");
+  const [metric, setMetric] = useState<Metric>("Bookings");
   const [visible, setVisible] = useState(false);
   const [fromDate, setFromDate] = useState(defaultFrom);
   const [toDate, setToDate] = useState(defaultTo);
@@ -50,9 +61,21 @@ export function RecentActivityCard({ buildingId, splitBySpotKind = false }: Rece
     staleTime: DASHBOARD_STALE_TIME,
   });
 
+  // Counting rows, or summing what they made. `bookingEarning` is the same
+  // function the Recent Bookings list and the Earnings page use, so a bar
+  // and the rows behind it can never disagree about what a booking earned.
+  const measure = useMemo(
+    () =>
+      metric === "Earnings"
+        ? (rows: { bookingStartIso: string }[]) =>
+            rows.reduce((sum, b) => sum + bookingEarning(b as never).earnedCents, 0)
+        : (rows: unknown[]) => rows.length,
+    [metric],
+  );
+
   const staticData = useMemo(() => {
     if (bookings.length === 0) {
-      return { weekly: weekData, monthly: monthData, weekAvg: avg(weekData), monthAvg: avg(monthData) };
+      return { weekly: weekData, monthly: monthData };
     }
     const now = new Date();
     const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -69,8 +92,8 @@ export function RecentActivityCard({ buildingId, splitBySpotKind = false }: Rece
       });
       return {
         day: label,
-        value: onDay.length,
-        neighbor: splitBySpotKind ? onDay.filter((b) => b.spotOwnerName).length : undefined,
+        value: measure(onDay),
+        neighbor: splitBySpotKind ? measure(onDay.filter((b) => b.spotOwnerName)) : undefined,
       };
     });
 
@@ -85,19 +108,16 @@ export function RecentActivityCard({ buildingId, splitBySpotKind = false }: Rece
       });
       return {
         day: `W${i + 1}`,
-        value: inWeek.length,
-        neighbor: splitBySpotKind ? inWeek.filter((b) => b.spotOwnerName).length : undefined,
+        value: measure(inWeek),
+        neighbor: splitBySpotKind ? measure(inWeek.filter((b) => b.spotOwnerName)) : undefined,
       };
     });
-
-    const weekAvg = Math.round(weekly.reduce((s, p) => s + p.value, 0) / weekly.length) || 0;
-    const monthAvg = Math.round(monthly.reduce((s, p) => s + p.value, 0) / monthly.length) || 0;
 
     // Trigger visible transition after initial compute
     setTimeout(() => setVisible(true), 50);
 
-    return { weekly, monthly, weekAvg, monthAvg };
-  }, [bookings, splitBySpotKind]);
+    return { weekly, monthly };
+  }, [bookings, splitBySpotKind, measure]);
 
   // Trigger visible after first data
   if (visible === false && !isLoading && bookings.length > 0) {
@@ -109,15 +129,8 @@ export function RecentActivityCard({ buildingId, splitBySpotKind = false }: Rece
     if (activeTab === "Month") return staticData.monthly;
     // Pass the split through, or the bars lose their two colours the
     // moment someone picks Custom while the legend above still shows them.
-    return generateCustomData(fromDate, toDate, bookings, splitBySpotKind);
-  }, [activeTab, staticData, fromDate, toDate, bookings, splitBySpotKind]);
-
-  const avgLabel =
-    activeTab === "Week"
-      ? `${staticData.weekAvg} per day`
-      : activeTab === "Month"
-      ? `${staticData.monthAvg} per week`
-      : `${avg(chartData)} per day`;
+    return generateCustomData(fromDate, toDate, bookings, splitBySpotKind, measure);
+  }, [activeTab, staticData, fromDate, toDate, bookings, splitBySpotKind, measure]);
 
   const switchTab = (tab: TabOption) => {
     if (tab === activeTab) return;
@@ -165,24 +178,13 @@ export function RecentActivityCard({ buildingId, splitBySpotKind = false }: Rece
         >
           Recent Activity
         </span>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            background: colors.tagBg,
-            borderRadius: 47,
-            padding: "4px 8px",
-            fontSize: 12,
-            color: colors.textStrong,
-          }}
-        >
-          Average: {avgLabel}
-          <IcArrowUp />
-        </div>
       </div>
 
-      {/* Tabs */}
+      {/* Range on the left, what is being measured on the right. Two
+          separate questions, so two separate groups rather than one row of
+          five pills where picking "Earnings" would look like picking a
+          range. */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
       <div
         style={{
           display: "inline-flex",
@@ -217,6 +219,51 @@ export function RecentActivityCard({ buildingId, splitBySpotKind = false }: Rece
             {tab}
           </button>
         ))}
+      </div>
+
+      {/* Only a building that earns has a second series to plot. */}
+      {splitBySpotKind && (
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            border: `1px solid ${colors.border}`,
+            borderRadius: 76,
+            padding: "2px 4px",
+          }}
+        >
+          {(["Bookings", "Earnings"] as Metric[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => {
+                if (m === metric) return;
+                setVisible(false);
+                setTimeout(() => {
+                  setMetric(m);
+                  setVisible(true);
+                }, 180);
+              }}
+              style={{
+                padding: "6px 12px",
+                borderRadius: 52,
+                // Lime rather than the dark fill the range tabs use: the two
+                // groups sit side by side, and two identical dark pills read
+                // as one control with two active states.
+                background: metric === m ? "var(--color-spot-community)" : "transparent",
+                color: metric === m ? colors.textStrong : colors.textWeak,
+                border: "none",
+                cursor: "pointer",
+                fontSize: 14,
+                lineHeight: "16px",
+                fontFamily: "var(--font-family-body)",
+                transition: "background 0.18s ease, color 0.18s ease",
+              }}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+      )}
       </div>
 
       {/* Custom date picker */}
@@ -265,7 +312,7 @@ export function RecentActivityCard({ buildingId, splitBySpotKind = false }: Rece
         <div style={{ display: "flex", gap: 20, fontSize: 13, color: "var(--color-text-strong)" }}>
           {([
             ["Community Spots", "var(--color-spot-community)"],
-            ["Residents Spots", "var(--color-spot-neighbor)"],
+            ["Resident spots", "var(--color-spot-neighbor)"],
           ] as const).map(([label, colour]) => (
             <span key={label} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
               <span style={{ width: 12, height: 12, borderRadius: 3, background: colour, flex: "none" }} />
@@ -291,7 +338,10 @@ export function RecentActivityCard({ buildingId, splitBySpotKind = false }: Rece
             Loading…
           </div>
         ) : chartData.length > 0 ? (
-          <BarChart data={chartData} />
+          <BarChart
+            data={chartData}
+            format={metric === "Earnings" ? formatMoney : undefined}
+          />
         ) : (
           <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-weaker)", fontSize: 14 }}>
             No bookings yet

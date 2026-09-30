@@ -12,11 +12,18 @@ import {
   TopGuestParkingBookersCard,
   DocumentModal,
 } from "../components/hoa";
-import { SavingsProgressCard } from "../components/revenue/SavingsProgressCard";
+import { MoneyProgressCard } from "../components/revenue/MoneyProgressCard";
 import {
   CONDO_FLOOR_CENTS,
+  CONDO_SUBSCRIPTION_CENTS,
 } from "../lib/demo/pricing";
-import { currentCondoMonth } from "../lib/demo/condo-revenue";
+import { condoSavingsHistory } from "../lib/demo/condo-revenue";
+import { countMockGiftCardsRedeemed } from "../lib/mock-data/gift-cards-mock-store";
+
+const MONTHS_SHORT = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -31,9 +38,12 @@ export default function DashboardPage() {
   // page silently gets no scope at all against a real session.
   const buildingId = user?.buildingIds?.[0] ?? null;
   const { data: stats, isLoading: statsLoading } = useDashboardStats(buildingId);
-  // Same source as the Revenue page, so the dashboard cannot quote a
-  // different month's earnings than the page it links to.
-  const month = useMemo(() => currentCondoMonth(), []);
+  // The SAME call the Savings page makes, not a second estimate of the same
+  // month. These two screens quote the same four figures, and when they were
+  // computed from different sources they disagreed by whatever the two
+  // formulas happened to differ by that day.
+  const month = useMemo(() => condoSavingsHistory(6)[0], []);
+  const giftCardsRedeemed = countMockGiftCardsRedeemed(buildingId);
   const safeStats = stats ?? { daily: 0, weekly: 0, monthly: 0, ytd: 0 };
 
   return (
@@ -57,7 +67,7 @@ export default function DashboardPage() {
               Dashboard
             </h1>
             <p style={{ fontSize: 16, lineHeight: "20px", color: "var(--color-text-weak)" }}>
-              Overview of parking activity in your building
+              Overview of parking activity and savings in your building
             </p>
           </div>
 
@@ -74,21 +84,38 @@ export default function DashboardPage() {
               overflow: "hidden",
             }}
           >
-            <StatCard label="Daily Bookings" value={statsLoading ? 0 : safeStats.daily} tag={statsLoading ? "Loading…" : "bookings today"} />
-            <StatCard label="Weekly Bookings" value={statsLoading ? 0 : safeStats.weekly} tag={statsLoading ? "Loading…" : "this week"} />
-            <StatCard label="Monthly Bookings" value={statsLoading ? 0 : safeStats.monthly} tag={statsLoading ? "Loading…" : "this month"} />
-            <StatCard label="Year to Date Bookings" value={statsLoading ? 0 : safeStats.ytd} tag={statsLoading ? "Loading…" : "all time"} />
+            {/* Three windows on the same count, widening - today, this
+                month, this year - so the fourth card is free to answer a
+                different question. A weekly count sat between the first two
+                without separating them, and year-to-date bookings beside
+                year-to-date redemptions is the pair a board actually reads:
+                how much parking happened, and how much of it came back to
+                residents as rewards. */}
+            <StatCard label="Bookings today" value={statsLoading ? 0 : safeStats.daily} tag={statsLoading ? "Loading…" : "today"} />
+            <StatCard label="Bookings this month" value={statsLoading ? 0 : safeStats.monthly} tag={statsLoading ? "Loading…" : "this month"} />
+            <StatCard label="Bookings year to date" value={statsLoading ? 0 : safeStats.ytd} tag={statsLoading ? "Loading…" : "year to date"} />
+            <StatCard label="Gift cards redeemed" value={giftCardsRedeemed} tag="year to date" />
           </div>
 
           {/* What this month's sharing took off the bill. A Condo is never
-              paid, so the card leads with the invoice rather than with
-              earnings - see SavingsProgressCard. */}
-          <SavingsProgressCard
-            earningsCents={month.earningsCents}
-            subscriptionCents={month.subscriptionCents}
+              paid, so the third column is a CARRYOVER, not a payout - see
+              MoneyProgressCard. */}
+          <MoneyProgressCard
+            product="condo"
+            subscriptionCents={CONDO_SUBSCRIPTION_CENTS}
+            earnedCents={month.fromSharingCents + month.carriedInCents}
+            savedCents={month.savedCents}
+            remainderCents={month.carriedOverCents}
             floorCents={CONDO_FLOOR_CENTS}
-            savingsHref="/condo/savings"
-            dueLabel={month.dueLabel}
+            dueLabel={`Due ${MONTHS_SHORT[(new Date().getMonth() + 1) % 12]} 1`}
+            href="/condo/savings"
+            sources={[
+              // A Condo's residents own every spot, so there is exactly one
+              // place its money can come from. The chip is still drawn,
+              // because "from resident spots" is the sentence the figure
+              // needs and a board reads the card without the page around it.
+              { id: "resident", label: "Resident spots", cents: month.fromSharingCents },
+            ]}
           />
 
           {/* Recent Activity + Current Bookings */}

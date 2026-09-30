@@ -21,6 +21,7 @@
  */
 
 import React, { useState } from "react";
+import Link from "next/link";
 
 import { formatMoney as money } from "../../lib/demo/pricing";
 import type { DemoContribution as SavingsContribution } from "../../lib/demo/condo-revenue";
@@ -156,11 +157,12 @@ export function ContributingBookings({ rows: all }: { rows: SavingsContribution[
         </div>
       )}
 
-      {data && data.total > rows.length && filter === "all" && (
-        <span style={st.muted}>
-          Showing {rows.length} of {data.total} bookings this month.
-        </span>
-      )}
+      {/* A link rather than a count. "Showing 8 of 8" is the common case and
+          says nothing; the operator who wants the rest wants the Bookings
+          page, which is where the filtering and the export already live. */}
+      <Link href="/condo/bookings" style={st.viewAll}>
+        View all bookings
+      </Link>
     </div>
   );
 }
@@ -188,6 +190,13 @@ const st: Record<string, React.CSSProperties> = {
     fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
     letterSpacing: "0.06em",
     color: "var(--color-text-weak)",
+  },
+  viewAll: {
+    alignSelf: "flex-end",
+    fontFamily: "var(--font-family-body)",
+    fontSize: "var(--font-size-tiny)",
+    color: "var(--color-text-strong)",
+    textDecoration: "none",
   },
   sub: {
     margin: "var(--spacing-4) 0 0",

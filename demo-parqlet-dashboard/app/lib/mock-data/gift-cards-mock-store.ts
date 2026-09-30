@@ -48,7 +48,7 @@ const MOCK_RESIDENTS: MockGiftCardResidentSummary[] = [
     buildingId: "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
     buildingName: "The Meridian",
     creditBalance: 2,
-    giftCardCount: 1,
+    giftCardCount: 2,
   },
   {
     residentId: "mock-resident-2",
@@ -70,7 +70,7 @@ const MOCK_RESIDENTS: MockGiftCardResidentSummary[] = [
     buildingId: "e6565d1b-1f25-4c51-bfa6-7db4932702cd",
     buildingName: "The Meridian",
     creditBalance: 14,
-    giftCardCount: 0,
+    giftCardCount: 2,
   },
   {
     residentId: "mock-resident-4",
@@ -93,6 +93,29 @@ const MOCK_REDEMPTIONS_BY_RESIDENT: Record<string, MockGiftCardRedemption[]> = {
       valueCents: 2500,
       creditsSpent: 10,
       redeemedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "mock-gc-tx-6",
+      brand: "Starbucks",
+      valueCents: 2500,
+      creditsSpent: 10,
+      redeemedAt: new Date(Date.now() - 27 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+  ],
+  "mock-resident-3": [
+    {
+      id: "mock-gc-tx-4",
+      brand: "Target",
+      valueCents: 2500,
+      creditsSpent: 10,
+      redeemedAt: new Date(Date.now() - 16 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "mock-gc-tx-5",
+      brand: "Amazon",
+      valueCents: 2500,
+      creditsSpent: 10,
+      redeemedAt: new Date(Date.now() - 62 * 24 * 60 * 60 * 1000).toISOString(),
     },
   ],
   "mock-resident-2": [
@@ -136,6 +159,20 @@ const MOCK_CREDIT_HISTORY_BY_RESIDENT: Record<string, MockCreditHistoryEntry[]> 
 
 export function listMockGiftCardReport(): { residents: MockGiftCardResidentSummary[] } {
   return { residents: MOCK_RESIDENTS };
+}
+
+/**
+ * How many gift cards a building's residents have redeemed.
+ *
+ * Read off the same rows the Reward Redemption report renders, rather than
+ * counted separately, so the dashboard tile and that page can never quote
+ * different totals for the same building.
+ */
+export function countMockGiftCardsRedeemed(buildingId: string | null): number {
+  if (!buildingId) return 0;
+  return MOCK_RESIDENTS
+    .filter((r) => r.buildingId === buildingId)
+    .reduce((sum, r) => sum + r.giftCardCount, 0);
 }
 
 export function getMockGiftCardResidentDetail(residentId: string) {

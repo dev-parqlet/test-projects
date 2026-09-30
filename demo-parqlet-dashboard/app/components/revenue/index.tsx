@@ -15,6 +15,7 @@
  */
 
 import React from "react";
+import Link from "next/link";
 
 import { Card } from "../ui/Card";
 import { Badge } from "../ui/Badge";
@@ -76,7 +77,17 @@ export function RevenueCard({
 }) {
   return (
     <Card style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-12)", flexWrap: "wrap" }}>
+      {/* Title left, control right. The badge slot carries a range picker
+          on the chart cards, so the row has to separate rather than hug. */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "var(--spacing-12)",
+          flexWrap: "wrap",
+        }}
+      >
         <span style={st.cardTitle}>{title}</span>
         {badge}
       </div>
@@ -281,7 +292,38 @@ export function RevenueHeader({
   );
 }
 
+/** A static range label beside a chart title, e.g. "Last 6 months". */
+export function RangePill({ children }: { children: React.ReactNode }) {
+  return <span style={st.rangePill}>{children}</span>;
+}
+
+/** The link that closes a card, e.g. "View all bookings". */
+export function CardLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link href={href} style={st.cardLink}>
+      {children}
+    </Link>
+  );
+}
+
 export const st: Record<string, React.CSSProperties> = {
+  rangePill: {
+    padding: "var(--spacing-8) var(--spacing-12)",
+    borderRadius: "var(--radius-8)",
+    border: "1px solid var(--color-stroke-medium)",
+    fontFamily: "var(--font-family-body)",
+    fontSize: "var(--font-size-tiny)",
+    color: "var(--color-text-strong)",
+    whiteSpace: "nowrap",
+  },
+  cardLink: {
+    alignSelf: "flex-end",
+    marginTop: "auto",
+    fontFamily: "var(--font-family-body)",
+    fontSize: "var(--font-size-tiny)",
+    color: "var(--color-text-strong)",
+    textDecoration: "none",
+  },
   headerSub: {
     margin: "var(--spacing-4) 0 0",
     fontFamily: "var(--font-family-body)",
@@ -317,8 +359,18 @@ export const st: Record<string, React.CSSProperties> = {
     lineHeight: "var(--line-height-heading-1)",
     color: "var(--color-text-strong)",
   },
+  tileValueRow: { display: "flex", alignItems: "baseline", gap: "var(--spacing-8)", flexWrap: "wrap" },
+  tileWas: {
+    fontFamily: "var(--font-family-body)",
+    fontSize: "var(--font-size-body)",
+    color: "var(--color-text-weak)",
+  },
   tileTag: {
-    alignSelf: "flex-start",
+    // Pinned to the bottom-right, matching the dashboard's stat cards: the
+    // tiles sit in one row and a tag that floats under a short value left
+    // the row looking ragged.
+    alignSelf: "flex-end",
+    marginTop: "auto",
     padding: "2px var(--spacing-8)",
     borderRadius: "var(--radius-48)",
     background: "var(--color-fill-weak)",
@@ -330,7 +382,7 @@ export const st: Record<string, React.CSSProperties> = {
     display: "grid",
     gridTemplateColumns: "minmax(0, 2fr) minmax(260px, 1fr)",
     gap: "var(--spacing-16)",
-    alignItems: "start",
+    alignItems: "stretch",
   },
   steps: { listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "var(--spacing-16)" },
   step: { display: "flex", gap: "var(--spacing-12)", alignItems: "flex-start" },
@@ -401,7 +453,15 @@ export const st: Record<string, React.CSSProperties> = {
     color: "var(--color-text-strong)",
     fontFamily: "var(--font-family-heading)",
   },
-  cardTitle: { fontSize: "var(--font-size-body)", fontWeight: 600, color: "var(--color-text-strong)" },
+  cardTitle: {
+    fontFamily: "var(--font-family-body)",
+    fontSize: "var(--font-size-uppercase)",
+    lineHeight: "var(--line-height-uppercase)",
+    fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
+    letterSpacing: "0.04em",
+    textTransform: "uppercase",
+    color: "var(--color-text-weak)",
+  },
   figures: { display: "flex", gap: 48, flexWrap: "wrap" },
   figureLabel: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },
   figureNote: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },

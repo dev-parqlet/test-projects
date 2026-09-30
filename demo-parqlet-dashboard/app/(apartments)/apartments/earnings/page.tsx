@@ -1,191 +1,232 @@
 "use client";
 
 /**
- * Revenue — Apartments only.
+ * Earnings — Apartments.
  *
- * The mirror of the Condo page, and deliberately a different story. A
- * Condo's earnings only ever pull its bill down towards a floor. An
- * Apartment's clear the bill outright and the rest is money it takes out.
+ * The mirror of the Condo Savings page, asking the same four questions in
+ * the same order, because an operator who has seen one should be able to
+ * read the other:
  *
- * The withdrawal rule is a product rule, not a UI nicety: once per
- * calendar month, paid within 3 working days. The button is therefore
- * disabled with the reason shown rather than hidden, so an operator can
- * see that the money is there and when they can have it.
+ *   What did we earn        the tiles
+ *   Is it getting better    the chart, against the subscription
+ *   Why is it that number   how earnings work, and the month-by-month table
+ *   Where did it come from  the bookings that produced it
+ *
+ * What differs is the ending, and it is the only thing that differs. A
+ * Condo's bill stops at a floor and the excess carries forward; an
+ * Apartment's bill reaches zero and the excess is CASH. So the third tile
+ * is Payouts rather than Carryover, the history's last column is a payout
+ * rather than a carryover, and the chart's dashed line is the whole
+ * subscription rather than the most that can be discounted.
+ *
+ * The page it replaced led with "September so far" and "Past withdrawals":
+ * an accounting statement, correct and unreadable. It answered what had
+ * been transferred without ever answering whether the spots were paying
+ * for the subscription, which is the only question this building bought
+ * the product to have answered.
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 
-import { Badge } from "../../../components/ui/Badge";
-import { Button } from "../../../components/ui/Button";
+import { useAuth } from "../../../components/auth/auth-provider";
 import {
-  Figure,
-  FigureRow,
-  HistoryTable,
-  OffsetBar,
+  CardLink,
+  RangePill,
   RevenueCard,
   RevenueHeader,
   st,
-  type HistoryRow,
 } from "../../../components/revenue";
+import { BookingEarnings } from "../../../components/revenue/BookingEarnings";
+import { MonthlyEarningsChart } from "../../../components/revenue/MonthlyEarningsChart";
+import { COMMISSION_PCT, formatDollars, formatMoney } from "../../../lib/demo/pricing";
 import {
-  APARTMENT_FLOOR_CENTS,
-  APARTMENT_SUBSCRIPTION_CENTS,
-  BASE_PRICE_CENTS,
-  BASE_PRICE_CREDITS,
-  COMMISSION_PCT,
-  PITCH,
-  applyOffset,
-  formatMoney,
-  netToBuilding,
-} from "../../../lib/demo/pricing";
-import { currentPeriod, recentPayouts } from "../../../lib/demo/apartments-data";
-import { CreditPriceCard } from "../../../components/pricing/CreditPriceCard";
-import { APARTMENT_PRICE_FOOTNOTE, apartmentPriceRows } from "../../../lib/demo/price-rows";
+  apartmentEarningsHistory,
+  earnedThisYearCents,
+} from "../../../lib/demo/apartment-earnings";
 
-export default function ApartmentsRevenuePage() {
+/** How many months the chart plots, and how many the table lists. */
+const CHART_MONTHS = 6;
+/**
+ * Shorter than the chart on purpose. The chart shows a trend, which needs a
+ * run of months; the table is read row by row, and six rows of six figures
+ * is a wall an operator skims past.
+ */
+const TABLE_MONTHS = 4;
+
+function StatTile({
+  label,
+  value,
+  was,
+  tag,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  /** The undiscounted price, struck through beside the value. */
+  was?: string;
+  tag?: string;
+  accent?: boolean;
+}) {
+  return (
+    <div style={st.tile}>
+      <span style={st.tileLabel}>{label}</span>
+      <span style={st.tileValueRow}>
+        {was && <s style={st.tileWas}>{was}</s>}
+        <span style={{ ...st.tileValue, color: accent ? "var(--color-text-success)" : undefined }}>
+          {value}
+        </span>
+      </span>
+      {tag && <span style={st.tileTag}>{tag}</span>}
+    </div>
+  );
+}
+
+export default function ApartmentEarningsPage() {
+  const { user } = useAuth();
+  const buildingId = user?.buildingIds?.[0] ?? null;
+
   const now = useMemo(() => new Date(), []);
-  const period = useMemo(() => currentPeriod(now), [now]);
-  const payouts = useMemo(() => recentPayouts(5, now), [now]);
-  const [requested, setRequested] = useState(false);
+  const months = useMemo(() => apartmentEarningsHistory(CHART_MONTHS, now), [now]);
+  const thisMonth = months[0];
+  const oldest = months[months.length - 1];
+  const earnedThisYear = useMemo(() => earnedThisYearCents(months), [months]);
 
-  const offset = applyOffset({
-    subscriptionCents: APARTMENT_SUBSCRIPTION_CENTS,
-    earningsCents: period.netCents,
-    floorCents: APARTMENT_FLOOR_CENTS,
-  });
-
-  // Only what the subscription could not absorb is yours to take out.
-  const withdrawableCents = offset.surplusCents;
-
-  // Once per calendar month, and the month that matters is THIS one. The
-  // history below is completed months only, so nothing there can block a
-  // withdrawal or lend its name to the notice.
-  const canWithdraw = withdrawableCents > 0 && !requested;
-
-  const blockedReason = requested
-    ? `Your ${period.period} withdrawal is being processed. You will be paid within 3 working days, and you can withdraw again next month.`
-    : withdrawableCents === 0
-      ? "This month's earnings have gone to your subscription. Anything past it is yours to withdraw."
-      : null;
-
-  const completed: HistoryRow[] = payouts.map((p) => ({
-    id: p.id,
-    period: p.period,
-    grossCents: p.grossCents,
-    feesCents: p.commissionCents,
-    netCents: p.netCents,
-    status: p.status,
-    trailing: p.paidOn
-      ? new Date(p.paidOn).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-      : "—",
-  }));
-
-  // A withdrawal taken just now appears at the top of its own month,
-  // rather than the page claiming it is done while the table disagrees.
-  const rows: HistoryRow[] = requested
-    ? [
-        {
-          id: "pending",
-          period: period.period,
-          grossCents: period.grossCents,
-          feesCents: period.commissionCents,
-          netCents: withdrawableCents,
-          status: "Processing",
-          trailing: "—",
-        },
-        ...completed,
-      ]
-    : completed;
+  const pctOfSubscription = Math.round(
+    (thisMonth.appliedCents / thisMonth.subscriptionCents) * 100,
+  );
 
   return (
     <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 24 }}>
-      <RevenueHeader />
-
-      {/* ── This month ───────────────────────────────────────────────── */}
-      <RevenueCard title={`${period.period} so far`} badge={<Badge variant="active">Open</Badge>}>
-        <FigureRow>
-          <Figure label="Collected from renters" value={formatMoney(period.grossCents)} />
-          <Figure
-            label="Commission + card fees"
-            value={`− ${formatMoney(period.commissionCents)}`}
-            tone="muted"
-          />
-          <Figure label="You earned" value={formatMoney(period.netCents)} />
-        </FigureRow>
-
-        <OffsetBar offset={offset} floorLabel="Your bill can reach zero" />
-
-        <FigureRow>
-          <Figure
-            label="Subscription"
-            value={formatMoney(offset.subscriptionCents)}
-            note={offset.subscriptionCents === 0 ? "you have none" : "per month"}
-          />
-          <Figure
-            label="Your bill this month"
-            value={formatMoney(offset.dueCents)}
-            note={
-              offset.dueCents === 0
-                ? "covered in full by your spots"
-                : `${formatMoney(offset.appliedCents)} covered so far`
-            }
-          />
-          <Figure label="Yours to withdraw" value={formatMoney(withdrawableCents)} tone="strong" />
-        </FigureRow>
-
-        <div style={st.actionRow}>
-          <Button
-            variant="primary"
-            size="small"
-            style={{ width: "auto", whiteSpace: "nowrap" }}
-            disabled={!canWithdraw}
-            onClick={() => setRequested(true)}
-          >
-            Withdraw {formatMoney(withdrawableCents)}
-          </Button>
-          <span style={st.hint}>
-            {blockedReason ??
-              `Paid to your account within 3 working days. One withdrawal per month, so this covers ${period.period}.`}
-          </span>
-        </div>
-      </RevenueCard>
-
-      {/* ── History ──────────────────────────────────────────────────── */}
-      <RevenueCard title="Past withdrawals">
-        <HistoryTable
-          columns={[
-            "Period",
-            "Collected",
-            "Commission + fees",
-            "Paid to you",
-            "Status",
-            "Paid on",
-          ]}
-          rows={rows}
-        />
-      </RevenueCard>
-      {/* Full width, and last: it explains the arithmetic above rather
-          than introducing it, so it reads better after the figures. */}
-      <CreditPriceCard
-        rows={apartmentPriceRows()}
-        footnote={APARTMENT_PRICE_FOOTNOTE}
-        intro={
-          <>
-            <span>{PITCH.apartments}</span>
-            <span>
-              Every spot rents for a base of {BASE_PRICE_CREDITS} credit
-              ({formatMoney(BASE_PRICE_CENTS)} a day), plus whatever extra you
-              set on the spots you own. On a {formatMoney(BASE_PRICE_CENTS)}{" "}
-              booking you receive{" "}
-              <strong>{formatMoney(netToBuilding(BASE_PRICE_CENTS))}</strong>{" "}
-              and we keep{" "}
-              {formatMoney(BASE_PRICE_CENTS - netToBuilding(BASE_PRICE_CENTS))}{" "}
-              as our {COMMISSION_PCT}% commission and card fees.
-            </span>
-          </>
-        }
+      <RevenueHeader
+        title="Earnings"
+        subtitle="What your building earns from Community Spots and resident sharing"
       />
 
+      {/* ── The four figures, in the order they are asked for ─────────── */}
+      <div style={st.tiles}>
+        <StatTile
+          label="Earned this month"
+          value={formatMoney(thisMonth.totalCents)}
+          tag={`${pctOfSubscription}% of subscription`}
+        />
+        <StatTile
+          label="Next invoice"
+          was={formatMoney(thisMonth.subscriptionCents)}
+          value={formatMoney(thisMonth.invoiceCents)}
+          tag={thisMonth.dueLabel}
+        />
+        <StatTile
+          label="Payouts"
+          value={formatMoney(thisMonth.payoutCents)}
+          // Says WHERE the threshold is, not just that nothing is due. A
+          // bare $0.00 reads as a feature that is not working.
+          tag={
+            thisMonth.payoutCents > 0
+              ? "Sent at month end"
+              : `Starts above ${formatDollars(thisMonth.subscriptionCents)}`
+          }
+        />
+        <StatTile
+          label="Earned this year"
+          value={formatMoney(earnedThisYear)}
+          tag={`since ${oldest.monthName}`}
+        />
+      </div>
+
+      {/* ── Is it getting better, and how earnings work ───────────────── */}
+      <div style={st.twoUp}>
+        <RevenueCard title="Monthly earnings" badge={<RangePill>Last {CHART_MONTHS} months</RangePill>}>
+          <MonthlyEarningsChart months={months} />
+        </RevenueCard>
+
+        <RevenueCard title="How earnings work">
+          <ol style={st.steps}>
+            <li style={st.step}>
+              <span style={st.stepNum}>1</span>
+              <span>
+                <strong style={st.stepTitle}>Community Spots</strong>
+                <span style={st.stepBody}>
+                  You earn the spot price minus Parqlet {COMMISSION_PCT}% and Stripe
+                  fees.
+                </span>
+              </span>
+            </li>
+            <li style={st.step}>
+              <span style={st.stepNum}>2</span>
+              <span>
+                <strong style={st.stepTitle}>Resident spots</strong>
+                <span style={st.stepBody}>
+                  You earn a share when residents pay by card to book each
+                  other&rsquo;s spots.
+                </span>
+              </span>
+            </li>
+            <li style={st.step}>
+              <span style={st.stepNum}>3</span>
+              <span>
+                <strong style={st.stepTitle}>Reused credits</strong>
+                <span style={st.stepBody}>
+                  Credits were already paid for once, so only the card-paid extra
+                  counts.
+                </span>
+              </span>
+            </li>
+            <li style={st.step}>
+              <span style={st.stepNum}>4</span>
+              <span>
+                <strong style={st.stepTitle}>Lower bill, then payouts</strong>
+                <span style={st.stepBody}>
+                  Earnings reduce your subscription to $0. Anything above
+                  is paid out.
+                </span>
+              </span>
+            </li>
+          </ol>
+          <CardLink href="/apartment/subscription">View subscription and invoices</CardLink>
+        </RevenueCard>
+      </div>
+
+      {/* ── Where it came from ────────────────────────────────────────── */}
+      <BookingEarnings buildingId={buildingId} />
+
+      {/* ── Why it is that number ─────────────────────────────────────── */}
+      <RevenueCard title="Monthly history">
+        <div style={st.tableWrap}>
+          <table style={st.savingsTable}>
+            <thead>
+              <tr>
+                {["Month", "Community Spots", "Resident spots", "Total earned", "Invoice", "Payout", ""].map(
+                  (h, i) => (
+                    <th
+                      key={h || "actions"}
+                      style={{ ...st.savingsTh, textAlign: i === 0 ? "left" : "right" }}
+                    >
+                      {h}
+                    </th>
+                  ),
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {months.slice(0, TABLE_MONTHS).map((m) => (
+                <tr key={m.id}>
+                  <td style={{ ...st.savingsTd, fontWeight: 600 }}>{m.period}</td>
+                  <td style={st.savingsTdNum}>{formatMoney(m.communityCents)}</td>
+                  <td style={st.savingsTdNum}>{formatMoney(m.residentCents)}</td>
+                  <td style={{ ...st.savingsTdNum, color: "var(--color-text-success)", fontWeight: 600 }}>
+                    {formatMoney(m.totalCents)}
+                  </td>
+                  <td style={st.savingsTdNum}>{formatMoney(m.invoiceCents)}</td>
+                  <td style={st.savingsTdNum}>{formatMoney(m.payoutCents)}</td>
+                  <td style={st.savingsTdNum}>
+                    <CardLink href="/apartment/subscription">View invoice</CardLink>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </RevenueCard>
     </div>
   );
 }

@@ -63,6 +63,19 @@ export function formatMoney(cents: number): string {
   })}`;
 }
 
+/**
+ * The same money, rounded to whole dollars: "$1,363", "$400".
+ *
+ * For CHART labels and for prose. A bar labelled "$175.68" asks the reader
+ * to compare six four-significant-figure numbers when the point of the bar
+ * is its height, and "your bill never drops below $100.00" is read aloud at
+ * a board meeting as "a hundred dollars". Tables and tiles keep the cents,
+ * because those are figures someone reconciles against an invoice.
+ */
+export function formatDollars(cents: number): string {
+  return `$${Math.round(cents / 100).toLocaleString('en-US')}`;
+}
+
 export function formatCredits(n: number): string {
   return `${n} credit${n === 1 ? '' : 's'}`;
 }

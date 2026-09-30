@@ -54,6 +54,37 @@ export function spotPriceCents(s: Pick<DemoSpot, 'extraCents'>): number {
   return apartmentSpotTotalCents(s.extraCents);
 }
 
+/**
+ * What the building calls a price band.
+ *
+ * The garage is priced in three blocks, and the block is what an operator
+ * reasons about - "the rooftop is underpriced", never "the spots with a $2
+ * extra". Derived from the extra rather than stored beside it, so renaming
+ * a band cannot leave a spot filed under a price it no longer charges.
+ *
+ * `type` (Compact / Standard / Large SUV) is a different axis: it is what
+ * FITS in the space, not what it costs, and the two must not be conflated.
+ */
+export function spotBandLabel(s: Pick<DemoSpot, 'owner' | 'extraCents'>): string {
+  if (s.owner !== 'building') return 'Resident spot';
+  const extra = s.extraCents;
+  if (extra >= money(9)) return 'Lower level';
+  if (extra >= money(4)) return 'Standard';
+  return 'Rooftop';
+}
+
+/** The band a spot NUMBER falls in, for rows that carry only the number. */
+export function bandForSpotNumber(spotNumber: string): string {
+  const spot = DEMO_SPOTS.find((s) => s.number === spotNumber);
+  return spot ? spotBandLabel(spot) : '—';
+}
+
+/** What one day on this spot is listed at, for rows that carry only the number. */
+export function priceForSpotNumber(spotNumber: string): number | null {
+  const spot = DEMO_SPOTS.find((s) => s.number === spotNumber);
+  return spot ? spotPriceCents(spot) : null;
+}
+
 /** True when the building may set an extra on this spot. */
 export function canPrice(s: Pick<DemoSpot, 'owner'>): boolean {
   return s.owner === 'building';

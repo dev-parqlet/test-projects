@@ -1,6 +1,5 @@
 "use client";
 
-import { IcCalendar, IcArrowUp } from "../icons";
 import { colors } from "../ui/chart-utils";
 
 interface StatCardProps {
@@ -56,7 +55,6 @@ export function StatCard({ label, value, tag, split }: StatCardProps) {
         >
           {label}
         </span>
-        <IcCalendar />
       </div>
 
       <span
@@ -71,7 +69,7 @@ export function StatCard({ label, value, tag, split }: StatCardProps) {
           whiteSpace: "nowrap",
         }}
       >
-        {value}
+        {typeof value === "number" ? value.toLocaleString("en-US") : value}
       </span>
 
       {split && (
@@ -96,7 +94,6 @@ export function StatCard({ label, value, tag, split }: StatCardProps) {
           }}
         >
           {tag}
-          <IcArrowUp />
         </div>
       </div>
     </div>

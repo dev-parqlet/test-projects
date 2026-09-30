@@ -25,22 +25,35 @@
 import React, { useMemo } from "react";
 
 import {
+  CardLink,
+  RangePill,
   RevenueCard,
   RevenueHeader,
   st,
 } from "../../components/revenue";
 import {
   CONDO_FLOOR_CENTS,
+  CONDO_SUBSCRIPTION_CENTS,
+  formatDollars,
   formatMoney,
 } from "../../lib/demo/pricing";
 import {
   condoContributions,
   condoSavingsHistory,
-  currentCondoMonth,
   savedThisYearCents,
 } from "../../lib/demo/condo-revenue";
 import { ContributingBookings } from "../../components/revenue/ContributingBookings";
 import { MonthlySavingsChart } from "../../components/revenue/MonthlySavingsChart";
+
+/** How many months the chart plots, and how many the table lists. */
+const CHART_MONTHS = 6;
+/**
+ * The table is SHORTER than the chart on purpose. The chart is there to
+ * show a trend, which needs a run of months; the table is there to be read
+ * row by row, and six rows of six figures is a wall a board skims past. The
+ * recent four are the ones anyone checks.
+ */
+const TABLE_MONTHS = 4;
 
 /**
  * One headline figure. A tile rather than a chart because the number IS
@@ -49,34 +62,46 @@ import { MonthlySavingsChart } from "../../components/revenue/MonthlySavingsChar
 function StatTile({
   label,
   value,
+  /**
+   * The undiscounted price, struck through beside the value. A saving only
+   * means something against the figure that would otherwise have been paid,
+   * and a caption saying so is read after the number rather than with it.
+   */
+  was,
   tag,
   accent = false,
 }: {
   label: string;
   value: string;
+  was?: string;
   tag?: string;
   accent?: boolean;
 }) {
   return (
     <div style={st.tile}>
       <span style={st.tileLabel}>{label}</span>
-      <span style={{ ...st.tileValue, color: accent ? "var(--color-text-success)" : undefined }}>
-        {value}
+      <span style={st.tileValueRow}>
+        {was && <s style={st.tileWas}>{was}</s>}
+        <span style={{ ...st.tileValue, color: accent ? "var(--color-text-success)" : undefined }}>
+          {value}
+        </span>
       </span>
       {tag && <span style={st.tileTag}>{tag}</span>}
     </div>
   );
 }
 
-export default function CondoRevenuePage() {
+export default function CondoSavingsPage() {
   const now = useMemo(() => new Date(), []);
-  const month = useMemo(() => currentCondoMonth(now), [now]);
-  const savingsMonths = useMemo(() => condoSavingsHistory(6, now), [now]);
+  const savingsMonths = useMemo(() => condoSavingsHistory(CHART_MONTHS, now), [now]);
   const contributions = useMemo(() => condoContributions(8, now), [now]);
   const thisMonth = savingsMonths[0];
+  const oldest = savingsMonths[savingsMonths.length - 1];
   const savedThisYear = useMemo(() => savedThisYearCents(savingsMonths), [savingsMonths]);
 
-
+  const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  // The bill is raised once the month it covers has finished.
+  const dueLabel = `Due ${MONTHS_SHORT[(now.getMonth() + 1) % 12]} 1`;
 
   return (
     <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 24 }}>
@@ -92,8 +117,9 @@ export default function CondoRevenuePage() {
         />
         <StatTile
           label="Next invoice"
+          was={formatMoney(CONDO_SUBSCRIPTION_CENTS)}
           value={formatMoney(thisMonth.invoiceCents)}
-          tag={month.dueLabel.replace("Due ", "Due ")}
+          tag={dueLabel}
         />
         <StatTile
           label="Carryover"
@@ -103,13 +129,15 @@ export default function CondoRevenuePage() {
         <StatTile
           label="Saved this year"
           value={formatMoney(savedThisYear)}
-          tag={`since ${savingsMonths[savingsMonths.length - 1].short}`}
+          // The full month name, not the axis label. "since Apr" reads as an
+          // abbreviation the reader has to expand; the tile has the room.
+          tag={`since ${oldest.monthName}`}
         />
       </div>
 
       {/* ── Is it getting better, and how savings work ────────────────── */}
       <div style={st.twoUp}>
-        <RevenueCard title="Monthly savings">
+        <RevenueCard title="Monthly savings" badge={<RangePill>Last {CHART_MONTHS} months</RangePill>}>
           <MonthlySavingsChart months={savingsMonths} />
         </RevenueCard>
 
@@ -130,11 +158,11 @@ export default function CondoRevenuePage() {
               <span style={st.stepNum}>2</span>
               <span>
                 <strong style={st.stepTitle}>
-                  Your bill never drops below {formatMoney(CONDO_FLOOR_CENTS)}
+                  Minimum subscription is {formatDollars(CONDO_FLOOR_CENTS)}
                 </strong>
                 <span style={st.stepBody}>
-                  You can save up to {formatMoney(thisMonth.maxSavingsCents)} a month
-                  on a {formatMoney(month.subscriptionCents)} plan.
+                  You can save up to {formatDollars(thisMonth.maxSavingsCents)} a month
+                  on a {formatDollars(CONDO_SUBSCRIPTION_CENTS)} plan.
                 </span>
               </span>
             </li>
@@ -144,11 +172,13 @@ export default function CondoRevenuePage() {
                 <strong style={st.stepTitle}>Extra carries over</strong>
                 <span style={st.stepBody}>
                   Anything above the max rolls into next month rather than being
-                  lost.
+                  lost, and is added to that month&rsquo;s sharing before the cap
+                  is applied again.
                 </span>
               </span>
             </li>
           </ol>
+          <CardLink href="/condo/subscription">View subscription and invoices</CardLink>
         </RevenueCard>
       </div>
 
@@ -168,7 +198,7 @@ export default function CondoRevenuePage() {
               </tr>
             </thead>
             <tbody>
-              {savingsMonths.map((m) => (
+              {savingsMonths.slice(0, TABLE_MONTHS).map((m) => (
                 <tr key={m.id}>
                   <td style={{ ...st.savingsTd, fontWeight: 600 }}>{m.period}</td>
                   <td style={st.savingsTdNum}>{formatMoney(m.fromSharingCents)}</td>

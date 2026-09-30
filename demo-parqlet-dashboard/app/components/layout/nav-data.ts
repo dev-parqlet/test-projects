@@ -95,7 +95,7 @@ export const apartmentsNavItems: readonly NavItem[] = [
   { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard,    href: "/apartment" },
   { id: "residents",     label: "Resident Directory", Icon: IcResidentDirectory, href: "/apartment/residents" },
   { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: "/apartment/bookings" },
-  { id: "availability",  label: "Parking Spots",      Icon: IcParking,      href: "/apartment/availability" },
+  { id: "availability",  label: "Availability",      Icon: IcParking,      href: "/apartment/availability" },
   { id: "earnings",      label: "Earnings",           Icon: IcCredit,       href: "/apartment/earnings" },
   { id: "reward-redemption", label: "Reward Redemption", Icon: IcGiftCard, href: "/apartment/reward-redemption" },
   { id: "tickets",       label: "Support Tickets",    Icon: IcQuestion,     href: "/apartment/tickets" },

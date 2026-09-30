@@ -23,7 +23,7 @@
 
 import React, { useState } from "react";
 
-import { formatMoney } from "../../lib/demo/pricing";
+import { formatDollars, formatMoney } from "../../lib/demo/pricing";
 import type { SavingsMonth } from "../../lib/demo/condo-revenue";
 
 /** Plot geometry, in the SVG's own units. */
@@ -68,7 +68,7 @@ export function MonthlySavingsChart({ months }: { months: SavingsMonth[] }) {
           Carried over
         </span>
         <span style={st.legendItem}>
-          <span style={st.dashSwatch} /> Max savings {formatMoney(maxSavings)}
+          <span style={st.dashSwatch} /> Max savings {formatDollars(maxSavings)}
         </span>
       </div>
 
@@ -160,7 +160,7 @@ export function MonthlySavingsChart({ months }: { months: SavingsMonth[] }) {
                   textAlign: "center",
                 }}
               >
-                <span style={st.valueLabel}>{formatMoney(m.savedCents)}</span>
+                <span style={st.valueLabel}>{formatDollars(m.savedCents)}</span>
               </div>
             );
           })}

@@ -59,14 +59,14 @@ export function TopContributorsCard({ buildingId }: TopContributorsCardProps) {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "32px 1fr 80px 120px",
+            gridTemplateColumns: "32px 1fr 110px 120px",
             gap: "0 12px",
             alignItems: "center",
             paddingBottom: 6,
             borderBottom: `1px solid ${colors.border}`,
           }}
         >
-          {["#", "Resident", "Shares", "Credits Earned"].map((h) => (
+          {["#", "Resident", "Times shared", "Credits earned"].map((h) => (
             <span
               key={h}
               style={{
@@ -76,7 +76,7 @@ export function TopContributorsCard({ buildingId }: TopContributorsCardProps) {
                 fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
                 color: "var(--color-text-weak)",
                 textTransform: "uppercase" as const,
-                textAlign: h === "#" ? "center" : h === "Shares" || h === "Credits Earned" ? "right" : "left" as React.CSSProperties["textAlign"],
+                textAlign: h === "#" ? "center" : h === "Times shared" || h === "Credits earned" ? "right" : "left" as React.CSSProperties["textAlign"],
               }}
             >
               {h}
@@ -97,7 +97,7 @@ export function TopContributorsCard({ buildingId }: TopContributorsCardProps) {
               key={c.rank}
               style={{
                 display: "grid",
-                gridTemplateColumns: "32px 1fr 80px 120px",
+                gridTemplateColumns: "32px 1fr 110px 120px",
                 gap: "0 12px",
                 alignItems: "center",
                 padding: "10px 0",
@@ -212,9 +212,9 @@ export function LeaderboardModal({ type, period, contributors = [], bookers = []
   const title = isContributors ? "Top Contributors" : "Top Guest Parking Bookers";
   const subtitle = isContributors
     ? "Residents helping the community by sharing their parking spots."
-    : "Residents who book guest parking spots the most.";
+    : "Residents who book guest parking the most.";
   const colTemplate = isContributors ? "32px 1fr 80px 120px" : "32px 1fr 80px";
-  const headers = isContributors ? ["#", "Resident", "Shares", "Credits Earned"] : ["#", "Resident", "Bookings"];
+  const headers = isContributors ? ["#", "Resident", "Times shared", "Credits earned"] : ["#", "Resident", "Bookings"];
   const rows = isContributors ? contributors : bookers;
 
   const cellTxt: React.CSSProperties = {
@@ -322,7 +322,7 @@ export function LeaderboardModal({ type, period, contributors = [], bookers = []
               key={h}
               style={{
                 ...cellTxt,
-                textAlign: h === "#" ? "center" : (h === "Shares" || h === "Credits Earned" || h === "Bookings") ? "right" : "left" as React.CSSProperties["textAlign"],
+                textAlign: h === "#" ? "center" : (h === "Times shared" || h === "Credits earned" || h === "Bookings") ? "right" : "left" as React.CSSProperties["textAlign"],
               }}
             >
               {h}

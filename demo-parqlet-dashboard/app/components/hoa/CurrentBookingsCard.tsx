@@ -1,12 +1,9 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { IcTime } from "../icons";
 import { useBookings } from "../hooks";
 import { colors } from "../ui/chart-utils";
-import { InfoTooltip } from "../ui/InfoTooltip";
 import { fmtDateTime } from "@/lib/dates";
-import { formatMoney } from "../../lib/demo/pricing";
 import { bookingEarning } from "../../lib/demo/booking-earnings";
 import { productPrefix } from "../../lib/demo/product-path";
 
@@ -37,7 +34,7 @@ export function CurrentBookingsCard({ buildingId, showEarnings = false }: Curren
   // fmtDateTime renders booking strings in UTC (matching the backend's
   // UTC-wall-clock contract, and the Bookings table's untouched display of
   // the same string) instead of the viewer's local time zone.
-  const formatTime = (start: string, end: string) => `${fmtDateTime(start)} – ${fmtDateTime(end)}`;
+  const formatTime = (start: string, end: string) => `${fmtDateTime(start)} to ${fmtDateTime(end)}`;
 
   return (
     <div
@@ -114,43 +111,28 @@ export function CurrentBookingsCard({ buildingId, showEarnings = false }: Curren
             <div key={booking.id}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <IcTime />
-                  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    <p style={{ fontSize: 14, lineHeight: "16px", color: colors.textStrong, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <span>
-                        {booking.unitNumber ?? "—"} booked parking spot <strong style={{ fontWeight: 500 }}>{booking.spotNumber ?? "—"}</strong>
-                      </span>
-                      {showEarnings && (
-                        <span style={spotKindTag(earning.spotKind)}>{earning.spotKindLabel}</span>
-                      )}
-                    </p>
+                  {/* No clock glyph. Every row on this list is a booking and
+                      every booking has a time, so the same icon seven times
+                      distinguished nothing - the spot-type tag that replaced
+                      it is the thing that actually differs row to row. */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     {showEarnings && (
-                      <p style={{ fontSize: 12, lineHeight: "16px", color: colors.textWeak }}>
-                        {earning.payLabel}
-                      </p>
+                      <span style={{ ...spotKindTag(earning.spotKind), alignSelf: "flex-start" }}>
+                        {earning.spotKindLabel}
+                      </span>
                     )}
+                    <p style={{ fontSize: 14, lineHeight: "16px", color: colors.textStrong }}>
+                      <strong style={{ fontWeight: 500 }}>{booking.unitNumber ?? "—"}</strong> booked spot{" "}
+                      <strong style={{ fontWeight: 500 }}>
+                        {booking.spotNumber ? `#${booking.spotNumber}` : "—"}
+                      </strong>
+                    </p>
                     <p style={{ fontSize: 12, lineHeight: "16px", color: colors.textWeak }}>
                       {formatTime(booking.bookingStart, booking.bookingEnd)}
                     </p>
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
-                  {showEarnings && !earning.refunded && (
-                    earning.zeroReason ? (
-                      // $0.00 is the surprising number on this screen, so it
-                      // carries its own explanation rather than sending the
-                      // operator to support to ask why.
-                      <InfoTooltip text={earning.zeroReason}>
-                        <span style={{ ...earnedStyle, color: colors.textWeak, borderBottom: "1px dotted var(--color-stroke-strong)" }}>
-                          {formatMoney(earning.earnedCents)}
-                        </span>
-                      </InfoTooltip>
-                    ) : (
-                      <span style={{ ...earnedStyle, color: "var(--color-text-success)" }}>
-                        +{formatMoney(earning.earnedCents)}
-                      </span>
-                    )
-                  )}
                   <span
                     style={{
                       display: "flex",
@@ -230,12 +212,6 @@ export function CurrentBookingsCard({ buildingId, showEarnings = false }: Curren
   );
 }
 
-const earnedStyle: React.CSSProperties = {
-  fontSize: 14,
-  lineHeight: "20px",
-  fontWeight: 600,
-  whiteSpace: "nowrap",
-};
 
 /** A community spot is the building's own; a resident spot is lent by a neighbour. */
 function spotKindTag(kind: "building" | "neighbor"): React.CSSProperties {
