@@ -180,7 +180,7 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
           the table's height, the way Top Contributors' "View all" does. */}
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "auto", paddingTop: 12 }}>
         <Link
-          href="/apartment/availability?tab=spots"
+          href="/apartment/parking-spots?tab=spots"
           style={{
             fontSize: "var(--font-size-tiny)",
             color: colors.strong,

@@ -89,13 +89,14 @@ export const navItems: readonly NavItem[] = [
  * in are two views of the same question - which of my spots can be booked,
  * and when - so they sit as two tabs on Availability rather than as two
  * sidebar entries an operator has to bounce between while pricing a level.
- * The /apartment/spots URL still works and opens that tab.
+ * The old /apartment/spots and /apartment/availability URLs both still
+ * work and open the tab they name.
  */
 export const apartmentsNavItems: readonly NavItem[] = [
   { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard,    href: "/apartment" },
   { id: "residents",     label: "Resident Directory", Icon: IcResidentDirectory, href: "/apartment/residents" },
   { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: "/apartment/bookings" },
-  { id: "availability",  label: "Availability",      Icon: IcParking,      href: "/apartment/availability" },
+  { id: "availability",  label: "Parking Spots",     Icon: IcParking,      href: "/apartment/parking-spots" },
   { id: "earnings",      label: "Earnings",           Icon: IcCredit,       href: "/apartment/earnings" },
   { id: "reward-redemption", label: "Reward Redemption", Icon: IcGiftCard, href: "/apartment/reward-redemption" },
   { id: "tickets",       label: "Support Tickets",    Icon: IcQuestion,     href: "/apartment/tickets" },
