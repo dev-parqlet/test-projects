@@ -205,7 +205,12 @@ const st: Record<string, React.CSSProperties> = {
     color: "var(--color-text-weak)",
   },
   filters: {
-    display: "inline-flex",
+    // `flex`, not `inline-flex`: an inline box sizes to its content, so
+    // the filter pills pushed the card wider than a phone before any wrap
+    // could take effect.
+    display: "flex",
+    flexWrap: "wrap",
+    maxWidth: "100%",
     padding: 3,
     borderRadius: "var(--radius-48)",
     border: "1px solid var(--color-stroke-medium)",

@@ -169,15 +169,12 @@ export function MoneyProgressCard({
         </div>
 
         <div style={st.columns}>
-          {columns.map((c, i) => (
-            <React.Fragment key={c.label}>
-              {i > 0 && <span style={st.divider} aria-hidden />}
-              <div style={st.column}>
-                <span style={st.colLabel}>{c.label}</span>
-                {c.node}
-                <span style={st.colNote}>{c.note}</span>
-              </div>
-            </React.Fragment>
+          {columns.map((c) => (
+            <div key={c.label} style={st.column}>
+              <span style={st.colLabel}>{c.label}</span>
+              {c.node}
+              <span style={st.colNote}>{c.note}</span>
+            </div>
           ))}
         </div>
 
@@ -272,9 +269,22 @@ const st: Record<string, React.CSSProperties> = {
     color: "var(--color-text-strong)",
     textDecoration: "none",
   },
-  columns: { display: "flex", alignItems: "stretch", gap: "var(--spacing-24)", flexWrap: "wrap" },
-  divider: { width: 1, alignSelf: "stretch", background: "var(--color-stroke-medium)", flex: "none" },
-  column: { display: "flex", flexDirection: "column", gap: 2, minWidth: 170 },
+  /**
+   * A GRID, not a wrapping flex row.
+   *
+   * Wrapping put a vertical divider at the start of a wrapped line, where
+   * it read as a rule down the middle of nothing, and a 170px column floor
+   * on a 375px phone left the third one hanging alone. auto-fit collapses
+   * to one column per line at phone width and keeps all three side by side
+   * wherever they fit.
+   */
+  columns: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+    gap: "var(--spacing-16) var(--spacing-24)",
+    alignItems: "stretch",
+  },
+  column: { display: "flex", flexDirection: "column", gap: 2, minWidth: 0 },
   colLabel: {
     fontFamily: "var(--font-family-body)",
     fontSize: "var(--font-size-tiny)",

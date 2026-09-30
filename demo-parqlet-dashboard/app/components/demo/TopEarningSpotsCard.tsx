@@ -132,7 +132,8 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
           No paid bookings yet.
         </span>
       ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 420 }}>
           <thead>
             <tr>
               {["Spot", "Type", "Price", "Bookings", "Earned"].map((h, i) => (
@@ -174,6 +175,7 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
             })}
           </tbody>
         </table>
+        </div>
       )}
 
       {/* Pinned to the bottom so the link sits on the card's edge whatever

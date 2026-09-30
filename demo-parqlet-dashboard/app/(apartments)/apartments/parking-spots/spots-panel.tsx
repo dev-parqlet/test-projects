@@ -264,6 +264,7 @@ export function SpotsPanel({
       )}
 
       <div style={st.card}>
+        <div style={st.tableScroll}>
         <div style={{ ...st.row, ...st.headRow }}>
           {["Spot", "Size", "Tier", "EV", "Shared by", "Price / day", "You receive", ""].map((h, i) => (
             <div key={h || i} style={{ ...st.cellBase, flex: COL_FLEX[i], justifyContent: i === 7 ? "flex-end" : "flex-start" }}>
@@ -326,6 +327,7 @@ export function SpotsPanel({
             No spots match these filters.
           </div>
         )}
+        </div>
       </div>
 
       <span style={{ fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)" }}>
@@ -610,9 +612,12 @@ const st: Record<string, React.CSSProperties> = {
     background: "var(--color-fill-white)",
     overflow: "hidden",
   },
+  /** Pans the table instead of crushing it. The card keeps its corners,
+   *  so the scroller has to live inside it. */
+  tableScroll: { overflowX: "auto" },
   row: {
     display: "flex", alignItems: "center", gap: "var(--spacing-8)",
-    padding: "var(--spacing-8) var(--spacing-24)", minHeight: 48,
+    padding: "var(--spacing-8) var(--spacing-24)", minWidth: 900, minHeight: 48,
     borderBottom: "1px solid var(--color-stroke-medium)",
   },
   headRow: { background: "var(--color-fill-white)", fontFamily: "var(--font-family-body)", fontSize: "var(--font-size-uppercase)", lineHeight: "var(--line-height-uppercase)", fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"], color: "var(--color-text-weak)", textTransform: "uppercase" as const },

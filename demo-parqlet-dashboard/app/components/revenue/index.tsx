@@ -333,7 +333,7 @@ export const st: Record<string, React.CSSProperties> = {
   // ── Savings page layout ───────────────────────────────────────────
   tiles: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
     gap: "var(--spacing-16)",
   },
   tile: {
@@ -380,7 +380,11 @@ export const st: Record<string, React.CSSProperties> = {
   },
   twoUp: {
     display: "grid",
-    gridTemplateColumns: "minmax(0, 2fr) minmax(260px, 1fr)",
+    // auto-fit, not a fixed 2fr/1fr pair. The old rule gave the right
+    // column a 260px floor that a phone cannot honour, so the chart beside
+    // it was squeezed to nothing and the row overflowed. Two columns
+    // wherever 320px each will fit, one column below that.
+    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
     gap: "var(--spacing-16)",
     alignItems: "stretch",
   },
