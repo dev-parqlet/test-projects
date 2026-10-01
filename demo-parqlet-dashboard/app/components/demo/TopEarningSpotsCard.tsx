@@ -116,14 +116,21 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
             Community Spots that earn the most.
           </span>
         </div>
+        {/* Padding copied from PeriodSelector, which is what sits here on
+            Top Contributors. At 6px against its 8px this pill was 4px
+            shorter, and since it sets the header row's height, every row
+            of the table below started 4px higher than its twin's. */}
         <span
           style={{
-            padding: "6px 12px",
+            display: "inline-flex",
+            alignItems: "center",
+            padding: "var(--spacing-8) 10px",
             borderRadius: "var(--radius-8)",
             border: `1px solid ${colors.border}`,
             fontFamily: "var(--font-family-body)",
             fontSize: "var(--font-size-tiny)",
-            color: colors.strong,
+            lineHeight: "var(--line-height-tiny)",
+            color: colors.weak,
             whiteSpace: "nowrap",
           }}
         >
@@ -147,12 +154,18 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
                   key={h}
                   style={{
                     textAlign: i >= 1 ? "right" : "left",
-                    fontSize: 11,
-                    fontWeight: 500,
-                    color: colors.weak,
+                    // Token sizes, matching Top Contributors' header row
+                    // exactly. 11px with 0.3 letter-spacing was a second
+                    // opinion about what a table header looks like.
+                    fontFamily: "var(--font-family-body)",
+                    fontSize: "var(--font-size-uppercase)",
+                    lineHeight: "var(--line-height-uppercase)",
+                    fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
+                    color: "var(--color-text-weak)",
                     textTransform: "uppercase",
-                    letterSpacing: 0.3,
-                    padding: "6px 8px",
+                    // No TOP padding: the other card's header sits flush
+                    // under the card gap with 6px below it before the rule.
+                    padding: "0 8px 6px",
                     borderBottom: `1px solid ${colors.border}`,
                     whiteSpace: "nowrap",
                   }}
