@@ -232,7 +232,11 @@ export default function ApartmentEarningsPage() {
                   <td style={{ ...st.savingsTd, fontWeight: 600 }}>{m.period}</td>
                   <td style={st.savingsTdNum}>{formatMoney(m.communityCents)}</td>
                   <td style={st.savingsTdNum}>{formatMoney(m.residentCents)}</td>
-                  <td style={{ ...st.savingsTdNum, color: "var(--color-text-success)", fontWeight: 600 }}>
+                  {/* Plain, like every other figure in the row. Every month
+                      in this column earned something, so colouring them all
+                      green made the colour mean nothing while shouting. The
+                      Condo's Saved column reads the same way. */}
+                  <td style={st.savingsTdNum}>
                     {formatMoney(m.totalCents)}
                   </td>
                   <td style={st.savingsTdNum}>{formatMoney(m.invoiceCents)}</td>
