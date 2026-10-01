@@ -84,7 +84,9 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
         padding: 16,
         display: "flex",
         flexDirection: "column",
-        gap: 12,
+        // 16, as Top Contributors beside it: the pair shares a row, and a
+        // 4px difference under the header showed as misaligned titles.
+        gap: 16,
         minHeight: 260,
         // Shares a row with Top Contributors on desktop; without these it
         // would size to its table and leave the pair lopsided.
@@ -93,7 +95,11 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
       }}
     >
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-        <div>
+        {/* Same shape as Top Contributors' header: a flex column with a
+            2px gap, not a block with a margin on the paragraph. The two
+            cards sit side by side and the margin put this title a few
+            pixels lower than its twin. */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <span
             style={{
               fontFamily: "var(--font-family-body)",
@@ -106,9 +112,9 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
           >
             Top earning spots
           </span>
-          <p style={{ margin: "4px 0 0", fontSize: 12, color: colors.weak }}>
+          <span style={{ fontFamily: "var(--font-family-body)", fontSize: 12, color: colors.weak, lineHeight: "16px" }}>
             Community Spots that earn the most.
-          </p>
+          </span>
         </div>
         <span
           style={{
@@ -167,9 +173,11 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
                       and as its own column it cost a quarter of a narrow
                       table to repeat one of four words. */}
                   <td style={td}>
-                    <span style={{ display: "block", fontWeight: 500 }}>#{r.spotNumber}</span>
-                    <span style={{ display: "block", fontSize: 12, color: colors.weak }}>
-                      {tierForSpotNumber(r.spotNumber)}
+                    <span style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
+                      <span style={{ fontSize: 14, lineHeight: "18px", fontWeight: 500 }}>#{r.spotNumber}</span>
+                      <span style={{ fontSize: 12, lineHeight: "16px", color: colors.weak }}>
+                        {tierForSpotNumber(r.spotNumber)}
+                      </span>
                     </span>
                   </td>
                   <td style={{ ...td, textAlign: "right", color: colors.weak }}>
@@ -212,7 +220,9 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
 const td: React.CSSProperties = {
   fontSize: 13,
   color: colors.strong,
-  padding: "8px",
+  // 10px vertical, matching Top Contributors' rows, so the two cards'
+  // five rows line up with each other.
+  padding: "10px 8px",
   borderBottom: `1px solid ${colors.border}`,
   whiteSpace: "nowrap",
 };

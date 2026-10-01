@@ -76,9 +76,15 @@ export function RevenueCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
+    // 16, like every other card on the dashboard. Card defaults to 24,
+    // which left these two sitting lower than their neighbours.
+    <Card style={{ padding: 16, display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
       {/* Title left, control right. The badge slot carries a range picker
-          on the chart cards, so the row has to separate rather than hug. */}
+          on the chart cards, so the row has to separate rather than hug.
+
+          minHeight is what keeps the two titles level: a card WITH a range
+          pill got a taller header row than one without, so side by side
+          their titles sat at different heights. */}
       <div
         style={{
           display: "flex",
@@ -86,6 +92,7 @@ export function RevenueCard({
           justifyContent: "space-between",
           gap: "var(--spacing-12)",
           flexWrap: "wrap",
+          minHeight: 32,
         }}
       >
         <span style={st.cardTitle}>{title}</span>
@@ -376,7 +383,9 @@ export const st: Record<string, React.CSSProperties> = {
     background: "var(--color-fill-weak)",
     fontFamily: "var(--font-family-body)",
     fontSize: "var(--font-size-extra-tiny)",
-    color: "var(--color-text-weak)",
+    // The same token the dashboard's stat-card pills use, so the two
+    // four-up rows read as the same component on both screens.
+    color: "var(--color-tag-text-neutral)",
   },
   twoUp: {
     display: "grid",
@@ -395,8 +404,10 @@ export const st: Record<string, React.CSSProperties> = {
     width: 24,
     height: 24,
     borderRadius: "50%",
-    background: "var(--color-tag-active)",
-    color: "var(--color-tag-text-active)",
+    // Accent, not the green "active" tag: these are numbered steps in an
+    // explanation, and the green read as a status.
+    background: "var(--color-accent-150)",
+    color: "var(--color-accent-1400)",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",

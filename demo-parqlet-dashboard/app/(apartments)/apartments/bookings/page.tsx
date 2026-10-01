@@ -169,7 +169,9 @@ export default function ApartmentsBookingsPage() {
               )}
             </div>
             <div style={{ ...st.cell, flex: COL[8] }}>
-              <Badge as="span" variant={badgeFor(r.status)}>{r.status}</Badge>
+              <Badge as="span" variant={statusBadge(r.status, tab).variant}>
+                {statusBadge(r.status, tab).label}
+              </Badge>
             </div>
           </div>
           );
@@ -188,12 +190,37 @@ export default function ApartmentsBookingsPage() {
   );
 }
 
-function badgeFor(status: string): string {
-  if (status === "Active") return "active";
-  if (status === "Assigned") return "upcoming";
-  if (status === "Cancelled") return "expired";
-  if (status === "Completed") return "inactive";
-  return "pending";
+/**
+ * Label and colour for a booking's status, by the SAME rule the HOA table
+ * uses - see app/(hoa)/bookings/page.tsx.
+ *
+ * "Assigned" is a backend state, not a word an operator should ever read.
+ * What it means depends entirely on which tab the row is under, and the
+ * tab already answers it: a booking listed under Current is happening now,
+ * so it is "Active"; the same booking under Past has finished and is
+ * waiting on the auto-complete sweep, so it is "Completed". Only an
+ * upcoming one is genuinely "Upcoming".
+ *
+ * Trusting the tab rather than re-deriving the time window is deliberate,
+ * and copied from the HOA page for the same reason: the tab is defined by
+ * exactly that condition, so a row under it satisfies it by construction.
+ * Recomputing the comparison here is a second chance to disagree.
+ */
+function statusBadge(status: string, tab: BookingTab): { label: string; variant: string } {
+  // "Active" and "Assigned" are the same thing by two names in the mock
+  // corpus, and neither should be read literally: a booking whose window
+  // has closed is finished no matter which word the row carries, which is
+  // why "Active" was appearing under Past bookings.
+  if (status === "Assigned" || status === "Active") {
+    if (tab === "current") return { label: "Active", variant: "active" };
+    if (tab === "past") return { label: "Completed", variant: "active" };
+    return { label: "Upcoming", variant: "upcoming" };
+  }
+  if (status === "Cancelled") return { label: "Cancelled", variant: "expired" };
+  if (status === "Completed") return { label: "Completed", variant: "active" };
+  // Anything the mock corpus adds later still renders, rather than
+  // throwing a row away over a word this function has not met.
+  return { label: status, variant: "inactive" };
 }
 
 const st: Record<string, React.CSSProperties> = {

@@ -33,6 +33,33 @@ const H = 240;
 const TOP = 28; // headroom for the value label above the tallest bar
 const BASE = H - 24; // leaves room for the month labels
 
+/**
+ * A bar with independent top and bottom corner radii.
+ *
+ * `<rect rx>` rounds all four, which is what left a notch where the two
+ * halves of a stacked bar meet: the top segment's rounded bottom and the
+ * bottom segment's rounded top curved away from each other and showed the
+ * background between them. Only the ends of the whole bar should be
+ * rounded, so each half rounds one end and squares the other.
+ */
+function barPath(x: number, y: number, w: number, h: number, rTop: number, rBottom: number): string {
+  if (h <= 0) return "";
+  // A radius taller than the segment would invert the curve.
+  const rt = Math.max(0, Math.min(rTop, h / 2, w / 2));
+  const rb = Math.max(0, Math.min(rBottom, h / 2, w / 2));
+  return [
+    `M ${x} ${y + rt}`,
+    rt ? `A ${rt} ${rt} 0 0 1 ${x + rt} ${y}` : `L ${x} ${y}`,
+    `L ${x + w - rt} ${y}`,
+    rt ? `A ${rt} ${rt} 0 0 1 ${x + w} ${y + rt}` : "",
+    `L ${x + w} ${y + h - rb}`,
+    rb ? `A ${rb} ${rb} 0 0 1 ${x + w - rb} ${y + h}` : `L ${x + w} ${y + h}`,
+    `L ${x + rb} ${y + h}`,
+    rb ? `A ${rb} ${rb} 0 0 1 ${x} ${y + h - rb}` : "",
+    "Z",
+  ].filter(Boolean).join(" ");
+}
+
 export function MonthlyEarningsChart({ months }: { months: ApartmentMonth[] }) {
   // Oldest on the left: time reads left to right, and the story is growth.
   const data = [...months].reverse();
@@ -102,20 +129,12 @@ export function MonthlyEarningsChart({ months }: { months: ApartmentMonth[] }) {
                 <rect x={slot * i} y={0} width={slot} height={H} fill="transparent" />
                 {/* The building's own spots on top: they are the part an
                     operator can act on, and the part that grows. */}
-                <rect
-                  x={x}
-                  y={totalTop}
-                  width={barW}
-                  height={Math.max(0, residentTop - totalTop)}
-                  rx="2"
+                <path
+                  d={barPath(x, totalTop, barW, Math.max(0, residentTop - totalTop), 2, 0)}
                   fill="var(--color-spot-community)"
                 />
-                <rect
-                  x={x}
-                  y={residentTop}
-                  width={barW}
-                  height={Math.max(0, BASE - residentTop)}
-                  rx="2"
+                <path
+                  d={barPath(x, residentTop, barW, Math.max(0, BASE - residentTop), 0, 2)}
                   fill="var(--color-spot-neighbor)"
                 />
               </g>
@@ -152,6 +171,26 @@ export function MonthlyEarningsChart({ months }: { months: ApartmentMonth[] }) {
             <span style={st.valueLabel}>{formatDollars(subscriptionCents)}</span>
           </div>
         </div>
+
+        {/* ABSOLUTE, inside the plot. As a block below the chart it was
+            laid out in flow, so hovering grew the card and every hover
+            nudged the page. Floating it over the bar costs no height. */}
+        {hover != null && (
+          <div
+            style={{
+              ...st.tooltip,
+              left: `${slot * hover + slot / 2}%`,
+              top: `${(y(data[hover].totalCents) / H) * 100}%`,
+            }}
+            role="status"
+          >
+            <strong>{data[hover].period}</strong>
+            <span>Community Spots {formatMoney(data[hover].communityCents)}</span>
+            <span>Resident spots {formatMoney(data[hover].residentCents)}</span>
+            <span>Invoice {formatMoney(data[hover].invoiceCents)}</span>
+            {data[hover].payoutCents > 0 && <span>Payout {formatMoney(data[hover].payoutCents)}</span>}
+          </div>
+        )}
       </div>
 
       <div style={st.axis}>
@@ -162,15 +201,6 @@ export function MonthlyEarningsChart({ months }: { months: ApartmentMonth[] }) {
         ))}
       </div>
 
-      {hover != null && (
-        <div style={st.tooltip} role="status">
-          <strong>{data[hover].period}</strong>
-          <span>Community Spots {formatMoney(data[hover].communityCents)}</span>
-          <span>Resident spots {formatMoney(data[hover].residentCents)}</span>
-          <span>Invoice {formatMoney(data[hover].invoiceCents)}</span>
-          {data[hover].payoutCents > 0 && <span>Payout {formatMoney(data[hover].payoutCents)}</span>}
-        </div>
-      )}
     </div>
   );
 }
@@ -210,16 +240,23 @@ const st: Record<string, React.CSSProperties> = {
     fontSize: "var(--font-size-tiny)",
     color: "var(--color-text-weak)",
   },
+  /* The dashboard's bar tooltip: a dark pill floated above the bar,
+     stacked one fact per line rather than a wrapping row. */
   tooltip: {
-    marginTop: "var(--spacing-12)",
+    position: "absolute",
+    transform: "translate(-50%, calc(-100% - 10px))",
     display: "flex",
-    gap: "var(--spacing-12)",
-    flexWrap: "wrap",
-    padding: "var(--spacing-8) var(--spacing-12)",
-    borderRadius: "var(--radius-8)",
-    background: "var(--color-fill-weak)",
+    flexDirection: "column",
+    gap: 2,
+    padding: "6px 10px",
+    borderRadius: 6,
+    background: "var(--color-fill-strong)",
     fontFamily: "var(--font-family-body)",
-    fontSize: "var(--font-size-tiny)",
-    color: "var(--color-text-strong)",
+    fontSize: 12,
+    lineHeight: "16px",
+    color: "var(--color-text-white)",
+    whiteSpace: "nowrap",
+    pointerEvents: "none",
+    zIndex: 10,
   },
 };

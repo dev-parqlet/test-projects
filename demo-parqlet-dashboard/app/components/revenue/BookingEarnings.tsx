@@ -193,7 +193,10 @@ export function BookingEarnings({ buildingId }: { buildingId: string | null }) {
                       style={{
                         ...st.td,
                         textAlign: "right",
-                        color: earning.earnedCents > 0 ? "var(--color-text-success)" : undefined,
+                        // Primary dark, not green: every row in this column
+                        // earned something, so colouring them all green made
+                        // the colour mean nothing while shouting.
+                        color: earning.earnedCents > 0 ? "var(--color-text-strong)" : undefined,
                         fontWeight: earning.earnedCents > 0 ? 600 : undefined,
                       }}
                     >
@@ -281,7 +284,12 @@ const st: Record<string, React.CSSProperties> = {
     display: "flex",
     padding: 3,
     borderRadius: 999,
-    background: "var(--color-fill-weak)",
+    // Transparent with a hairline, like the range tabs on the dashboard's
+    // Recent activity. A filled track plus a filled selected pill gave two
+    // competing shapes in dark mode, where the two fills were a shade
+    // apart.
+    background: "transparent",
+    border: "1px solid var(--color-stroke-medium)",
     flexWrap: "wrap",
     maxWidth: "100%",
   },
@@ -296,7 +304,10 @@ const st: Record<string, React.CSSProperties> = {
     cursor: "pointer",
     whiteSpace: "nowrap",
   },
-  filterOn: { background: "var(--color-fill-strong)", color: "var(--color-fill-white)" },
+  // text-strong / fill-white, the pair Recent activity uses, so the
+  // selected pill inverts with the theme. fill-strong was #3a3a3d in dark
+  // against #232326 text - dark on dark.
+  filterOn: { background: "var(--color-text-strong)", color: "var(--color-fill-white)" },
   tableWrap: { overflowX: "auto" },
   table: { width: "100%", borderCollapse: "collapse", minWidth: 760 },
   th: {
