@@ -178,6 +178,14 @@ export function MonthlyEarningsChart({ months }: { months: ApartmentMonth[] }) {
               position: "absolute",
               right: 0,
               top: `${((y(subscriptionCents) - 18) / H) * 100}%`,
+              // The dashed line runs the full width behind this. The
+              // card-coloured background masks the dashes it covers and the
+              // left padding opens a clean gap, so the line stops short of
+              // the number instead of running into it. Masking rather than
+              // shortening the line, because the label's width changes with
+              // the amount.
+              background: "var(--color-fill-white)",
+              paddingLeft: 6,
             }}
           >
             <span style={st.valueLabel}>{formatDollars(subscriptionCents)}</span>
