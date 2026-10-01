@@ -41,6 +41,11 @@
   /* The "Resident spot" pill. Its own token because `fill-weak` goes to
      near-black in dark mode, where the pill vanished into the page. */
   --color-tag-spot-resident: #f8f6f2;
+  /* Background for the neutral pills on the stat cards and the earnings
+     tiles. Its own token rather than `fill-weak`, which is also the PAGE
+     background and the PeriodSelector's selected-option highlight - both
+     of which have to stay where they are. */
+  --color-tag-bg-neutral: #f8f6f2;
   /* Text ON the lime accent fill. Deliberately NOT redefined for dark
      mode: the lime is identical in both themes, so inheriting text-strong
      there turned the label white on lime. */

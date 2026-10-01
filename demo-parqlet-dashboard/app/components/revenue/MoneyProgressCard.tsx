@@ -343,7 +343,7 @@ const st: Record<string, React.CSSProperties> = {
   chip: {
     padding: "6px var(--spacing-12)",
     borderRadius: 999,
-    background: "var(--color-fill-weak)",
+    background: "var(--color-tag-bg-neutral)",
     fontFamily: "var(--font-family-body)",
     fontSize: "var(--font-size-tiny)",
     color: "var(--color-text-weak)",

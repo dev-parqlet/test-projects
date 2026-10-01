@@ -13,6 +13,7 @@ export const colors = {
   tagBg:            "var(--color-fill-weak)",
   // Neutral pill LABEL. Not textStrong: a near-black 12px pill competes
   // with the figure it annotates.
+  tagBgNeutral:     "var(--color-tag-bg-neutral)",
   tagText:          "var(--color-tag-text-neutral)",
   tagActive:        "var(--color-tag-active)",
   tagUpcoming:      "var(--color-tag-upcoming)",

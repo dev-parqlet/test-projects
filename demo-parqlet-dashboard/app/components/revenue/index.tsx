@@ -380,7 +380,7 @@ export const st: Record<string, React.CSSProperties> = {
     marginTop: "auto",
     padding: "2px var(--spacing-8)",
     borderRadius: "var(--radius-48)",
-    background: "var(--color-fill-weak)",
+    background: "var(--color-tag-bg-neutral)",
     fontFamily: "var(--font-family-body)",
     fontSize: "var(--font-size-extra-tiny)",
     // The same token the dashboard's stat-card pills use, so the two

@@ -85,7 +85,7 @@ export function StatCard({ label, value, tag, split }: StatCardProps) {
             display: "flex",
             alignItems: "center",
             gap: 4,
-            background: colors.tagBg,
+            background: colors.tagBgNeutral,
             borderRadius: 47,
             padding: "4px 8px",
             fontSize: 12,

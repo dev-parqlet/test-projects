@@ -74,6 +74,7 @@ html[data-theme="dark"] {
   --color-tag-text-neutral: #c9c7c4;
   /* The same light grey the pagination uses for the selected page. */
   --color-tag-spot-resident: #3a3a3d;
+  --color-tag-bg-neutral: #232326;
   --color-text-active-tag: #8fd66c;
 
   /* Icons */
