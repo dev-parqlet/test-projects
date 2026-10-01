@@ -176,7 +176,7 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => {
+            {rows.map((r, i) => {
               const price = priceForSpotNumber(r.spotNumber);
               return (
                 <tr key={r.spotNumber}>
@@ -185,7 +185,7 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
                       rather than standing beside it as a fact of its own,
                       and as its own column it cost a quarter of a narrow
                       table to repeat one of four words. */}
-                  <td style={td}>
+                  <td style={{ ...td, ...(i === rows.length - 1 ? lastTd : null) }}>
                     <span style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
                       <span style={{ fontSize: 14, lineHeight: "18px", fontWeight: 500 }}>#{r.spotNumber}</span>
                       <span style={{ fontSize: 12, lineHeight: "16px", color: colors.weak }}>
@@ -193,14 +193,14 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
                       </span>
                     </span>
                   </td>
-                  <td style={{ ...td, textAlign: "right", color: colors.weak }}>
+                  <td style={{ ...td, ...(i === rows.length - 1 ? lastTd : null), textAlign: "right", color: colors.weak }}>
                     {price == null ? "—" : `${formatMoney(price)}/day`}
                   </td>
-                  <td style={{ ...td, textAlign: "right" }}>{r.bookings}</td>
+                  <td style={{ ...td, ...(i === rows.length - 1 ? lastTd : null), textAlign: "right" }}>{r.bookings}</td>
                   {/* 500, matching the spot number in Recent bookings. At
                       600 these two columns read as the only thing on the
                       card worth looking at. */}
-                  <td style={{ ...td, textAlign: "right", fontWeight: 500 }}>
+                  <td style={{ ...td, ...(i === rows.length - 1 ? lastTd : null), textAlign: "right", fontWeight: 500 }}>
                     {formatMoney(r.netCents)}
                   </td>
                 </tr>
@@ -229,6 +229,10 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
     </div>
   );
 }
+
+/** The last row closes the table, so it carries no rule - as the card
+ *  beside it does. */
+const lastTd: React.CSSProperties = { borderBottom: "none" };
 
 const td: React.CSSProperties = {
   fontSize: 13,

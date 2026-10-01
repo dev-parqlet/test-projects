@@ -91,7 +91,12 @@ export function TopContributorsCard({ buildingId }: TopContributorsCardProps) {
           Loading…
         </div>
       ) : hasData ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        // No gap. Each row already separates itself with a rule, and the 2px
+        // that used to sit between them made this card's rows pitch 2px
+        // further apart than Top Earning Spots' - which is a table, where
+        // collapsed borders leave no gap at all. Over five rows that is
+        // 10px of drift between two cards meant to read straight across.
+        <div style={{ display: "flex", flexDirection: "column" }}>
           {contributors.slice(0, 5).map((c, i) => (
             <div
               key={c.rank}
