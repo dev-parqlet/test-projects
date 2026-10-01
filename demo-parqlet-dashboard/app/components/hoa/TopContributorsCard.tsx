@@ -101,6 +101,10 @@ export function TopContributorsCard({ buildingId }: TopContributorsCardProps) {
                 gap: "0 12px",
                 alignItems: "center",
                 padding: "10px 0",
+                // Pinned to the same 56 as Top Earning Spots' rows, so the
+                // two cards' five rows sit level with each other.
+                minHeight: 56,
+                boxSizing: "border-box",
                 borderBottom: i < 4 ? `1px solid ${colors.border}` : "none",
               }}
             >

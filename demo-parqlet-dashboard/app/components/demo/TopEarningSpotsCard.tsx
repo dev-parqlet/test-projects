@@ -232,10 +232,16 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
 
 const td: React.CSSProperties = {
   fontSize: 13,
+  // 18px, the line box Top Contributors' figures use. Left to `normal` a
+  // 13px cell resolves to roughly 15.6px, which is enough on its own to
+  // make one card's rows a different height from the other's.
+  lineHeight: "18px",
   color: colors.strong,
-  // 10px vertical, matching Top Contributors' rows, so the two cards'
-  // five rows line up with each other.
+  // 10px vertical and a fixed 56 tall, matching Top Contributors' rows
+  // exactly, so the two cards' five rows line up straight across.
   padding: "10px 8px",
+  height: 56,
+  boxSizing: "border-box",
   borderBottom: `1px solid ${colors.border}`,
   whiteSpace: "nowrap",
 };
