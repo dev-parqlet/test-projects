@@ -197,7 +197,7 @@ function AddWindowModal({
         <label style={st.field}>
           <span style={st.fieldLabel}>Spot</span>
           <select
-            style={st.input}
+            style={st.select}
             value={spotId}
             onChange={(e) => {
               setSpotId(e.target.value);
@@ -276,4 +276,24 @@ const st: Record<string, React.CSSProperties> = {
   field: { display: "flex", flexDirection: "column", gap: 6 },
   fieldLabel: { fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },
   input: { padding: "10px 12px", borderRadius: 8, border: "1px solid var(--color-stroke-medium)", fontSize: 14, fontFamily: "inherit", background: "var(--color-fill-white)", color: "var(--color-text-strong)" },
+  /**
+   * A native <select> sizes to its widest option, not to its container, so
+   * this one stopped short of the text fields beside it and its arrow sat
+   * wherever the longest spot label happened to end. Full width puts the
+   * arrow on the same edge as every other field in the dialog.
+   *
+   * border-box because the 12px side padding would otherwise be added to
+   * the 100% and push the control past the field it lines up with.
+   */
+  select: {
+    padding: "10px 12px",
+    borderRadius: 8,
+    border: "1px solid var(--color-stroke-medium)",
+    fontSize: 14,
+    fontFamily: "inherit",
+    background: "var(--color-fill-white)",
+    color: "var(--color-text-strong)",
+    width: "100%",
+    boxSizing: "border-box",
+  },
 };

@@ -25,7 +25,7 @@
  * have to learn a second set of controls on their third screen.
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { Button } from "../../../components/ui/Button";
 import { Modal } from "../../../components/ui/Modal";
@@ -43,6 +43,8 @@ import {
   type DemoSpot,
 } from "../../../lib/demo/apartments-data";
 import { BASE_PRICE_CENTS, BASE_PRICE_CREDITS } from "../../../lib/demo/pricing";
+import { Pagination } from "../../../components/ui/Pagination";
+import { useToast } from "../../../components/ui/use-toast";
 
 type Draft = Omit<DemoSpot, "id">;
 
@@ -92,7 +94,7 @@ export function SpotsPanel({
 }: SpotsPanelProps) {
   const [spots, setSpots] = useState<DemoSpot[]>(DEMO_SPOTS);
   const [editing, setEditing] = useState<DemoSpot | null>(null);
-  const [lastBulk, setLastBulk] = useState<string | null>(null);
+  const toast = useToast();
 
   // ── Filters ───────────────────────────────────────────────────────────
   const [query, setQuery] = useState("");
@@ -127,12 +129,27 @@ export function SpotsPanel({
     return [...rows].sort(byNumber);
   }, [spots, query, type, owner, ev, sort]);
 
+  // ── Pagination ────────────────────────────────────────────────────────
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  // A filter that shortens the list can strand you on a page that no
+  // longer exists, which renders as an empty table rather than as no
+  // results.
+  useEffect(() => { setPage(1); }, [query, type, owner, ev, sort]);
+  const paged = useMemo(
+    () => visible.slice((page - 1) * pageSize, page * pageSize),
+    [visible, page, pageSize],
+  );
+
   const save = (draft: Draft, id?: string) => {
     setSpots((prev) =>
       id ? prev.map((s) => (s.id === id ? { ...draft, id } : s)) : [...prev, { ...draft, id: `s${Date.now()}` }],
     );
     setEditing(null);
     setCreating(false);
+    // The modal closes onto a long table where a new row is easy to miss,
+    // especially when a filter or sort puts it off-screen.
+    toast.show(id ? `Spot ${draft.number} updated` : `Spot ${draft.number} added`);
   };
 
   /**
@@ -172,7 +189,7 @@ export function SpotsPanel({
         });
       }
       const skipped = hi - lo + 1 - made.length;
-      setLastBulk(
+      toast.show(
         made.length === 0
           ? `Every number from ${lo} to ${hi} already exists.`
           : `Added ${made.length} spot${made.length === 1 ? "" : "s"} (${lo}-${hi})` +
@@ -215,7 +232,7 @@ export function SpotsPanel({
     );
     setPricingRange(false);
     const skippedNote = skipped === 0 ? "" : ` ${skipped} resident-shared spot${skipped === 1 ? "" : "s"} left at the base.`;
-    setLastBulk(
+    toast.show(
       touched === 0
         ? `No spots you own are numbered ${lo}–${hi}.${skippedNote}`
         : `${touched} spot${touched === 1 ? "" : "s"} (${lo}–${hi}) set to ${formatMoney(BASE_PRICE_CENTS + extraCents)} per day.${skippedNote}`,
@@ -256,13 +273,6 @@ export function SpotsPanel({
         </div>
       </div>
 
-      {lastBulk && (
-        <div style={st.notice} role="status">
-          {lastBulk}
-          <button style={st.noticeClose} onClick={() => setLastBulk(null)}>Dismiss</button>
-        </div>
-      )}
-
       <div style={st.card}>
         <div style={st.tableScroll}>
         <div style={{ ...st.row, ...st.headRow }}>
@@ -273,7 +283,7 @@ export function SpotsPanel({
           ))}
         </div>
 
-        {visible.map((sp) => {
+        {paged.map((sp) => {
           const total = spotPriceCents(sp);
           return (
             <div key={sp.id} style={st.row}>
@@ -328,11 +338,20 @@ export function SpotsPanel({
           </div>
         )}
         </div>
+
+        {/* Inside the card, as every other table view has it. */}
+        <Pagination
+          totalItems={visible.length}
+          pageSize={pageSize}
+          currentPage={page}
+          onPageChange={setPage}
+          itemLabel="spots"
+          pageSizeOptions={[10, 20, 50, 100]}
+          onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+        />
       </div>
 
-      <span style={{ fontSize: "var(--font-size-tiny)", color: "var(--color-text-weak)" }}>
-        Showing {visible.length} of {spots.length} spots
-      </span>
+      {toast.node}
 
       <BulkAddModal
         open={bulkAdding}
@@ -409,18 +428,32 @@ function BulkAddModal({
   const [to, setTo] = useState("230");
   const [type, setType] = useState<DemoSpot["type"]>("Standard");
   const [ev, setEv] = useState(false);
-  const [extra, setExtra] = useState("4");
+  /**
+   * The FULL daily price, not the extra over the base.
+   *
+   * It used to ask for "extra per day, on top of the base credit", which
+   * is how the data is stored but not a number anybody has in their head.
+   * A manager pricing a garage knows what a spot costs, so that is what
+   * this asks for; the extra is derived on the way out and the stored
+   * shape is unchanged.
+   */
+  const [price, setPrice] = useState(String((BASE_PRICE_CENTS + 400) / 100));
 
   if (!open) return null;
 
   const f = Number.parseInt(from, 10);
   const t = Number.parseInt(to, 10);
-  const extraDollars = Number.parseFloat(extra);
-  const extraOk = Number.isFinite(extraDollars) && Number.isInteger(extraDollars) && extraDollars >= 0;
+  const priceDollars = Number.parseFloat(price);
+  const priceCents = Number.isFinite(priceDollars) ? Math.round(priceDollars * 100) : NaN;
+  // Below the base is not a price this product can express: a resident's
+  // spot already costs the base, so a cheaper building spot would undercut
+  // the floor the credit system is built on.
+  const belowBase = Number.isFinite(priceCents) && priceCents < BASE_PRICE_CENTS;
+  const priceOk = Number.isFinite(priceCents) && !belowBase;
   const count = Number.isInteger(f) && Number.isInteger(t) ? Math.abs(t - f) + 1 : 0;
   const tooMany = count > 500;
-  const invalid = !Number.isInteger(f) || !Number.isInteger(t) || f < 0 || t < 0 || !extraOk || tooMany;
-  const extraCents = extraOk ? Math.round(extraDollars * 100) : 0;
+  const invalid = !Number.isInteger(f) || !Number.isInteger(t) || f < 0 || t < 0 || !priceOk || tooMany;
+  const extraCents = priceOk ? priceCents - BASE_PRICE_CENTS : 0;
 
   return (
     <Modal open onClose={onClose} title="Add spots in bulk" size="small">
@@ -448,15 +481,22 @@ function BulkAddModal({
           </label>
         </div>
         <Input
-          label="Extra per day (USD), on top of the base credit"
-          inputMode="numeric"
-          value={extra}
-          onChange={(e) => setExtra(e.target.value)}
+          label="Price per spot (USD per day)"
+          inputMode="decimal"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
         />
-        <span style={{ fontSize: 12, color: tooMany ? "var(--color-tag-text-expired)" : "var(--color-text-weak)" }}>
+        <span
+          style={{
+            fontSize: 12,
+            color: tooMany || belowBase ? "var(--color-tag-text-expired)" : "var(--color-text-weak)",
+          }}
+        >
           {tooMany
             ? `That is ${count} spots. A range covers at most 500 at a time.`
-            : `${count} spot${count === 1 ? "" : "s"}, each ${formatMoney(BASE_PRICE_CENTS + extraCents)} a day.`}
+            : belowBase
+              ? `A spot cannot be priced below the base of ${formatMoney(BASE_PRICE_CENTS)} a day.`
+              : `${count} spot${count === 1 ? "" : "s"}, each ${formatMoney(BASE_PRICE_CENTS + extraCents)} a day.`}
         </span>
         <div style={st.actions}>
           <Button variant="secondary" size="small" style={{ width: "auto" }} onClick={onClose}>Cancel</Button>
