@@ -157,7 +157,9 @@ export function MoneyProgressCard({
   }
 
   return (
-    <Card>
+    // 16, not Card's default 24: every other card on this dashboard pads
+    // to 16, and the odd one out read as a different kind of card.
+    <Card style={{ padding: 16 }}>
       <div style={st.body}>
         <div style={st.headRow}>
           <span style={st.eyebrow}>
@@ -168,13 +170,19 @@ export function MoneyProgressCard({
           </Link>
         </div>
 
-        <div style={st.columns}>
-          {columns.map((c) => (
-            <div key={c.label} style={st.column}>
-              <span style={st.colLabel}>{c.label}</span>
-              {c.node}
-              <span style={st.colNote}>{c.note}</span>
-            </div>
+        <div className="money-columns">
+          {columns.map((c, i) => (
+            <React.Fragment key={c.label}>
+              {/* Between sections only, and dropped entirely once the row
+                  stacks - a rule at the top of a stacked column is the bug
+                  that made this a grid in the first place. */}
+              {i > 0 && <span className="money-divider" aria-hidden />}
+              <div style={st.column}>
+                <span style={st.colLabel}>{c.label}</span>
+                {c.node}
+                <span style={st.colNote}>{c.note}</span>
+              </div>
+            </React.Fragment>
           ))}
         </div>
 
@@ -269,21 +277,11 @@ const st: Record<string, React.CSSProperties> = {
     color: "var(--color-text-strong)",
     textDecoration: "none",
   },
-  /**
-   * A GRID, not a wrapping flex row.
-   *
-   * Wrapping put a vertical divider at the start of a wrapped line, where
-   * it read as a rule down the middle of nothing, and a 170px column floor
-   * on a 375px phone left the third one hanging alone. auto-fit collapses
-   * to one column per line at phone width and keeps all three side by side
-   * wherever they fit.
-   */
-  columns: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-    gap: "var(--spacing-16) var(--spacing-24)",
-    alignItems: "stretch",
-  },
+  /* `.money-columns` / `.money-divider` live in globals.css because they
+     need a media query: the columns sit left in a row with a hairline
+     between them, and below 640px they stack and the hairlines disappear.
+     Inline styles cannot express that, and a divider stranded at the top
+     of a stacked column is exactly the bug that made this a grid before. */
   column: { display: "flex", flexDirection: "column", gap: 2, minWidth: 0 },
   colLabel: {
     fontFamily: "var(--font-family-body)",
@@ -353,7 +351,7 @@ const st: Record<string, React.CSSProperties> = {
   },
   chipValue: {
     fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
-    color: "var(--color-text-strong)",
+    color: "var(--color-tag-text-neutral)",
   },
   banner: {
     display: "flex",

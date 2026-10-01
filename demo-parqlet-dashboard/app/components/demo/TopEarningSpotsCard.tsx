@@ -133,14 +133,14 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
         </span>
       ) : (
         <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 420 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 360 }}>
           <thead>
             <tr>
-              {["Spot", "Type", "Price", "Bookings", "Earned"].map((h, i) => (
+              {["Spot", "Price", "Bookings", "Earned"].map((h, i) => (
                 <th
                   key={h}
                   style={{
-                    textAlign: i >= 2 ? "right" : "left",
+                    textAlign: i >= 1 ? "right" : "left",
                     fontSize: 11,
                     fontWeight: 500,
                     color: colors.weak,
@@ -161,13 +161,25 @@ export function TopEarningSpotsCard({ buildingId }: { buildingId: string | null 
               const price = priceForSpotNumber(r.spotNumber);
               return (
                 <tr key={r.spotNumber}>
-                  <td style={{ ...td, fontWeight: 600 }}>#{r.spotNumber}</td>
-                  <td style={td}>{tierForSpotNumber(r.spotNumber)}</td>
+                  {/* Tier UNDER the number, the way a unit sits under a
+                      resident's name elsewhere: it qualifies the spot
+                      rather than standing beside it as a fact of its own,
+                      and as its own column it cost a quarter of a narrow
+                      table to repeat one of four words. */}
+                  <td style={td}>
+                    <span style={{ display: "block", fontWeight: 500 }}>#{r.spotNumber}</span>
+                    <span style={{ display: "block", fontSize: 12, color: colors.weak }}>
+                      {tierForSpotNumber(r.spotNumber)}
+                    </span>
+                  </td>
                   <td style={{ ...td, textAlign: "right", color: colors.weak }}>
                     {price == null ? "—" : `${formatMoney(price)}/day`}
                   </td>
                   <td style={{ ...td, textAlign: "right" }}>{r.bookings}</td>
-                  <td style={{ ...td, textAlign: "right", fontWeight: 600 }}>
+                  {/* 500, matching the spot number in Recent bookings. At
+                      600 these two columns read as the only thing on the
+                      card worth looking at. */}
+                  <td style={{ ...td, textAlign: "right", fontWeight: 500 }}>
                     {formatMoney(r.netCents)}
                   </td>
                 </tr>

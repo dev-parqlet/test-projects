@@ -2168,40 +2168,10 @@ function SubscriptionPageContent() {
           </Card>
         )}
 
-        {/* ── Page footer ── */}
-        <div style={{
-          display:        "flex",
-          justifyContent: "flex-start",
-          alignItems:     "center",
-          gap:            10,
-          marginTop:      16,
-          paddingBottom:  "var(--spacing-16)",
-        }}>
-          {([
-            { label: "Privacy Policy", href: "https://parqlet-terms-and-privacy.notion.site/Privacy-Policy-35d38574a76480a0be27c1cac5735ebe" },
-            { label: "Terms of Service", href: "https://parqlet-terms-and-privacy.notion.site/Terms-of-Service-35d38574a76480228d7bc194bc23c6de" },
-          ] as const).map(({ label, href }, i) => (
-            <span key={label} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {i > 0 && <span style={{ color: "var(--color-gray-30)", fontSize: 12, lineHeight: 1 }}>·</span>}
-              <a
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  fontFamily:     "var(--font-family-body)",
-                  fontSize:       "var(--font-size-tiny)",
-                  fontWeight:     "var(--font-weight-regular)" as React.CSSProperties["fontWeight"],
-                  color:          "var(--color-text-weak)",
-                  textDecoration: "none",
-                }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}
-              >
-                {label}
-              </a>
-            </span>
-          ))}
-        </div>
+        {/* The Privacy Policy / Terms of Service pair that used to close
+            this page is gone: both are permanent items in the left nav, so
+            repeating them here was a second route to the same two
+            documents and the only page that did it. */}
 
       </div>
 

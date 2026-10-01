@@ -16,14 +16,17 @@ interface BarChartProps {
 }
 
 /**
- * Directly labelled bars, no Y axis.
+ * Bars with no Y axis and no printed values - the figure appears on hover.
  *
- * The axis was doing the work the labels now do, and doing it worse: a
- * reader wanting Saturday's figure had to trace the bar's top across to a
- * scale and interpolate between two gridlines. With every bar carrying its
- * own number the axis is a second, vaguer copy of the same information, so
- * it and the dashed guides that helped you read it are both gone. What is
- * left is a baseline, which is the one part a bar chart cannot do without:
+ * The axis went first, because a reader wanting Saturday's number had to
+ * trace the bar's top across to a scale and interpolate. Printing the
+ * number on every bar replaced it, and then became the same problem in a
+ * different form: seven numerals across the top of a small card is a row
+ * of text competing with the shape it annotates, and the shape is what the
+ * chart is for. Comparing heights is what the bars already do well; an
+ * exact figure is wanted one bar at a time, which is what hover is.
+ *
+ * What is left is a baseline, the one part a bar chart cannot do without:
  * without it the bars float and their heights stop being comparable.
  */
 export function BarChart({ data, format, seriesLabels = ["Community Spots", "Resident spots"] }: BarChartProps) {
@@ -41,7 +44,8 @@ export function BarChart({ data, format, seriesLabels = ["Community Spots", "Res
           display: "flex",
           alignItems: "flex-end",
           gap: 8,
-          // Headroom for the value label that sits above the tallest bar.
+          // Headroom so the hover tooltip above the tallest bar is not
+          // clipped by the card.
           paddingTop: 20,
           borderBottom: `1px solid ${colors.border}`,
         }}
@@ -65,36 +69,27 @@ export function BarChart({ data, format, seriesLabels = ["Community Spots", "Res
                 cursor: "default",
               }}
             >
-              {/* Split bars carry their total above and their parts in the
-                  tooltip; a solid bar has nothing more to say, so it gets
-                  no tooltip at all. */}
-              {isHovered && neighbor != null && (
+              {/* Every bar with something in it answers on hover: the
+                  total first, then the split for a building that has one.
+                  An empty day has nothing to say, so it says nothing. */}
+              {isHovered && value > 0 && (
                 <div style={{ ...tip, bottom: `${heightPct}%` }}>
                   <span style={{ display: "block" }}>
-                    {seriesLabels[0]} <strong>{label(value - neighbor)}</strong>
+                    <strong>{label(value)}</strong>
                   </span>
-                  <span style={{ display: "block" }}>
-                    {seriesLabels[1]} <strong>{label(neighbor)}</strong>
-                  </span>
+                  {neighbor != null && (
+                    <>
+                      <span style={{ display: "block" }}>
+                        {seriesLabels[0]} <strong>{label(value - neighbor)}</strong>
+                      </span>
+                      <span style={{ display: "block" }}>
+                        {seriesLabels[1]} <strong>{label(neighbor)}</strong>
+                      </span>
+                    </>
+                  )}
                   <div style={tipArrow} />
                 </div>
               )}
-
-              {/* The figure, above its own bar. */}
-              <span
-                style={{
-                  position: "absolute",
-                  bottom: `${heightPct}%`,
-                  marginBottom: 4,
-                  fontFamily: "var(--font-family-body)",
-                  fontSize: 12,
-                  lineHeight: "16px",
-                  color: colors.textWeak,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {label(value)}
-              </span>
 
               <div
                 style={{

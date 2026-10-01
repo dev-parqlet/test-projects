@@ -33,6 +33,7 @@ import { fmtDateTime } from "@/lib/dates";
 import { bookingEarning } from "../../lib/demo/booking-earnings";
 import { tierForSpotNumber, formatMoney } from "../../lib/demo/apartments-data";
 import { dashboardKeys, DASHBOARD_STALE_TIME, BACKEND_URL } from "../hooks/dashboard/queryKeys";
+import { spotKindTag } from "../ui/spot-kind-tag";
 
 type Filter = "all" | "community" | "resident" | "canceled";
 
@@ -224,18 +225,6 @@ export function BookingEarnings({ buildingId }: { buildingId: string | null }) {
   );
 }
 
-function spotKindTag(kind: "building" | "neighbor"): React.CSSProperties {
-  return {
-    display: "inline-block",
-    padding: "2px var(--spacing-8)",
-    borderRadius: "var(--radius-48)",
-    fontFamily: "var(--font-family-body)",
-    fontSize: "var(--font-size-extra-tiny)",
-    whiteSpace: "nowrap",
-    background: kind === "building" ? "var(--color-fill-accent)" : "var(--color-fill-weak)",
-    color: "var(--color-text-strong)",
-  };
-}
 
 function statusTag(status: string, refunded: boolean): React.CSSProperties {
   const base: React.CSSProperties = {

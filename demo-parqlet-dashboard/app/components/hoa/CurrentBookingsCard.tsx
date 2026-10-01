@@ -6,6 +6,7 @@ import { colors } from "../ui/chart-utils";
 import { fmtDateTime } from "@/lib/dates";
 import { bookingEarning } from "../../lib/demo/booking-earnings";
 import { productPrefix } from "../../lib/demo/product-path";
+import { spotKindTag } from "../ui/spot-kind-tag";
 
 interface CurrentBookingsCardProps {
   buildingId: string | null;
@@ -213,15 +214,3 @@ export function CurrentBookingsCard({ buildingId, showEarnings = false }: Curren
 }
 
 
-/** A community spot is the building's own; a resident spot is lent by a neighbour. */
-function spotKindTag(kind: "building" | "neighbor"): React.CSSProperties {
-  return {
-    padding: "2px 8px",
-    borderRadius: 47,
-    fontSize: 12,
-    lineHeight: "16px",
-    whiteSpace: "nowrap",
-    background: kind === "building" ? "var(--color-accent-150)" : "var(--color-fill-weak)",
-    color: "var(--color-text-strong)",
-  };
-}

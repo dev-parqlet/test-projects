@@ -250,7 +250,10 @@ export function RecentActivityCard({ buildingId, splitBySpotKind = false }: Rece
                 // groups sit side by side, and two identical dark pills read
                 // as one control with two active states.
                 background: metric === m ? "var(--color-spot-community)" : "transparent",
-                color: metric === m ? colors.textStrong : colors.textWeak,
+                // Fixed #222 on the lime, not text-strong: the lime does not
+                // change between themes, so in dark mode text-strong turned
+                // this label white on a pale chip.
+                color: metric === m ? "var(--color-text-on-accent)" : colors.textWeak,
                 border: "none",
                 cursor: "pointer",
                 fontSize: 14,

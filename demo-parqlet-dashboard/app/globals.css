@@ -71,6 +71,9 @@ html[data-theme="dark"] {
   --color-text-accent: #d5ef4d;
   --color-text-error: #e57373;
   --color-text-link: #ececec;
+  --color-tag-text-neutral: #c9c7c4;
+  /* The same light grey the pagination uses for the selected page. */
+  --color-tag-spot-resident: #3a3a3d;
   --color-text-active-tag: #8fd66c;
 
   /* Icons */
@@ -155,6 +158,9 @@ html[data-theme="dark"] {
   --color-accent-50: #2a2e14;
   --color-accent-100: #313519;
   --color-accent-150: #383d1e;
+  /* Inverted: on the dark accent fill the legible value is a PALE lime,
+     not the dark one light mode uses. */
+  --color-accent-1400: #d7e88a;
   --color-green-50: #16220f;
   --color-green-100: #1c2b14;
   --color-green-150: #1f3a17;
@@ -201,5 +207,41 @@ html[data-theme="dark"] input:disabled:-webkit-autofill:focus {
   .copyable-cell-body * {
     font-size: 12px !important;
     line-height: 16px !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * MoneyProgressCard columns
+ *
+ * "Saved on subscription" and "Next invoice" read as one claim, so they sit
+ * together on the left rather than spread across the card, separated by a
+ * hairline instead of by distance.
+ *
+ * The media query is the whole reason these are classes and not inline
+ * styles: below 640px the columns stack, and a vertical rule at the top of
+ * a stacked column reads as a rule down the middle of nothing.
+ * ───────────────────────────────────────────────────────────────────────── */
+.money-columns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-16) var(--spacing-20);
+}
+
+.money-divider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 32px;
+  align-self: center;
+  background: var(--color-stroke-medium);
+}
+
+@media (max-width: 640px) {
+  .money-columns {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .money-divider {
+    display: none;
   }
 }

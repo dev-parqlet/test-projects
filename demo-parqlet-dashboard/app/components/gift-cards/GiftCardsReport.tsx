@@ -633,6 +633,8 @@ export function GiftCardsReport({ isSuperAdmin = false }: { isSuperAdmin?: boole
           border: "1px solid var(--color-stroke-medium)",
           borderRadius: "var(--radius-12)",
           overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
           // Without this the card is a flex child that shrinks below its
           // own content, and `overflow: hidden` then clips the last row
           // mid-height instead of letting the page scroll.
@@ -694,20 +696,25 @@ export function GiftCardsReport({ isSuperAdmin = false }: { isSuperAdmin?: boole
             ))
           )}
         </TableScroll>
+
+        {/* INSIDE the card, as every other table view on the dashboard
+            renders it. Sitting outside gave it its own white box with its
+            own border, which read as a second, empty card below the
+            table rather than as the table's own footer. */}
+        <Pagination
+          totalItems={residentRows.length}
+          pageSize={pageSize}
+          currentPage={currentPage}
+          onPageChange={setPage}
+          itemLabel="residents"
+          pageSizeOptions={[10, 20, 50, 100]}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setPage(1);
+          }}
+        />
       </div>
 
-      <Pagination
-        totalItems={residentRows.length}
-        pageSize={pageSize}
-        currentPage={currentPage}
-        onPageChange={setPage}
-        itemLabel="residents"
-        pageSizeOptions={[10, 20, 50, 100]}
-        onPageSizeChange={(size) => {
-          setPageSize(size);
-          setPage(1);
-        }}
-      />
 
       <GiftCardResidentDetailModal
         residentId={selectedResidentId}

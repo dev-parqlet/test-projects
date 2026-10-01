@@ -11,6 +11,9 @@ export const colors = {
   textStrong:       "var(--color-text-strong)",
   textWeak:         "var(--color-text-weak)",
   tagBg:            "var(--color-fill-weak)",
+  // Neutral pill LABEL. Not textStrong: a near-black 12px pill competes
+  // with the figure it annotates.
+  tagText:          "var(--color-tag-text-neutral)",
   tagActive:        "var(--color-tag-active)",
   tagUpcoming:      "var(--color-tag-upcoming)",
   chartBar:         "var(--color-accent-1000)",

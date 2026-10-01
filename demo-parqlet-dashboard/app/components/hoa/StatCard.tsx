@@ -89,7 +89,7 @@ export function StatCard({ label, value, tag, split }: StatCardProps) {
             borderRadius: 47,
             padding: "4px 8px",
             fontSize: 12,
-            color: colors.textStrong,
+            color: colors.tagText,
             lineHeight: "16px",
           }}
         >

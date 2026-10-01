@@ -33,6 +33,18 @@
    */
   --color-text-success: #69be38;
   --color-text-link: #222222;
+  /* Neutral pill labels ("today", "this month"). Gray 90 rather than
+     text-strong: at 12px a near-black pill competes with the figure it
+     is annotating. Semantic because the raw gray flips dark in dark
+     mode, where this still has to read as text. */
+  --color-tag-text-neutral: #3d3d3d;
+  /* The "Resident spot" pill. Its own token because `fill-weak` goes to
+     near-black in dark mode, where the pill vanished into the page. */
+  --color-tag-spot-resident: #f8f6f2;
+  /* Text ON the lime accent fill. Deliberately NOT redefined for dark
+     mode: the lime is identical in both themes, so inheriting text-strong
+     there turned the label white on lime. */
+  --color-text-on-accent: #222222;
   --color-text-active-tag: #69be38;
 
   /* Icons */
@@ -91,6 +103,11 @@
   /* ─────────────────────────────────────────────
    * RAW PALETTE — Primary Accent (Lime Green)
    * ───────────────────────────────────────────── */
+  /* Darker than 1200, for TEXT that has to sit on a pale accent fill
+     (the numbered circles in "How earnings work"). The ramp stopped at
+     1200, which is a fill colour - as text on accent-150 it is barely
+     legible. */
+  --color-accent-1400: #5c6b0f;
   --color-accent-1200: #b8d41b;
   --color-accent-1000: #c7e51f;
   --color-accent-800: #d2ea4c;
