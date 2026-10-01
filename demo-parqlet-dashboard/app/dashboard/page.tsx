@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useAuth } from "../components/auth/auth-provider";
 import { useDashboardStats } from "../components/hooks";
 import { useWindowWidth } from "../components/hooks/useWindowSize";
@@ -10,7 +10,6 @@ import {
   CurrentBookingsCard,
   TopContributorsCard,
   TopGuestParkingBookersCard,
-  DocumentModal,
 } from "../components/hoa";
 import { MoneyProgressCard } from "../components/revenue/MoneyProgressCard";
 import {
@@ -31,7 +30,6 @@ export default function DashboardPage() {
   const isMobile = width < 768;
   const isDesktop = width >= 1024;
   const pad = isMobile ? 16 : 24;
-  const [docModal, setDocModal] = useState<"Privacy Policy" | "Terms of Service" | null>(null);
   // `/api/auth/me` only ever returns `buildingIds` (plural) — it never sends
   // a singular `buildingId` (see api-backend/src/routes/auth.ts) — so this
   // must read `buildingIds[0]`, not `buildingId`, or every widget on this
@@ -48,7 +46,6 @@ export default function DashboardPage() {
 
   return (
     <>
-      {docModal && <DocumentModal title={docModal} onClose={() => setDocModal(null)} />}
       <div style={{ padding: pad }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
@@ -130,30 +127,10 @@ export default function DashboardPage() {
             <TopGuestParkingBookersCard buildingId={buildingId} />
           </div>
 
-          {/* Footer links */}
-          <div style={{ display: "flex", gap: 16, paddingBottom: 8, flexWrap: "wrap" }}>
-            {([
-              { label: "Privacy Policy", href: "https://parqlet-terms-and-privacy.notion.site/Privacy-Policy-35d38574a76480a0be27c1cac5735ebe" },
-              { label: "Terms of Service", href: "https://parqlet-terms-and-privacy.notion.site/Terms-of-Service-35d38574a76480228d7bc194bc23c6de" },
-            ] as const).map(({ label, href }) => (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  fontSize: "var(--font-size-tiny)",
-                  color: "var(--color-text-weak)",
-                  textDecoration: "none",
-                  fontFamily: "var(--font-family-body)",
-                }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = "none"; }}
-              >
-                {label}
-              </a>
-            ))}
-          </div>
+          {/* The Privacy Policy / Terms of Service pair that used to close
+              this page is gone: both are permanent items in the left nav,
+              so repeating them here was a second route to the same two
+              documents. */}
 
         </div>
       </div>
