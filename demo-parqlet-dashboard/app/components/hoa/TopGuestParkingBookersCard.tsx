@@ -54,96 +54,110 @@ export function TopGuestParkingBookersCard({ buildingId }: TopGuestParkingBooker
         <PeriodSelector value={period} onChange={setPeriod} />
       </div>
 
-      {/* Column headers */}
-      {(hasData || isLoading) && (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "32px 1fr 80px",
-            gap: "0 12px",
-            alignItems: "center",
-            paddingBottom: 6,
-            borderBottom: `1px solid ${colors.border}`,
-          }}
-        >
-          {["#", "Resident", "Bookings"].map((h) => (
-            <span
-              key={h}
-              style={{
-                fontFamily: "var(--font-family-body)",
-                fontSize: "var(--font-size-uppercase)",
-                lineHeight: "var(--line-height-uppercase)",
-                fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
-                color: "var(--color-text-weak)",
-                textTransform: "uppercase" as const,
-                textAlign: h === "#" ? "center" : h === "Bookings" ? "right" : "left" as React.CSSProperties["textAlign"],
-              }}
-            >
-              {h}
-            </span>
-          ))}
-        </div>
-      )}
+      {/* Column headers and rows are ONE flex child, not two.
+          The card is a flex column with a gap, so as separate children it
+          put that gap between the header rule and the first row - while
+          Top Contributors beside it now has them flush. */}
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {/* Column headers */}
+        {(hasData || isLoading) && (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "32px 1fr 80px",
+              gap: "0 12px",
+              alignItems: "center",
+              paddingBottom: 6,
+              borderBottom: `1px solid ${colors.border}`,
+            }}
+          >
+            {["#", "Resident", "Bookings"].map((h) => (
+              <span
+                key={h}
+                style={{
+                  fontFamily: "var(--font-family-body)",
+                  fontSize: "var(--font-size-uppercase)",
+                  lineHeight: "var(--line-height-uppercase)",
+                  fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
+                  color: "var(--color-text-weak)",
+                  textTransform: "uppercase" as const,
+                  textAlign: h === "#" ? "center" : h === "Bookings" ? "right" : "left" as React.CSSProperties["textAlign"],
+                }}
+              >
+                {h}
+              </span>
+            ))}
+          </div>
+        )}
 
-      {/* Rows */}
-      {isLoading ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 0", color: "var(--color-text-weaker)", fontSize: 14 }}>
-          Loading…
-        </div>
-      ) : hasData ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {bookers.slice(0, 5).map((b, i) => (
-            <div
-              key={b.rank}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "32px 1fr 80px",
-                gap: "0 12px",
-                alignItems: "center",
-                padding: "10px 0",
-                borderBottom: i < 4 ? `1px solid ${colors.border}` : "none",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "center" }}>
-                <div style={RANK_STYLE}>{b.rank}</div>
+        {/* Rows */}
+        {isLoading ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 0", color: "var(--color-text-weaker)", fontSize: 14 }}>
+            Loading…
+          </div>
+        ) : hasData ? (
+          // No gap. Each row already separates itself with a rule, and the 2px
+          // that used to sit between them put this card's rows out of step
+          // with Top Contributors beside it.
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {bookers.slice(0, 5).map((b, i) => (
+              <div
+                key={b.rank}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "32px 1fr 80px",
+                  gap: "0 12px",
+                  alignItems: "center",
+                  padding: "10px 0",
+                  // Pinned to the same 56 as Top Contributors' rows, so the
+                  // two cards' five rows sit level with each other.
+                  minHeight: 56,
+                  boxSizing: "border-box",
+                  borderBottom: i < 4 ? `1px solid ${colors.border}` : "none",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <div style={RANK_STYLE}>{b.rank}</div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-family-body)",
+                      fontSize: 14,
+                      fontWeight: 400,
+                      color: colors.textStrong,
+                      lineHeight: "18px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap" as const,
+                    }}
+                  >
+                    {b.name}
+                  </span>
+                  <span style={{ fontFamily: "var(--font-family-body)", fontSize: 12, color: colors.textWeak, lineHeight: "16px" }}>
+                    {b.unit}
+                  </span>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <span style={{ fontFamily: "var(--font-family-body)", fontSize: 13, color: colors.textStrong, lineHeight: "18px" }}>
+                    {b.shares}
+                  </span>
+                </div>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-family-body)",
-                    fontSize: 14,
-                    fontWeight: 400,
-                    color: colors.textStrong,
-                    lineHeight: "18px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap" as const,
-                  }}
-                >
-                  {b.name}
-                </span>
-                <span style={{ fontFamily: "var(--font-family-body)", fontSize: 12, color: colors.textWeak, lineHeight: "16px" }}>
-                  {b.unit}
-                </span>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <span style={{ fontFamily: "var(--font-family-body)", fontSize: 13, color: colors.textStrong, lineHeight: "18px" }}>
-                  {b.shares}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div style={{ padding: "32px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center" }}>
-          <span style={{ fontFamily: "var(--font-family-body)", fontSize: 14, fontWeight: 500, color: colors.textStrong }}>
-            No bookings yet
-          </span>
-          <span style={{ fontFamily: "var(--font-family-body)", fontSize: 13, color: colors.textWeak, lineHeight: "18px", maxWidth: 280 }}>
-            Residents will appear here once they start booking guest parking spots.
-          </span>
-        </div>
-      )}
+            ))}
+          </div>
+        ) : (
+          <div style={{ padding: "32px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center" }}>
+            <span style={{ fontFamily: "var(--font-family-body)", fontSize: 14, fontWeight: 500, color: colors.textStrong }}>
+              No bookings yet
+            </span>
+            <span style={{ fontFamily: "var(--font-family-body)", fontSize: 13, color: colors.textWeak, lineHeight: "18px", maxWidth: 280 }}>
+              Residents will appear here once they start booking guest parking spots.
+            </span>
+          </div>
+        )}
+      </div>
+
 
       {/* View all — pinned to the card's bottom edge, matching TopContributorsCard */}
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "auto" }}>
