@@ -31,6 +31,31 @@ const H = 240;
 const TOP = 28; // headroom for the value label above the tallest bar
 const BASE = H - 24; // leaves room for the month labels
 
+/**
+ * A bar with independent top and bottom corner radii.
+ *
+ * `<rect rx>` rounds all four, which turned every column into a capsule:
+ * the bottom curved away from the baseline it is supposed to sit flat on,
+ * and the two halves of a stacked column each rounded towards the other.
+ * A bar chart's bars stand on the axis; only their top is a free end.
+ */
+function barPath(x: number, y: number, w: number, h: number, rTop: number, rBottom: number): string {
+  if (h <= 0) return "";
+  const rt = Math.max(0, Math.min(rTop, h / 2, w / 2));
+  const rb = Math.max(0, Math.min(rBottom, h / 2, w / 2));
+  return [
+    `M ${x} ${y + rt}`,
+    rt ? `A ${rt} ${rt} 0 0 1 ${x + rt} ${y}` : `L ${x} ${y}`,
+    `L ${x + w - rt} ${y}`,
+    rt ? `A ${rt} ${rt} 0 0 1 ${x + w} ${y + rt}` : "",
+    `L ${x + w} ${y + h - rb}`,
+    rb ? `A ${rb} ${rb} 0 0 1 ${x + w - rb} ${y + h}` : `L ${x + w} ${y + h}`,
+    `L ${x + rb} ${y + h}`,
+    rb ? `A ${rb} ${rb} 0 0 1 ${x} ${y + h - rb}` : "",
+    "Z",
+  ].filter(Boolean).join(" ");
+}
+
 export function MonthlySavingsChart({ months }: { months: SavingsMonth[] }) {
   // Oldest on the left: time reads left to right, and the story here is
   // growth.
@@ -119,26 +144,22 @@ export function MonthlySavingsChart({ months }: { months: SavingsMonth[] }) {
                     that the pointer find a 3px-wide bar. */}
                 <rect x={slot * i} y={0} width={slot} height={H} fill="transparent" />
                 {m.carriedOverCents > 0 && (
-                  <rect
-                    x={x}
-                    y={carriedTop}
-                    width={barW}
+                  <path
                     /* 2px of surface between the two fills, so the join
-                       reads as two parts rather than one gradient. */
-                    height={Math.max(0, savedTop - carriedTop - 2)}
-                    rx="2"
+                       reads as two parts rather than one gradient. Rounded
+                       on top, square underneath: it caps the column, and a
+                       curve on its underside pointed at nothing. */
+                    d={barPath(x, carriedTop, barW, Math.max(0, savedTop - carriedTop - 2), 2, 0)}
                     fill="var(--color-tag-upcoming)"
                     stroke="var(--color-tag-text-upcoming)"
                     strokeWidth="0.5"
                     vectorEffect="non-scaling-stroke"
                   />
                 )}
-                <rect
-                  x={x}
-                  y={savedTop}
-                  width={barW}
-                  height={Math.max(0, BASE - savedTop)}
-                  rx="2"
+                {/* Square on the baseline: this end stands on the axis
+                    rather than floating above it. */}
+                <path
+                  d={barPath(x, savedTop, barW, Math.max(0, BASE - savedTop), 2, 0)}
                   fill="var(--color-button-primary)"
                 />
               </g>

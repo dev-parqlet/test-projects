@@ -133,8 +133,11 @@ export function MonthlyEarningsChart({ months }: { months: ApartmentMonth[] }) {
                   d={barPath(x, totalTop, barW, Math.max(0, residentTop - totalTop), 2, 0)}
                   fill="var(--color-spot-community)"
                 />
+                {/* Square at BOTH ends: it meets the community half above
+                    and stands on the axis below. A radius on the baseline
+                    curved the column away from the line it sits on. */}
                 <path
-                  d={barPath(x, residentTop, barW, Math.max(0, BASE - residentTop), 0, 2)}
+                  d={barPath(x, residentTop, barW, Math.max(0, BASE - residentTop), 0, 0)}
                   fill="var(--color-spot-neighbor)"
                 />
               </g>
