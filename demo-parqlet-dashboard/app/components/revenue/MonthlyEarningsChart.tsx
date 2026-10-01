@@ -33,32 +33,6 @@ const H = 240;
 const TOP = 28; // headroom for the value label above the tallest bar
 const BASE = H - 24; // leaves room for the month labels
 
-/**
- * A bar with independent top and bottom corner radii.
- *
- * `<rect rx>` rounds all four, which is what left a notch where the two
- * halves of a stacked bar meet: the top segment's rounded bottom and the
- * bottom segment's rounded top curved away from each other and showed the
- * background between them. Only the ends of the whole bar should be
- * rounded, so each half rounds one end and squares the other.
- */
-function barPath(x: number, y: number, w: number, h: number, rTop: number, rBottom: number): string {
-  if (h <= 0) return "";
-  // A radius taller than the segment would invert the curve.
-  const rt = Math.max(0, Math.min(rTop, h / 2, w / 2));
-  const rb = Math.max(0, Math.min(rBottom, h / 2, w / 2));
-  return [
-    `M ${x} ${y + rt}`,
-    rt ? `A ${rt} ${rt} 0 0 1 ${x + rt} ${y}` : `L ${x} ${y}`,
-    `L ${x + w - rt} ${y}`,
-    rt ? `A ${rt} ${rt} 0 0 1 ${x + w} ${y + rt}` : "",
-    `L ${x + w} ${y + h - rb}`,
-    rb ? `A ${rb} ${rb} 0 0 1 ${x + w - rb} ${y + h}` : `L ${x + w} ${y + h}`,
-    `L ${x + rb} ${y + h}`,
-    rb ? `A ${rb} ${rb} 0 0 1 ${x} ${y + h - rb}` : "",
-    "Z",
-  ].filter(Boolean).join(" ");
-}
 
 export function MonthlyEarningsChart({ months }: { months: ApartmentMonth[] }) {
   // Oldest on the left: time reads left to right, and the story is growth.
@@ -117,33 +91,68 @@ export function MonthlyEarningsChart({ months }: { months: ApartmentMonth[] }) {
             vectorEffect="non-scaling-stroke"
           />
 
+          {/* Hover targets only. A full-height column, so the tooltip does
+              not demand that the pointer find a narrow bar. */}
+          {data.map((m, i) => (
+            <rect
+              key={m.id}
+              x={slot * i}
+              y={0}
+              width={slot}
+              height={H}
+              fill="transparent"
+              onMouseEnter={() => setHover(i)}
+              onMouseLeave={() => setHover(null)}
+            />
+          ))}
+        </svg>
+
+        {/* THE BARS, in HTML rather than SVG - for the same reason the
+            labels below are.
+
+            `preserveAspectRatio="none"` stretches 100 viewBox units across
+            the whole card, so the horizontal scale is many times the
+            vertical one, and every length drawn inside is distorted by
+            that. A corner radius suffers worst: `rx="2"` came out wide and
+            flat rather than round. A radius in CSS pixels is round because
+            nothing scales it. */}
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
           {data.map((m, i) => {
-            const cx = slot * i + slot / 2;
-            const x = cx - barW / 2;
+            const x = slot * i + slot / 2 - barW / 2;
             const totalTop = y(m.totalCents);
             const residentTop = y(m.residentCents);
+            const pct = (v: number) => (v / H) * 100;
             return (
-              <g key={m.id} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
-                {/* A full-height target, so the tooltip does not demand that
-                    the pointer find a narrow bar. */}
-                <rect x={slot * i} y={0} width={slot} height={H} fill="transparent" />
+              <React.Fragment key={m.id}>
                 {/* The building's own spots on top: they are the part an
                     operator can act on, and the part that grows. */}
-                <path
-                  d={barPath(x, totalTop, barW, Math.max(0, residentTop - totalTop), 2, 0)}
-                  fill="var(--color-spot-community)"
+                <div
+                  style={{
+                    position: "absolute",
+                    left: `${x}%`,
+                    width: `${barW}%`,
+                    top: `${pct(totalTop)}%`,
+                    height: `${pct(Math.max(0, residentTop - totalTop))}%`,
+                    background: "var(--color-spot-community)",
+                    borderRadius: "3px 3px 0 0",
+                  }}
                 />
                 {/* Square at BOTH ends: it meets the community half above
-                    and stands on the axis below. A radius on the baseline
-                    curved the column away from the line it sits on. */}
-                <path
-                  d={barPath(x, residentTop, barW, Math.max(0, BASE - residentTop), 0, 0)}
-                  fill="var(--color-spot-neighbor)"
+                    and stands on the axis below. */}
+                <div
+                  style={{
+                    position: "absolute",
+                    left: `${x}%`,
+                    width: `${barW}%`,
+                    top: `${pct(residentTop)}%`,
+                    height: `${pct(Math.max(0, BASE - residentTop))}%`,
+                    background: "var(--color-spot-neighbor)",
+                  }}
                 />
-              </g>
+              </React.Fragment>
             );
           })}
-        </svg>
+        </div>
 
         {/* Labels in HTML rather than SVG text: the viewBox is stretched
             horizontally to fill the card, which would distort any glyph

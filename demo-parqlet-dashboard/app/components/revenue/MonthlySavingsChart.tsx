@@ -31,30 +31,6 @@ const H = 240;
 const TOP = 28; // headroom for the value label above the tallest bar
 const BASE = H - 24; // leaves room for the month labels
 
-/**
- * A bar with independent top and bottom corner radii.
- *
- * `<rect rx>` rounds all four, which turned every column into a capsule:
- * the bottom curved away from the baseline it is supposed to sit flat on,
- * and the two halves of a stacked column each rounded towards the other.
- * A bar chart's bars stand on the axis; only their top is a free end.
- */
-function barPath(x: number, y: number, w: number, h: number, rTop: number, rBottom: number): string {
-  if (h <= 0) return "";
-  const rt = Math.max(0, Math.min(rTop, h / 2, w / 2));
-  const rb = Math.max(0, Math.min(rBottom, h / 2, w / 2));
-  return [
-    `M ${x} ${y + rt}`,
-    rt ? `A ${rt} ${rt} 0 0 1 ${x + rt} ${y}` : `L ${x} ${y}`,
-    `L ${x + w - rt} ${y}`,
-    rt ? `A ${rt} ${rt} 0 0 1 ${x + w} ${y + rt}` : "",
-    `L ${x + w} ${y + h - rb}`,
-    rb ? `A ${rb} ${rb} 0 0 1 ${x + w - rb} ${y + h}` : `L ${x + w} ${y + h}`,
-    `L ${x + rb} ${y + h}`,
-    rb ? `A ${rb} ${rb} 0 0 1 ${x} ${y + h - rb}` : "",
-    "Z",
-  ].filter(Boolean).join(" ");
-}
 
 export function MonthlySavingsChart({ months }: { months: SavingsMonth[] }) {
   // Oldest on the left: time reads left to right, and the story here is
@@ -129,43 +105,73 @@ export function MonthlySavingsChart({ months }: { months: SavingsMonth[] }) {
             vectorEffect="non-scaling-stroke"
           />
 
+          {/* Hover targets only. A full-height column, so the tooltip does
+              not demand that the pointer find a narrow bar. */}
+          {data.map((m, i) => (
+            <rect
+              key={m.id}
+              x={slot * i}
+              y={0}
+              width={slot}
+              height={H}
+              fill="transparent"
+              onMouseEnter={() => setHover(i)}
+              onMouseLeave={() => setHover(null)}
+            />
+          ))}
+        </svg>
+
+        {/* THE BARS, in HTML rather than SVG - for the same reason the
+            labels below are.
+
+            `preserveAspectRatio="none"` stretches 100 viewBox units across
+            the whole card, so the horizontal scale is roughly fourteen
+            times the vertical one. Every length drawn in the SVG is
+            distorted by that, including a corner radius: `rx="2"` came out
+            about 28px wide and 2px tall, which is the flattened, smeared
+            curve that made the top of each bar look wrong. A radius in CSS
+            pixels is round because nothing scales it. */}
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
           {data.map((m, i) => {
-            const cx = slot * i + slot / 2;
-            const x = cx - barW / 2;
+            const x = slot * i + slot / 2 - barW / 2;
             const savedTop = y(m.savedCents);
             const carriedTop = y(m.savedCents + m.carriedOverCents);
+            const pct = (v: number) => (v / H) * 100;
             return (
-              <g
-                key={m.id}
-                onMouseEnter={() => setHover(i)}
-                onMouseLeave={() => setHover(null)}
-              >
-                {/* A full-height target, so the tooltip does not demand
-                    that the pointer find a 3px-wide bar. */}
-                <rect x={slot * i} y={0} width={slot} height={H} fill="transparent" />
+              <React.Fragment key={m.id}>
                 {m.carriedOverCents > 0 && (
-                  <path
-                    /* 2px of surface between the two fills, so the join
-                       reads as two parts rather than one gradient. Rounded
-                       on top, square underneath: it caps the column, and a
-                       curve on its underside pointed at nothing. */
-                    d={barPath(x, carriedTop, barW, Math.max(0, savedTop - carriedTop - 2), 2, 0)}
-                    fill="var(--color-tag-upcoming)"
-                    stroke="var(--color-tag-text-upcoming)"
-                    strokeWidth="0.5"
-                    vectorEffect="non-scaling-stroke"
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: `${x}%`,
+                      width: `${barW}%`,
+                      top: `${pct(carriedTop)}%`,
+                      // The 2 is the gap that keeps the two fills reading
+                      // as two parts rather than one gradient.
+                      height: `${pct(Math.max(0, savedTop - carriedTop - 2))}%`,
+                      background: "var(--color-tag-upcoming)",
+                      border: "1px solid var(--color-tag-text-upcoming)",
+                      boxSizing: "border-box",
+                      borderRadius: "3px 3px 0 0",
+                    }}
                   />
                 )}
-                {/* Square on the baseline: this end stands on the axis
-                    rather than floating above it. */}
-                <path
-                  d={barPath(x, savedTop, barW, Math.max(0, BASE - savedTop), 2, 0)}
-                  fill="var(--color-button-primary)"
+                <div
+                  style={{
+                    position: "absolute",
+                    left: `${x}%`,
+                    width: `${barW}%`,
+                    top: `${pct(savedTop)}%`,
+                    height: `${pct(Math.max(0, BASE - savedTop))}%`,
+                    background: "var(--color-button-primary)",
+                    // Square on the baseline: this end stands on the axis.
+                    borderRadius: "3px 3px 0 0",
+                  }}
                 />
-              </g>
+              </React.Fragment>
             );
           })}
-        </svg>
+        </div>
 
         {/* Labels in HTML rather than SVG text: the viewBox is stretched
             horizontally to fill the card, which would distort any glyph
