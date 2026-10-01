@@ -165,7 +165,21 @@ export type SavingsMonth = {
  * exceeds the cap - so the chart shows exactly one carried-over cap, which
  * is what makes that part of the legend mean anything.
  */
-const SHARING_RAMP_CENTS = [9_595, 14_300, 17_568, 18_834, 31_218, 46_924];
+/**
+ * Twelve months, so the chart's range picker has twelve to show.
+ *
+ * The SIX EARLIEST are deliberately small - every one of them well under
+ * the $400 a month that can be discounted - so none of them carries
+ * anything into the seventh. That is what keeps the "Last 6 months" view
+ * byte-identical to what it showed when this ramp was six entries long:
+ * `slice(-count)` takes the newest, and the carryover fold still starts
+ * those six at zero. Raise any of the early figures past the cap and the
+ * later months change underneath you.
+ */
+const SHARING_RAMP_CENTS = [
+  2_150, 3_380, 4_720, 6_100, 7_240, 8_430,
+  9_595, 14_300, 17_568, 18_834, 31_218, 46_924,
+];
 
 export function condoSavingsHistory(count = 6, now = new Date()): SavingsMonth[] {
   const ramp = SHARING_RAMP_CENTS.slice(-count);

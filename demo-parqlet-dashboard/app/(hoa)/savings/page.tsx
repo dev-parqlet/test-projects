@@ -22,11 +22,11 @@
  * only sees the bill will assume the extra activity was wasted.
  */
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 
+import { PeriodSelector } from "../../components/hoa";
 import {
   CardLink,
-  RangePill,
   RevenueCard,
   RevenueHeader,
   st,
@@ -45,8 +45,20 @@ import {
 import { ContributingBookings } from "../../components/revenue/ContributingBookings";
 import { MonthlySavingsChart } from "../../components/revenue/MonthlySavingsChart";
 
-/** How many months the chart plots, and how many the table lists. */
-const CHART_MONTHS = 6;
+/**
+ * The chart's range, as a real control rather than a label.
+ *
+ * Twelve is genuinely twelve: both ramps in lib/demo were extended to
+ * carry it, because `slice(-count)` would otherwise have returned six and
+ * quietly shown the wrong thing under a label that said twelve.
+ */
+const RANGE_OPTIONS = ["Last 3 months", "Last 6 months", "Last 12 months"] as const;
+type RangeOption = (typeof RANGE_OPTIONS)[number];
+const RANGE_MONTHS: Record<RangeOption, number> = {
+  "Last 3 months": 3,
+  "Last 6 months": 6,
+  "Last 12 months": 12,
+};
 /**
  * The table is SHORTER than the chart on purpose. The chart is there to
  * show a trend, which needs a run of months; the table is there to be read
@@ -93,7 +105,11 @@ function StatTile({
 
 export default function CondoSavingsPage() {
   const now = useMemo(() => new Date(), []);
-  const savingsMonths = useMemo(() => condoSavingsHistory(CHART_MONTHS, now), [now]);
+  const [range, setRange] = useState<RangeOption>("Last 6 months");
+  const savingsMonths = useMemo(
+    () => condoSavingsHistory(RANGE_MONTHS[range], now),
+    [range, now],
+  );
   const contributions = useMemo(() => condoContributions(8, now), [now]);
   const thisMonth = savingsMonths[0];
   const oldest = savingsMonths[savingsMonths.length - 1];
@@ -137,7 +153,10 @@ export default function CondoSavingsPage() {
 
       {/* ── Is it getting better, and how savings work ────────────────── */}
       <div style={st.twoUp}>
-        <RevenueCard title="Monthly savings" badge={<RangePill>Last {CHART_MONTHS} months</RangePill>}>
+        <RevenueCard
+          title="Monthly savings"
+          badge={<PeriodSelector value={range} onChange={setRange} options={RANGE_OPTIONS} />}
+        >
           <MonthlySavingsChart months={savingsMonths} />
         </RevenueCard>
 
@@ -203,7 +222,10 @@ export default function CondoSavingsPage() {
                   <td style={{ ...st.savingsTd, fontWeight: 600 }}>{m.period}</td>
                   <td style={st.savingsTdNum}>{formatMoney(m.fromSharingCents)}</td>
                   <td style={st.savingsTdNum}>{formatMoney(m.carriedInCents)}</td>
-                  <td style={{ ...st.savingsTdNum, color: "var(--color-text-success)", fontWeight: 600 }}>
+                  {/* Plain, like every other figure in the row. Every month
+                      in this column saved something, so colouring them all
+                      green made the colour mean nothing while shouting. */}
+                  <td style={st.savingsTdNum}>
                     {formatMoney(m.savedCents)}
                   </td>
                   <td style={st.savingsTdNum}>{formatMoney(m.invoiceCents)}</td>

@@ -48,6 +48,9 @@ export function MonthlySavingsChart({ months }: { months: SavingsMonth[] }) {
     ...data.map((m) => m.savedCents + m.carriedOverCents),
   );
   const y = (cents: number) => BASE - (cents / ceiling) * (BASE - TOP);
+  // The top of the WHOLE bar, carried-over block included, so the tooltip
+  // clears the tallest part of the column rather than overlapping it.
+  const topOf = (m: (typeof data)[number]) => y(m.savedCents + m.carriedOverCents);
   const slot = 100 / data.length;
   const barW = Math.min(46, slot * 0.46);
 
@@ -165,6 +168,27 @@ export function MonthlySavingsChart({ months }: { months: SavingsMonth[] }) {
             );
           })}
         </div>
+
+        {/* ABSOLUTE, over the column it describes. As a block below the
+            chart it was laid out in flow, so hovering grew the card and
+            nudged the page, and it sat far from the bar it was about. */}
+        {hover != null && (
+          <div
+            style={{
+              ...st.tooltip,
+              left: `${slot * hover + slot / 2}%`,
+              top: `${(topOf(data[hover]) / H) * 100}%`,
+            }}
+            role="status"
+          >
+            <strong>{data[hover].period}</strong>
+            <span>Saved {formatMoney(data[hover].savedCents)}</span>
+            <span>Invoice {formatMoney(data[hover].invoiceCents)}</span>
+            {data[hover].carriedOverCents > 0 && (
+              <span>Carried over {formatMoney(data[hover].carriedOverCents)}</span>
+            )}
+          </div>
+        )}
       </div>
 
       <div style={st.axis}>
@@ -175,16 +199,6 @@ export function MonthlySavingsChart({ months }: { months: SavingsMonth[] }) {
         ))}
       </div>
 
-      {hover != null && (
-        <div style={st.tooltip} role="status">
-          <strong>{data[hover].period}</strong>
-          <span>Saved {formatMoney(data[hover].savedCents)}</span>
-          <span>Invoice {formatMoney(data[hover].invoiceCents)}</span>
-          {data[hover].carriedOverCents > 0 && (
-            <span>Carried over {formatMoney(data[hover].carriedOverCents)}</span>
-          )}
-        </div>
-      )}
     </div>
   );
 }
@@ -224,16 +238,23 @@ const st: Record<string, React.CSSProperties> = {
     fontSize: "var(--font-size-tiny)",
     color: "var(--color-text-weak)",
   },
+  /* The dashboard's bar tooltip: a dark pill floated above the column,
+     one fact per line rather than a wrapping row. */
   tooltip: {
-    marginTop: "var(--spacing-12)",
+    position: "absolute",
+    transform: "translate(-50%, calc(-100% - 10px))",
     display: "flex",
-    gap: "var(--spacing-12)",
-    flexWrap: "wrap",
-    padding: "var(--spacing-8) var(--spacing-12)",
-    borderRadius: "var(--radius-8)",
-    background: "var(--color-fill-weak)",
+    flexDirection: "column",
+    gap: 2,
+    padding: "6px 10px",
+    borderRadius: 6,
+    background: "var(--color-fill-strong)",
     fontFamily: "var(--font-family-body)",
-    fontSize: "var(--font-size-tiny)",
-    color: "var(--color-text-strong)",
+    fontSize: 12,
+    lineHeight: "16px",
+    color: "var(--color-text-white)",
+    whiteSpace: "nowrap",
+    pointerEvents: "none",
+    zIndex: 10,
   },
 };

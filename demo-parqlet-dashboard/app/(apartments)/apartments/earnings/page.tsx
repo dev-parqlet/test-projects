@@ -26,12 +26,12 @@
  * the product to have answered.
  */
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 
 import { useAuth } from "../../../components/auth/auth-provider";
+import { PeriodSelector } from "../../../components/hoa";
 import {
   CardLink,
-  RangePill,
   RevenueCard,
   RevenueHeader,
   st,
@@ -44,8 +44,20 @@ import {
   earnedThisYearCents,
 } from "../../../lib/demo/apartment-earnings";
 
-/** How many months the chart plots, and how many the table lists. */
-const CHART_MONTHS = 6;
+/**
+ * The chart's range, as a real control rather than a label.
+ *
+ * Twelve is genuinely twelve: both ramps in lib/demo were extended to
+ * carry it, because `slice(-count)` would otherwise have returned six and
+ * quietly shown the wrong thing under a label that said twelve.
+ */
+const RANGE_OPTIONS = ["Last 3 months", "Last 6 months", "Last 12 months"] as const;
+type RangeOption = (typeof RANGE_OPTIONS)[number];
+const RANGE_MONTHS: Record<RangeOption, number> = {
+  "Last 3 months": 3,
+  "Last 6 months": 6,
+  "Last 12 months": 12,
+};
 /**
  * Shorter than the chart on purpose. The chart shows a trend, which needs a
  * run of months; the table is read row by row, and six rows of six figures
@@ -86,7 +98,11 @@ export default function ApartmentEarningsPage() {
   const buildingId = user?.buildingIds?.[0] ?? null;
 
   const now = useMemo(() => new Date(), []);
-  const months = useMemo(() => apartmentEarningsHistory(CHART_MONTHS, now), [now]);
+  const [range, setRange] = useState<RangeOption>("Last 6 months");
+  const months = useMemo(
+    () => apartmentEarningsHistory(RANGE_MONTHS[range], now),
+    [range, now],
+  );
   const thisMonth = months[0];
   const oldest = months[months.length - 1];
   const earnedThisYear = useMemo(() => earnedThisYearCents(months), [months]);
@@ -135,7 +151,10 @@ export default function ApartmentEarningsPage() {
 
       {/* ── Is it getting better, and how earnings work ───────────────── */}
       <div style={st.twoUp}>
-        <RevenueCard title="Monthly earnings" badge={<RangePill>Last {CHART_MONTHS} months</RangePill>}>
+        <RevenueCard
+          title="Monthly earnings"
+          badge={<PeriodSelector value={range} onChange={setRange} options={RANGE_OPTIONS} />}
+        >
           <MonthlyEarningsChart months={months} />
         </RevenueCard>
 

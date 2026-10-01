@@ -87,6 +87,15 @@ export type ApartmentMonth = {
  * banner - follows from the arithmetic below without another edit.
  */
 const EARNINGS_RAMP: readonly (readonly [community: number, resident: number])[] = [
+  // The six earliest exist so the chart's range picker has twelve months
+  // to offer. They sit far below the subscription, so no payout appears in
+  // them and the newest six are unchanged - `slice(-count)` takes the end.
+  [money(28), money(6)],    // 34
+  [money(39), money(8)],    // 47
+  [money(52), money(11)],   // 63
+  [money(64), money(13)],   // 77
+  [money(76), money(15)],   // 91
+  [money(88), money(17)],   // 105
   [money(101), money(19)],  // 120
   [money(138), money(27)],  // 165
   [money(175), money(35)],  // 210

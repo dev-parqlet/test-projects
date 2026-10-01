@@ -5,12 +5,24 @@ import { colors } from "../ui/chart-utils";
 
 type Period = "This month" | "Last month" | "All time";
 
-interface PeriodSelectorProps {
-  value: Period;
-  onChange: (p: Period) => void;
+const DEFAULT_PERIODS: readonly string[] = ["This month", "Last month", "All time"];
+
+interface PeriodSelectorProps<T extends string = Period> {
+  value: T;
+  onChange: (p: T) => void;
+  /**
+   * What the menu offers. Defaults to the three leaderboard periods this
+   * was written for; the revenue charts pass month ranges instead, which
+   * is the only reason the list is a prop rather than a constant.
+   */
+  options?: readonly T[];
 }
 
-export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
+export function PeriodSelector<T extends string = Period>({
+  value,
+  onChange,
+  options,
+}: PeriodSelectorProps<T>) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -63,7 +75,7 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
             overflow:   "hidden",
           }}
         >
-          {(["This month", "Last month", "All time"] as Period[]).map((opt) => (
+          {((options ?? (DEFAULT_PERIODS as readonly T[]))).map((opt) => (
             <button
               key={opt}
               onClick={() => { onChange(opt); setOpen(false); }}
