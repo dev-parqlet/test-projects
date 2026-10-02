@@ -15,6 +15,8 @@ import {
   money,
   netToBuilding,
 } from './pricing';
+import { DEMO_IDENTITIES } from './variants';
+import bookingsMock from '../mock-data/bookings.json';
 
 // Re-exported so screens keep importing their figures from one place. The
 // arithmetic itself lives in pricing.ts, shared with the Condo side.
@@ -40,9 +42,8 @@ export type SpotTier = (typeof SPOT_TIERS)[number];
  * Where a spot stands TODAY, derived from its lease rather than stored.
  *
  *   rentable      Nobody's lease covers it, so the building rents it out
- *                 on Parqlet and prices it itself. Shown as "Ready to
- *                 list": the spot is free and priced, and the only thing
- *                 left is to put it up.
+ *                 on Parqlet and prices it itself. Shown as "Vacant":
+ *                 nobody's name is on it.
  *   move-in-soon  A unit's lease starts on a known date. It is still
  *                 rentable, but only up to the day before that date.
  *   assigned      It is on a unit's lease today. It costs the base and
@@ -121,7 +122,7 @@ export function spotStatus(
 }
 
 export const SPOT_STATUS_LABEL: Record<SpotStatus, string> = {
-  rentable: 'Ready to list',
+  rentable: 'Vacant',
   'move-in-soon': 'Move-in soon',
   assigned: 'Assigned',
 };
@@ -178,6 +179,70 @@ export function tierForSpotNumber(spotNumber: string): string {
 export function priceForSpotNumber(spotNumber: string): number | null {
   const spot = DEMO_SPOTS.find((s) => s.number === spotNumber);
   return spot ? spotPriceCents(spot) : null;
+}
+
+// ─── What is happening on a spot right now ──────────────────────────────
+
+/**
+ * Whether anybody is parked on this spot, or about to be.
+ *
+ * A DIFFERENT AXIS from `SpotStatus`, and the screen needs both. Status
+ * answers "may the building sell this?" - a question about the lease.
+ * This answers "is it sold?" - a question about today's bookings. A spot
+ * can be Vacant and Booked at the same time, and that pair is the normal
+ * case for a building actually earning on its garage.
+ *
+ * Read off the SAME mock bookings the Bookings screen renders, rather
+ * than generated beside them, so the two screens can never disagree. A
+ * prospect who clicks from one to the other is exactly the person who
+ * would notice.
+ */
+export type SpotBookingStatus = 'booked' | 'upcoming' | 'available';
+
+export const SPOT_BOOKING_LABEL: Record<SpotBookingStatus, string> = {
+  booked: 'Booked',
+  upcoming: 'Upcoming',
+  available: 'Available',
+};
+
+type MockBooking = { buildingId: string; spotNumber: string; status: string };
+
+/**
+ * Spot number -> what is on it, for the Apartment demo's building only.
+ *
+ * `Active` is a booking running now; `Assigned` is paid and still to
+ * come. Everything else - Completed, Cancelled, PendingApproval - leaves
+ * the spot free: a finished booking is history and an unconfirmed one is
+ * not a commitment.
+ *
+ * Built once at module load. The corpus is seventy rows and the result is
+ * a dozen entries, so there is nothing to gain from doing it per render.
+ */
+const BOOKING_BY_SPOT: Map<string, SpotBookingStatus> = (() => {
+  const apartmentId = DEMO_IDENTITIES.apartment.user.buildings[0]?.id;
+  const out = new Map<string, SpotBookingStatus>();
+  for (const b of (bookingsMock.data as MockBooking[])) {
+    if (b.buildingId !== apartmentId) continue;
+    if (b.status === 'Active') out.set(b.spotNumber, 'booked');
+    // Booked outranks Upcoming: a spot with a car on it now and another
+    // booking next week reads as Booked, which is what an operator
+    // deciding whether they can sell today needs to see.
+    else if (b.status === 'Assigned' && out.get(b.spotNumber) !== 'booked') {
+      out.set(b.spotNumber, 'upcoming');
+    }
+  }
+  return out;
+})();
+
+export function spotBookingStatus(spotNumber: string): SpotBookingStatus {
+  return BOOKING_BY_SPOT.get(spotNumber) ?? 'available';
+}
+
+/** How many spots sit in each booking state, for the summary line. */
+export function countByBooking(spots: DemoSpot[]): Record<SpotBookingStatus, number> {
+  const out: Record<SpotBookingStatus, number> = { booked: 0, upcoming: 0, available: 0 };
+  for (const s of spots) out[spotBookingStatus(s.number)]++;
+  return out;
 }
 
 /** How many spots sit in each status, for the filter chips. */

@@ -9,7 +9,7 @@
  * spots arrive by integration, and the one column that matters -
  * STATUS - is read off the lease rather than typed in:
  *
- *   Ready to list No lease covers it. The building prices it and sells
+ *   Vacant        No lease covers it. The building prices it and sells
  *                 it on Parqlet.
  *   Move-in soon  A lease starts on a known date. Still sellable, but
  *                 only up to the day before.
@@ -49,13 +49,16 @@ import {
   SPOT_TIERS,
   bookableUntil,
   canPrice,
+  SPOT_BOOKING_LABEL,
   countByStatus,
   formatMoney,
   formatSpotDate,
   netToBuilding,
   spotPriceCents,
+  spotBookingStatus,
   spotStatus,
   type DemoSpot,
+  type SpotBookingStatus,
   type SpotStatus,
   type SpotTier,
 } from "../../../lib/demo/apartments-data";
@@ -116,7 +119,7 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
   const [type, setType] = useState("All types");
   const [tier, setTier] = useState("All tiers");
   const [ev, setEv] = useState("EV: All");
-  const [sort, setSort] = useState("Status");
+  const [sort, setSort] = useState("Spot number");
 
   const counts = useMemo(() => countByStatus(spots), [spots]);
 
@@ -145,16 +148,21 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
 
     if (sort === "Price: high to low") return [...rows].sort((a, b) => spotPriceCents(b) - spotPriceCents(a));
     if (sort === "Price: low to high") return [...rows].sort((a, b) => spotPriceCents(a) - spotPriceCents(b));
-    if (sort === "Spot number") return [...rows].sort(byNumber);
-    // Status, the default: everything the building can actually sell
-    // first, in spot order, then the leased ones. On a 180-space garage
-    // where 159 are leased, sorting by number alone buries the 21 rows
-    // the operator came here for.
-    return [...rows].sort((a, b) => {
-      const ra = canPrice(a) ? 0 : 1;
-      const rb = canPrice(b) ? 0 : 1;
-      return ra === rb ? byNumber(a, b) : ra - rb;
-    });
+    // Status: everything the building can actually sell first, in spot
+    // order, then the leased ones. Still offered, because on a 180-space
+    // garage where 159 are leased it is the fastest way to the rows worth
+    // acting on - it is just no longer what the screen opens on.
+    if (sort === "Status") {
+      return [...rows].sort((a, b) => {
+        const ra = canPrice(a) ? 0 : 1;
+        const rb = canPrice(b) ? 0 : 1;
+        return ra === rb ? byNumber(a, b) : ra - rb;
+      });
+    }
+    // Spot number, the DEFAULT. A garage is numbered, and an operator
+    // looking for bay 148 wants it where 148 belongs rather than wherever
+    // its lease happens to sort it.
+    return [...rows].sort(byNumber);
   }, [spots, tab, query, type, tier, ev, sort]);
 
   // ── Pagination ────────────────────────────────────────────────────────
@@ -406,7 +414,7 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
             text runs onto the next line, and "$6.00a day" is the kind of
             typo nobody sees until a prospect does. */}
         {`Every spot starts at the base of ${BASE_PRICE_CREDITS} credit (${formatMoney(BASE_PRICE_CENTS)} a day).`}{" "}
-        Spots ready to list can be priced higher and rented to residents&rsquo;
+        Vacant spots can be priced higher and rented to residents&rsquo;
         guests. Spots assigned to a unit stay at the base, and their residents
         can share them.
       </p>
@@ -433,7 +441,7 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
           onChange={setTab}
           tabs={[
             { id: "all", label: "All", count: spots.length },
-            { id: "rentable", label: "Ready to list", count: counts.rentable },
+            { id: "rentable", label: "Vacant", count: counts.rentable },
             { id: "move-in-soon", label: "Move-in soon", count: counts["move-in-soon"] },
             { id: "assigned", label: "Assigned", count: counts.assigned },
           ]}
@@ -454,7 +462,7 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
           <FilterDropdown label="EV" options={["EV: All", "EV only", "No EV"]} value={ev} onChange={setEv} />
           <FilterDropdown
             label="Sort"
-            options={["Status", "Spot number", "Price: high to low", "Price: low to high"]}
+            options={["Spot number", "Status", "Price: high to low", "Price: low to high"]}
             value={sort}
             onChange={setSort}
           />
@@ -534,7 +542,10 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
                     <span style={st.subTxt}>{statusNote(sp, status)}</span>
                   </span>
                 </Cell>
-                <Cell i={6}>
+                {/* Is it SOLD? A different question from whether it may
+                    be sold, which is the Status column beside it. */}
+                <Cell i={6}><BookingTag status={spotBookingStatus(sp.number)} /></Cell>
+                <Cell i={7}>
                   <span style={st.stack}>
                     <span style={{ ...st.txt, fontWeight: 600 }}>{formatMoney(total)}</span>
                     <span style={st.subTxt}>
@@ -550,7 +561,7 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
                     </span>
                   </span>
                 </Cell>
-                <Cell i={7}>
+                <Cell i={8}>
                   {/* A spot on a lease earns the building nothing directly -
                       the resident shares it and keeps the credit - so there
                       is no figure to put here. */}
@@ -558,7 +569,7 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
                     {canPrice(sp) ? formatMoney(netToBuilding(total)) : "—"}
                   </span>
                 </Cell>
-                <div style={{ ...st.cellBase, flex: COL_FLEX[8], justifyContent: "flex-end", gap: "var(--spacing-12)" }}>
+                <div style={{ ...st.cellBase, flex: COL_FLEX[9], justifyContent: "flex-end", gap: "var(--spacing-12)" }}>
                   {status === "assigned" ? (
                     <button style={st.link} onClick={() => unassign(sp)}>Unassign</button>
                   ) : (
@@ -649,10 +660,10 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
   );
 }
 
-const HEADS = ["Spot", "Size", "Tier", "EV", "Status", "Price / day", "You receive", ""];
+const HEADS = ["Spot", "Size", "Tier", "EV", "Status", "Booking", "Price / day", "You receive", ""];
 const COL_FLEX = [
-  "0 0 40px", "5 1 60px", "7 1 85px", "7 1 85px", "3 1 44px",
-  "11 1 150px", "9 1 120px", "6 1 85px", "9 1 140px",
+  "0 0 40px", "5 1 58px", "6 1 78px", "6 1 78px", "3 1 42px",
+  "10 1 140px", "6 1 95px", "9 1 115px", "5 1 80px", "8 1 136px",
 ];
 
 function Cell({ i, children }: { i: number; children: React.ReactNode }) {
@@ -664,9 +675,23 @@ function StatusTag({ spot, status }: { spot: DemoSpot; status: SpotStatus }) {
   // lease has not changed, only whether we are showing it to renters - so
   // it borrows the row rather than adding a fifth chip to the filter bar.
   if (status === "rentable" && spot.paused) return <Badge variant="inactive">Paused</Badge>;
-  if (status === "rentable") return <Badge variant="active">Ready to list</Badge>;
+  if (status === "rentable") return <Badge variant="active">Vacant</Badge>;
   if (status === "move-in-soon") return <Badge variant="pending">Move-in soon</Badge>;
   return <Badge variant="inactive">Assigned</Badge>;
+}
+
+/**
+ * Booked / Upcoming / Available.
+ *
+ * `upcoming` borrows the same blue the Bookings screen gives a booking
+ * that has not started, and `available` is deliberately the quiet grey:
+ * on a garage where most spots are free, a hundred and sixty coloured
+ * pills would drown the dozen that mean something.
+ */
+function BookingTag({ status }: { status: SpotBookingStatus }) {
+  if (status === "booked") return <Badge variant="active">{SPOT_BOOKING_LABEL.booked}</Badge>;
+  if (status === "upcoming") return <Badge variant="upcoming">{SPOT_BOOKING_LABEL.upcoming}</Badge>;
+  return <span style={{ ...st.txt, color: "var(--color-text-weak)" }}>{SPOT_BOOKING_LABEL.available}</span>;
 }
 
 function statusNote(spot: DemoSpot, status: SpotStatus): string {
