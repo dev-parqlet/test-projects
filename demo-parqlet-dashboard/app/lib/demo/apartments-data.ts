@@ -69,7 +69,7 @@ export type DemoSpot = {
    *
    * THIS IS THE FIELD THE INTEGRATION OWNS. A building does not keep a
    * spreadsheet of which spaces are free this month - it keeps leases, in
-   * AppFolio or Yardi or whatever it runs on, and the parking assignment
+   * Yardi or whatever it runs on, and the parking assignment
    * is a line on the lease. Pulling it is the only way the free spots stay
    * correct without somebody reconciling them by hand every month, which
    * nobody will do. Spots can still be added by hand (a visitor bay, a

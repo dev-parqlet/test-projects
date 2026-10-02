@@ -4,7 +4,7 @@
  * Parking Spots — the spot list, Apartments only.
  *
  * WHERE THE ROWS COME FROM. A building does not maintain a list of
- * parking spaces; it maintains LEASES, in AppFolio or Yardi or whatever
+ * parking spaces; it maintains LEASES, in Yardi or whatever
  * it runs on, and the parking assignment is a line on the lease. So the
  * spots arrive by integration, and the one column that matters -
  * STATUS - is read off the lease rather than typed in:
@@ -937,7 +937,7 @@ function LeaseModal({ spot, onClose }: { spot: DemoSpot; onClose: () => void }) 
           <Row label="Lease starts" value={formatSpotDate(spot.moveInAt!)} />
           <Row label="Bookable until" value={until ? formatSpotDate(until) : "—"} />
           <Row label="Price while it is yours" value={`${formatMoney(spotPriceCents(spot))} a day`} />
-          <Row label="From" value="AppFolio sync" />
+          <Row label="From" value="Yardi sync" />
         </dl>
         <p style={st.formHint}>
           This comes from your property system, so it is not edited here. Change

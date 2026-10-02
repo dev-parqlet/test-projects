@@ -120,7 +120,7 @@ function AvailabilityTabs() {
         <ImportDataCard
           product="apartment"
           variant="bare"
-          blurb="Upload the export from AppFolio, Yardi or whatever your building runs on. Residents arrive with their unit and lease dates, which is what sets each spot's status here."
+          blurb="Upload the export from Yardi or whatever your building runs on. Residents arrive with their unit and lease dates, which is what sets each spot's status here."
         />
       </Modal>
     </div>
