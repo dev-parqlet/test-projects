@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { usePathname } from "next/navigation";
 import { useAuth } from "../components/auth/auth-provider";
 import { useDashboardStats } from "../components/hooks";
 import { useWindowWidth } from "../components/hooks/useWindowSize";
@@ -17,6 +18,7 @@ import {
   CONDO_SUBSCRIPTION_CENTS,
 } from "../lib/demo/pricing";
 import { condoSavingsHistory } from "../lib/demo/condo-revenue";
+import { condoShowsSavings, productPrefix } from "../lib/demo/product-path";
 import { countMockGiftCardsRedeemed } from "../lib/mock-data/gift-cards-mock-store";
 
 const MONTHS_SHORT = [
@@ -35,6 +37,13 @@ export default function DashboardPage() {
   // must read `buildingIds[0]`, not `buildingId`, or every widget on this
   // page silently gets no scope at all against a real session.
   const buildingId = user?.buildingIds?.[0] ?? null;
+  // A Condo's residents own every spot, so the money their sharing makes is
+  // theirs. HOA boards told us a dashboard pitching the BUILDING on earning
+  // off it reads wrong - so /condo leaves the savings story out, and
+  // /condo+savings keeps it for the buildings already shown it.
+  const pathname = usePathname();
+  const showsSavings = condoShowsSavings(pathname);
+  const prefix = productPrefix(pathname);
   const { data: stats, isLoading: statsLoading } = useDashboardStats(buildingId);
   // The SAME call the Savings page makes, not a second estimate of the same
   // month. These two screens quote the same four figures, and when they were
@@ -64,7 +73,9 @@ export default function DashboardPage() {
               Dashboard
             </h1>
             <p style={{ fontSize: 16, lineHeight: "20px", color: "var(--color-text-weak)" }}>
-              Overview of parking activity and savings in your building
+              {showsSavings
+                ? "Overview of parking activity and savings in your building"
+                : "Overview of parking activity in your building"}
             </p>
           </div>
 
@@ -96,7 +107,9 @@ export default function DashboardPage() {
 
           {/* What this month's sharing took off the bill. A Condo is never
               paid, so the third column is a CARRYOVER, not a payout - see
-              MoneyProgressCard. */}
+              MoneyProgressCard. Absent entirely on /condo: see
+              `showsSavings` above. */}
+          {showsSavings && (
           <MoneyProgressCard
             product="condo"
             subscriptionCents={CONDO_SUBSCRIPTION_CENTS}
@@ -105,7 +118,7 @@ export default function DashboardPage() {
             remainderCents={month.carriedOverCents}
             floorCents={CONDO_FLOOR_CENTS}
             dueLabel={`Due ${MONTHS_SHORT[(new Date().getMonth() + 1) % 12]} 1`}
-            href="/condo/savings"
+            href={`${prefix}/savings`}
             sources={[
               // A Condo's residents own every spot, so there is exactly one
               // place its money can come from. The chip is still drawn,
@@ -114,6 +127,7 @@ export default function DashboardPage() {
               { id: "resident", label: "Resident spots", cents: month.fromSharingCents },
             ]}
           />
+          )}
 
           {/* Recent Activity + Current Bookings */}
           <div style={{ display: "flex", flexDirection: isDesktop ? "row" : "column", gap: 16, alignItems: isDesktop ? "stretch" : undefined }}>

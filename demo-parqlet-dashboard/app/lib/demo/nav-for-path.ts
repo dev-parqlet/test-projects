@@ -13,9 +13,21 @@
  * /apartment/... whatever they click.
  */
 
-import { apartmentsNavItems, navItems, type NavItem } from '../../components/layout/nav-data';
-import { productFromPath } from './product-path';
+import { apartmentsNavItems, condoNavItems, type NavItem } from '../../components/layout/nav-data';
+import { condoShowsSavings, productFromPath, productPrefix } from './product-path';
 
+/**
+ * Takes the RAW pathname, prefix and all.
+ *
+ * It used to be handed the stripped path, which was enough while /condo
+ * was the only Condo prefix. It no longer is: the prefix is what says
+ * whether this visitor sees the savings story, and stripping it first
+ * threw that away.
+ */
 export function navItemsForPath(pathname: string): readonly NavItem[] {
-  return productFromPath(pathname) === 'apartment' ? apartmentsNavItems : navItems;
+  if (productFromPath(pathname) === 'apartment') return apartmentsNavItems;
+  return condoNavItems({
+    prefix: productPrefix(pathname),
+    withSavings: condoShowsSavings(pathname),
+  });
 }

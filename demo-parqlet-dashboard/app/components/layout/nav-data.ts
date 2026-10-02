@@ -61,20 +61,42 @@ const HOA_GIFT_CARDS_VISIBLE = true;
 export const CONDO_PREFIX = "/condo";
 export const APARTMENT_PREFIX = "/apartment";
 
-export const navItems: readonly NavItem[] = [
-  { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard,    href: "/condo" },
-  { id: "residents",     label: "Resident Directory", Icon: IcResidentDirectory, href: "/condo/residents" },
-  { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: "/condo/bookings" },
-  { id: "savings",       label: "Savings",            Icon: IcCredit,       href: "/condo/savings" },
-  { id: "reward-redemption", label: "Reward Redemption", Icon: IcGiftCard, href: "/condo/reward-redemption", enabled: HOA_GIFT_CARDS_VISIBLE },
-  { id: "tickets",       label: "Support Tickets",    Icon: IcQuestion,     href: "/condo/tickets" },
-  { id: "subscription",  label: "Subscription",       Icon: IcSubscription, href: "/condo/subscription", requiredAction: Actions.ViewSubscription },
-  { id: "settings",      label: "Settings",           Icon: IcSettings,     href: "/condo/settings" },
-  // Profile and Access Management are NOT here. Both live in the avatar
-  // menu in the header, and carrying them in the sidebar as well made the
-  // nav longer without making anything reachable that was not already.
-  { id: "notifications", label: "Notifications",      Icon: IcNotification, href: "/condo/notifications" },
-] as const;
+/**
+ * The Condo sidebar, built for the prefix the visitor arrived on.
+ *
+ * A function rather than a constant because there are now two Condo cuts -
+ * /condo and /condo+savings - and every href has to carry the one the
+ * visitor is in, or their first click drops them into the other. See
+ * lib/demo/product-path.ts for why the two exist.
+ *
+ * `withSavings` is the only difference in CONTENT: a Condo's residents own
+ * the spots, so the building earning off them is a story HOA boards told us
+ * reads wrong, and /condo leaves it out.
+ */
+export function condoNavItems({
+  prefix = CONDO_PREFIX,
+  withSavings = true,
+}: { prefix?: string; withSavings?: boolean } = {}): readonly NavItem[] {
+  return [
+    { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard,    href: prefix },
+    { id: "residents",     label: "Resident Directory", Icon: IcResidentDirectory, href: `${prefix}/residents` },
+    { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: `${prefix}/bookings` },
+    ...(withSavings
+      ? [{ id: "savings" as const, label: "Savings", Icon: IcCredit, href: `${prefix}/savings` }]
+      : []),
+    { id: "reward-redemption", label: "Reward Redemption", Icon: IcGiftCard, href: `${prefix}/reward-redemption`, enabled: HOA_GIFT_CARDS_VISIBLE },
+    { id: "tickets",       label: "Support Tickets",    Icon: IcQuestion,     href: `${prefix}/tickets` },
+    { id: "subscription",  label: "Subscription",       Icon: IcSubscription, href: `${prefix}/subscription`, requiredAction: Actions.ViewSubscription },
+    { id: "settings",      label: "Settings",           Icon: IcSettings,     href: `${prefix}/settings` },
+    // Profile and Access Management are NOT here. Both live in the avatar
+    // menu in the header, and carrying them in the sidebar as well made the
+    // nav longer without making anything reachable that was not already.
+    { id: "notifications", label: "Notifications",      Icon: IcNotification, href: `${prefix}/notifications` },
+  ];
+}
+
+/** The plain-/condo nav, for callers with no path in hand. */
+export const navItems: readonly NavItem[] = condoNavItems();
 
 /**
  * Apartments is a SEPARATE product, not an HOA with extra rows: the building

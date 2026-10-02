@@ -7,6 +7,7 @@ import { DashboardShell } from "../components/layout/DashboardShell";
 import { AuthGuard } from "../components/auth/auth-guard";
 import { NavId } from "../components/layout/nav-data";
 import { stripProductPrefix } from "../lib/demo/product-path";
+import { navItemsForPath } from "../lib/demo/nav-for-path";
 
 function pathnameToNavId(raw: string): NavId {
   // The browser shows /condo/...; the routes underneath are unprefixed.
@@ -31,7 +32,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const active = pathnameToNavId(pathname);
   return (
     <AuthGuard allowedRoles={["admin", "lead_concierge", "concierge", "security"]} redirectTo="/sign-in">
-      <DashboardShell active={active}>{children}</DashboardShell>
+      {/* The nav has to come from the PATH. Without it this shell fell
+          back to the default Condo nav, which carries Savings - so
+          /condo+savings and /condo showed the same sidebar on the one
+          screen where the difference matters most. */}
+      <DashboardShell active={active} navItems={navItemsForPath(pathname)}>{children}</DashboardShell>
     </AuthGuard>
   );
 }

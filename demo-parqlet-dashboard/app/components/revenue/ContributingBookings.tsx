@@ -22,6 +22,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+import { productPrefix } from "../../lib/demo/product-path";
 
 import { formatMoney as money } from "../../lib/demo/pricing";
 import type { DemoContribution as SavingsContribution } from "../../lib/demo/condo-revenue";
@@ -51,6 +54,8 @@ function matches(row: SavingsContribution, filter: Filter): boolean {
 }
 
 export function ContributingBookings({ rows: all }: { rows: SavingsContribution[] }) {
+  // Keeps "View all" inside whichever Condo cut the visitor arrived on.
+  const pathname = usePathname();
   const [filter, setFilter] = useState<Filter>("all");
   const [explain, setExplain] = useState<string | null>(null);
 
@@ -160,7 +165,7 @@ export function ContributingBookings({ rows: all }: { rows: SavingsContribution[
       {/* A link rather than a count. "Showing 8 of 8" is the common case and
           says nothing; the operator who wants the rest wants the Bookings
           page, which is where the filtering and the export already live. */}
-      <Link href="/condo/bookings" style={st.viewAll}>
+      <Link href={`${productPrefix(pathname)}/bookings`} style={st.viewAll}>
         View all bookings
       </Link>
     </div>

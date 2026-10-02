@@ -58,8 +58,24 @@ const nextConfig: NextConfig = {
       { source: "/apartment", destination: "/apartments" },
       { source: "/apartment/:path*", destination: "/apartments/:path*" },
 
-      // The Condo product. Its dashboard is /dashboard; everything else
-      // sits at the top level, so the prefix simply falls away.
+      // The Condo product, in its two cuts. Both serve the SAME pages; the
+      // prefix is what tells the screens whether this building is being
+      // shown the savings story. See lib/demo/product-path.ts.
+      //
+      // The savings cut comes first because it is the longer string, and a
+      // rewrite list is matched in order.
+      // The backslash escapes the "+" for path-to-regexp, which otherwise
+      // reads it as a "one or more" modifier and refuses the route.
+      //
+      // "+earnings" is an ALIAS, not a redirect: Next runs a redirect's
+      // destination through the same parser, which will not take a "+"
+      // either. Serving both spellings means a deck link pasted from
+      // memory lands somewhere, and each keeps its own prefix so the nav
+      // does not move the visitor to the other one mid-demo.
+      { source: "/condo\\+savings", destination: "/dashboard" },
+      { source: "/condo\\+savings/:path*", destination: "/:path*" },
+      { source: "/condo\\+earnings", destination: "/dashboard" },
+      { source: "/condo\\+earnings/:path*", destination: "/:path*" },
       { source: "/condo", destination: "/dashboard" },
       { source: "/condo/:path*", destination: "/:path*" },
     ];

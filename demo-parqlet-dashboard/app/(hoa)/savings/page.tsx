@@ -22,7 +22,10 @@
  * only sees the bill will assume the extra activity was wasted.
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+
+import { CONDO_PREFIX, condoShowsSavings, productPrefix } from "../../lib/demo/product-path";
 
 import { PeriodSelector } from "../../components/hoa";
 import {
@@ -104,6 +107,22 @@ function StatTile({
 }
 
 export default function CondoSavingsPage() {
+  /**
+   * /condo does not have this page.
+   *
+   * The nav item is gone there, so the only way in is typing the URL - but
+   * a prospect sent the /condo link and shown a Savings screen is exactly
+   * the thing the two cuts exist to prevent, and a deck link is pasted and
+   * edited by hand. So the screen sends them back rather than trusting the
+   * sidebar to be the only door.
+   */
+  const pathname = usePathname();
+  const router = useRouter();
+  const allowed = condoShowsSavings(pathname);
+  useEffect(() => {
+    if (!allowed) router.replace(CONDO_PREFIX);
+  }, [allowed, router]);
+
   const now = useMemo(() => new Date(), []);
   const [range, setRange] = useState<RangeOption>("Last 6 months");
   const savingsMonths = useMemo(
@@ -197,7 +216,7 @@ export default function CondoSavingsPage() {
               </span>
             </li>
           </ol>
-          <CardLink href="/condo/subscription">View subscription and invoices</CardLink>
+          <CardLink href={`${productPrefix(pathname)}/subscription`}>View subscription and invoices</CardLink>
         </RevenueCard>
       </div>
 
