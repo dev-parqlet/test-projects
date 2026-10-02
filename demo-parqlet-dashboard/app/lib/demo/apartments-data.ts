@@ -40,7 +40,9 @@ export type SpotTier = (typeof SPOT_TIERS)[number];
  * Where a spot stands TODAY, derived from its lease rather than stored.
  *
  *   rentable      Nobody's lease covers it, so the building rents it out
- *                 on Parqlet and prices it itself.
+ *                 on Parqlet and prices it itself. Shown as "Ready to
+ *                 list": the spot is free and priced, and the only thing
+ *                 left is to put it up.
  *   move-in-soon  A unit's lease starts on a known date. It is still
  *                 rentable, but only up to the day before that date.
  *   assigned      It is on a unit's lease today. It costs the base and
@@ -119,7 +121,7 @@ export function spotStatus(
 }
 
 export const SPOT_STATUS_LABEL: Record<SpotStatus, string> = {
-  rentable: 'Rentable',
+  rentable: 'Ready to list',
   'move-in-soon': 'Move-in soon',
   assigned: 'Assigned',
 };

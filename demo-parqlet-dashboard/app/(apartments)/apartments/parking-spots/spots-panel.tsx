@@ -9,7 +9,7 @@
  * spots arrive by integration, and the one column that matters -
  * STATUS - is read off the lease rather than typed in:
  *
- *   Rentable      No lease covers it. The building prices it and sells
+ *   Ready to list No lease covers it. The building prices it and sells
  *                 it on Parqlet.
  *   Move-in soon  A lease starts on a known date. Still sellable, but
  *                 only up to the day before.
@@ -406,7 +406,7 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
             text runs onto the next line, and "$6.00a day" is the kind of
             typo nobody sees until a prospect does. */}
         {`Every spot starts at the base of ${BASE_PRICE_CREDITS} credit (${formatMoney(BASE_PRICE_CENTS)} a day).`}{" "}
-        Rentable spots can be priced higher and rented to residents&rsquo;
+        Spots ready to list can be priced higher and rented to residents&rsquo;
         guests. Spots assigned to a unit stay at the base, and their residents
         can share them.
       </p>
@@ -433,7 +433,7 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
           onChange={setTab}
           tabs={[
             { id: "all", label: "All", count: spots.length },
-            { id: "rentable", label: "Rentable", count: counts.rentable },
+            { id: "rentable", label: "Ready to list", count: counts.rentable },
             { id: "move-in-soon", label: "Move-in soon", count: counts["move-in-soon"] },
             { id: "assigned", label: "Assigned", count: counts.assigned },
           ]}
@@ -664,7 +664,7 @@ function StatusTag({ spot, status }: { spot: DemoSpot; status: SpotStatus }) {
   // lease has not changed, only whether we are showing it to renters - so
   // it borrows the row rather than adding a fifth chip to the filter bar.
   if (status === "rentable" && spot.paused) return <Badge variant="inactive">Paused</Badge>;
-  if (status === "rentable") return <Badge variant="active">Rentable</Badge>;
+  if (status === "rentable") return <Badge variant="active">Ready to list</Badge>;
   if (status === "move-in-soon") return <Badge variant="pending">Move-in soon</Badge>;
   return <Badge variant="inactive">Assigned</Badge>;
 }

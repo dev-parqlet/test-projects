@@ -22,6 +22,8 @@ import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "../../../components/ui/Button";
+import { Modal } from "../../../components/ui/Modal";
+import { ImportDataCard } from "../../../components/import/ImportDataCard";
 import { TabBar } from "../../../components/ui/TabBar";
 import { AvailabilityPanel } from "./availability-panel";
 import { SpotsPanel } from "./spots-panel";
@@ -51,6 +53,7 @@ function AvailabilityTabs() {
   // which this component renders. The modals themselves stay in the panel.
   const [creating, setCreating] = useState(false);
   const [bulkEditing, setBulkEditing] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   return (
     <div style={{ padding: "var(--spacing-24)", display: "flex", flexDirection: "column" }}>
@@ -72,6 +75,15 @@ function AvailabilityTabs() {
                 whether the numbers already existed, which is a fact the
                 operator had to establish before they could pick a button.
                 See bulk-spots-modal.tsx. */}
+            {/* The SAME import as Settings - one file, one parser, one
+                preview. The feed carries each resident's unit alongside
+                their details, which is what tells this screen whose lease
+                a spot sits on, so uploading it from here rather than from
+                Settings is a shortcut, not a second feature. See
+                components/import/ImportDataCard. */}
+            <Button variant="secondary" size="small" style={st.action} onClick={() => setImporting(true)}>
+              Import Parking Data
+            </Button>
             <Button variant="secondary" size="small" style={st.action} onClick={() => setBulkEditing(true)}>
               Add or edit in bulk
             </Button>
@@ -96,6 +108,21 @@ function AvailabilityTabs() {
           setBulkEditing={setBulkEditing}
         />
       )}
+
+      {/* `bare`, because the Modal already draws the frame and the title -
+          a card inside a dialog is a box inside a box. */}
+      <Modal
+        open={importing}
+        onClose={() => setImporting(false)}
+        title="Import parking data"
+        size="xlarge"
+      >
+        <ImportDataCard
+          product="apartment"
+          variant="bare"
+          blurb="Upload the export from AppFolio, Yardi or whatever your building runs on. Residents arrive with their unit and lease dates, which is what sets each spot's status here."
+        />
+      </Modal>
     </div>
   );
 }
