@@ -30,12 +30,23 @@ export function BulkActionBar({
   itemLabel = "item",
   actions,
   onClear,
+  style,
 }: {
   count: number;
   /** Singular; pluralised with an "s". */
   itemLabel?: string;
   actions: BulkAction[];
   onClear: () => void;
+  /**
+   * Merged into the root, so a caller can lay the bar OVER the control row
+   * it replaces instead of inserting it above one.
+   *
+   * This is not decoration. A bar that appears in the flow pushes the table
+   * down by its own height the instant the first row is ticked, and the
+   * next click - aimed at a row the eye last saw 76px higher - lands on the
+   * wrong one. The only safe bar is one that takes no space.
+   */
+  style?: React.CSSProperties;
 }) {
   if (count === 0) return null;
 
@@ -56,6 +67,7 @@ export function BulkActionBar({
         background: "var(--color-fill-strong)",
         color: "var(--color-text-white)",
         fontFamily: "var(--font-family-body)",
+        ...style,
       }}
     >
       <span

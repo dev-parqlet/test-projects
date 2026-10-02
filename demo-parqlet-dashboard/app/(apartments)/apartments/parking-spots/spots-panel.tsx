@@ -359,6 +359,32 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
   const pausable = selectedSpots.filter(canPrice);
   const allPaused = pausable.length > 0 && pausable.every((s) => s.paused);
 
+  /**
+   * Apply one new price per price-block, in a single pass.
+   *
+   * Takes blocks rather than one price because the dialog hands back what
+   * the operator actually decided: these spots to this rate, those to
+   * that one. Nothing on a lease can be in here - the dialog is only ever
+   * given spots that `canPrice`.
+   */
+  const applyPriceGroups = (next: { spotIds: string[]; extraCents: number }[]) => {
+    setBulkPricing(false);
+    const byId = new Map<string, number>();
+    for (const g of next) for (const id of g.spotIds) byId.set(id, g.extraCents);
+    if (byId.size === 0) return;
+
+    setSpots((prev) =>
+      prev.map((s) => (byId.has(s.id) ? { ...s, extraCents: byId.get(s.id)! } : s)),
+    );
+    setTicked(new Set());
+
+    const skipped = selectedSpots.length - selectedSpots.filter(canPrice).length;
+    const rates = next
+      .map((g) => `${g.spotIds.length} to ${formatMoney(BASE_PRICE_CENTS + g.extraCents)}`)
+      .join(", ");
+    toast.show(`Repriced ${byId.size} spot${byId.size === 1 ? "" : "s"} - ${rates}.${skipNote(skipped)}`);
+  };
+
   const deleteSelected = () => {
     const removable = selectedSpots.filter(canPrice);
     const skipped = selectedSpots.length - removable.length;
@@ -385,8 +411,23 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
         can share them.
       </p>
 
-      {/* ── Status, search and filters ──────────────────────────────────── */}
-      <div style={st.filterRow}>
+      {/*
+        Status, search, filters — and, laid OVER them, the selection bar.
+        ONE slot, not two.
+
+        The bar used to sit in the flow between this row and the table,
+        which meant ticking the first checkbox pushed every row down by the
+        bar's own height. The second tick then landed on whichever row had
+        moved into the place the eye last saw - exactly the "I clicked 415
+        and it ticked 411" fault. A control that appears mid-interaction
+        must not take space from the thing being interacted with.
+
+        Hiding the filters under it is deliberate rather than a side
+        effect: narrowing the list while rows are ticked silently changes
+        what a bulk action would hit.
+      */}
+      <div style={st.toolbar}>
+        <div style={{ ...st.filterRow, visibility: selected.size > 0 ? "hidden" : "visible" }}>
         <CountTabs
           active={tab}
           onChange={setTab}
@@ -417,28 +458,30 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
             value={sort}
             onChange={setSort}
           />
+          </div>
         </div>
-      </div>
 
-      <BulkActionBar
-        count={selected.size}
-        itemLabel="spot"
-        onClear={() => setTicked(new Set())}
-        actions={[
-          { label: "Edit price", onClick: () => setBulkPricing(true) },
-          { label: "Edit type", onClick: () => setBulkTyping(true) },
-          {
-            label: allPaused ? "Resume" : "Pause",
-            onClick: () =>
-              overSelection(
-                (s) => ({ ...s, paused: !allPaused }),
-                (n, skipped) =>
-                  `${n} spot${n === 1 ? "" : "s"} ${allPaused ? "back on Parqlet" : "paused — hidden from Parqlet"}.${skipNote(skipped)}`,
-              ),
-          },
-          { label: "Delete", onClick: deleteSelected, destructive: true },
-        ]}
-      />
+        <BulkActionBar
+          count={selected.size}
+          itemLabel="spot"
+          style={{ position: "absolute", inset: 0 }}
+          onClear={() => setTicked(new Set())}
+          actions={[
+            { label: "Edit price", onClick: () => setBulkPricing(true) },
+            { label: "Edit type", onClick: () => setBulkTyping(true) },
+            {
+              label: allPaused ? "Resume" : "Pause",
+              onClick: () =>
+                overSelection(
+                  (s) => ({ ...s, paused: !allPaused }),
+                  (n, skipped) =>
+                    `${n} spot${n === 1 ? "" : "s"} ${allPaused ? "back on Parqlet" : "paused — hidden from Parqlet"}.${skipNote(skipped)}`,
+                ),
+            },
+            { label: "Delete", onClick: deleteSelected, destructive: true },
+          ]}
+        />
+      </div>
 
       <div style={st.card}>
         <div style={st.tableScroll}>
@@ -579,19 +622,15 @@ export function SpotsPanel({ creating, setCreating, bulkEditing, setBulkEditing 
 
       {lease && <LeaseModal spot={lease} onClose={() => setLease(null)} />}
 
-      <BulkPriceModal
-        open={bulkPricing}
-        count={pausable.length}
-        onClose={() => setBulkPricing(false)}
-        onApply={(extraCents) => {
-          setBulkPricing(false);
-          overSelection(
-            (s) => ({ ...s, extraCents }),
-            (n, skipped) =>
-              `${n} spot${n === 1 ? "" : "s"} set to ${formatMoney(BASE_PRICE_CENTS + extraCents)} a day.${skipNote(skipped)}`,
-          );
-        }}
-      />
+      {/* Mounted only while open, so each run starts from the prices the
+          selection is at NOW rather than from the last run's fields. */}
+      {bulkPricing && (
+        <BulkPriceModal
+          spots={pausable}
+          onClose={() => setBulkPricing(false)}
+          onApply={applyPriceGroups}
+        />
+      )}
 
       <BulkTypeModal
         open={bulkTyping}
@@ -896,39 +935,156 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
+/**
+ * Spot numbers as the blocks they actually form: "1-10, 14, 27".
+ *
+ * A group of thirty consecutive bays is one range to the operator who
+ * laid them out, and printing all thirty numbers buries that. Runs are
+ * collapsed; anything non-numeric is listed after, because a bay called
+ * "VISITOR" is in no run.
+ */
+function compressSpotNumbers(numbers: string[]): string {
+  const nums = numbers.map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+  const named = numbers.filter((n) => !Number.isFinite(Number(n))).sort();
+
+  const parts: string[] = [];
+  for (let i = 0; i < nums.length; ) {
+    let j = i;
+    while (j + 1 < nums.length && nums[j + 1] === nums[j] + 1) j++;
+    parts.push(i === j ? String(nums[i]) : `${nums[i]}\u2013${nums[j]}`);
+    i = j + 1;
+  }
+  const all = [...parts, ...named];
+  // Eight blocks is about a line. Past that the list stops informing and
+  // starts pushing the price field off the dialog.
+  if (all.length > 8) return `${all.slice(0, 8).join(", ")} +${all.length - 8} more`;
+  return all.join(", ");
+}
+
+type PriceGroup = {
+  /** The price the whole group sits at today, as the key that formed it. */
+  fromExtraCents: number;
+  spotIds: string[];
+  label: string;
+  /** Full daily price in dollars, edited. */
+  price: string;
+};
+
+/** The ticked spots, gathered into one block per price they are at now. */
+function groupByPrice(spots: DemoSpot[]): PriceGroup[] {
+  const by = new Map<number, DemoSpot[]>();
+  for (const s of spots) {
+    const g = by.get(s.extraCents);
+    if (g) g.push(s);
+    else by.set(s.extraCents, [s]);
+  }
+  return [...by.entries()]
+    .sort((a, b) => b[0] - a[0])
+    .map(([extraCents, members]) => ({
+      fromExtraCents: extraCents,
+      spotIds: members.map((m) => m.id),
+      label: compressSpotNumbers(members.map((m) => m.number)),
+      price: ((BASE_PRICE_CENTS + extraCents) / 100).toFixed(2),
+    }));
+}
+
+/**
+ * Edit price — the selection, split into the prices it is ALREADY at.
+ *
+ * Tick two spots that both cost $15 and there is one block to edit. Tick
+ * seven spanning three rates and there are three, each with its own
+ * field, because that is the decision the operator is actually making:
+ * they are not flattening a garage to one number, they are moving a tier.
+ * A single field would have quietly levelled the lot, and the only way
+ * back is to remember what each one used to cost.
+ *
+ * Grouped by PRICE rather than by spot number, because price is what the
+ * operator picked the rows for. The numbers are then printed back as the
+ * runs they form, so a block reads "201-230" rather than thirty numbers.
+ */
 function BulkPriceModal({
-  open,
-  count,
+  spots,
   onClose,
   onApply,
 }: {
-  open: boolean;
-  count: number;
+  /** Already filtered to the spots the building may price. */
+  spots: DemoSpot[];
   onClose: () => void;
-  onApply: (extraCents: number) => void;
+  onApply: (next: { spotIds: string[]; extraCents: number }[]) => void;
 }) {
-  const [price, setPrice] = useState(((BASE_PRICE_CENTS + 400) / 100).toFixed(2));
-  const cents = Math.round(Number.parseFloat(price) * 100);
-  const invalid = !Number.isFinite(cents) || cents < BASE_PRICE_CENTS;
+  const [groups, setGroups] = useState<PriceGroup[]>(() => groupByPrice(spots));
+
+  const parsed = groups.map((g) => Math.round(Number.parseFloat(g.price) * 100));
+  const invalid = parsed.some((c) => !Number.isFinite(c) || c < BASE_PRICE_CENTS);
+  const changed = groups.some(
+    (g, i) => Number.isFinite(parsed[i]) && parsed[i] - BASE_PRICE_CENTS !== g.fromExtraCents,
+  );
+  const total = groups.reduce((n, g) => n + g.spotIds.length, 0);
+
+  const setPrice = (i: number, price: string) =>
+    setGroups((p) => p.map((g, j) => (j === i ? { ...g, price } : g)));
 
   return (
-    <Modal open={open} onClose={onClose} title="Edit price" size="small">
+    <Modal open onClose={onClose} title="Edit price" size="large">
       <div style={st.form}>
         <p style={st.formHint}>
-          One daily price for the {count} selected spot{count === 1 ? "" : "s"} you
-          can price. Anything on a unit&rsquo;s lease keeps the{" "}
+          {groups.length === 1
+            ? `All ${total} spot${total === 1 ? "" : "s"} you selected are at the same price.`
+            : `Your ${total} selected spots sit at ${groups.length} different prices. Change the ones you mean - the rest stay as they are.`}{" "}
+          Spots on a unit&rsquo;s lease are not listed: they keep the{" "}
           {formatMoney(BASE_PRICE_CENTS)} base.
         </p>
-        <PriceField value={price} onChange={setPrice} />
-        <PriceBreakdown extraCents={priceToExtra(price)} />
+
+        {groups.map((g, i) => {
+          const cents = parsed[i];
+          const ok = Number.isFinite(cents) && cents >= BASE_PRICE_CENTS;
+          const moved = ok && cents - BASE_PRICE_CENTS !== g.fromExtraCents;
+          return (
+            <div key={g.fromExtraCents} style={st.priceGroup}>
+              <div style={st.rangeHead}>
+                <span style={st.rangeLabel}>Range {i + 1}</span>
+                <span style={st.groupMeta}>
+                  {g.spotIds.length} spot{g.spotIds.length === 1 ? "" : "s"} now at{" "}
+                  {formatMoney(BASE_PRICE_CENTS + g.fromExtraCents)}
+                </span>
+              </div>
+              <span style={st.groupSpots}>Spots {g.label}</span>
+              <div style={{ maxWidth: 190 }}>
+                <PriceField value={g.price} onChange={(v) => setPrice(i, v)} />
+              </div>
+              {ok ? (
+                <PriceBreakdown extraCents={cents - BASE_PRICE_CENTS} />
+              ) : (
+                <span style={{ ...st.formHint, color: "var(--color-tag-text-expired)" }}>
+                  A spot cannot be priced below the base of {formatMoney(BASE_PRICE_CENTS)} a day.
+                </span>
+              )}
+              {moved && (
+                <span style={st.groupMoved}>
+                  {g.spotIds.length} spot{g.spotIds.length === 1 ? "" : "s"} move from{" "}
+                  {formatMoney(BASE_PRICE_CENTS + g.fromExtraCents)} to {formatMoney(cents)}.
+                </span>
+              )}
+            </div>
+          );
+        })}
+
         <div style={st.actions}>
           <Button variant="secondary" size="small" style={{ width: "auto" }} onClick={onClose}>Cancel</Button>
           <Button
             variant="primary"
             size="small"
             style={{ width: "auto" }}
-            disabled={invalid || count === 0}
-            onClick={() => onApply(cents - BASE_PRICE_CENTS)}
+            disabled={invalid || !changed}
+            onClick={() =>
+              onApply(
+                groups
+                  .map((g, i) => ({ spotIds: g.spotIds, extraCents: parsed[i] - BASE_PRICE_CENTS }))
+                  // An untouched block is not an edit, so it is not reported
+                  // as one in the toast either.
+                  .filter((g, i) => g.extraCents !== groups[i].fromExtraCents),
+              )
+            }
           >
             Apply
           </Button>
@@ -999,6 +1155,8 @@ function BulkTypeModal({
 
 const st: Record<string, React.CSSProperties> = {
   sub: { margin: 0, fontSize: "var(--font-size-tiny)", lineHeight: 1.6, color: "var(--color-text-weak)", maxWidth: 760 },
+  /** The one slot the filter row and the selection bar share. */
+  toolbar: { position: "relative" },
   filterRow: {
     display: "flex",
     alignItems: "center",
@@ -1074,6 +1232,35 @@ const st: Record<string, React.CSSProperties> = {
     fontSize: "var(--font-size-tiny)", fontFamily: "var(--font-family-body)",
     fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
     background: "var(--color-fill-white)", color: "var(--color-text-strong)",
+  },
+  priceGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--spacing-8)",
+    paddingBottom: "var(--spacing-16)",
+    borderBottom: "1px solid var(--color-stroke-medium)",
+  },
+  rangeHead: { display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--spacing-12)" },
+  rangeLabel: {
+    fontFamily: "var(--font-family-body)",
+    fontSize: "var(--font-size-uppercase)",
+    lineHeight: "var(--line-height-uppercase)",
+    fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
+    color: "var(--color-text-weak)",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+  },
+  groupMeta: { fontFamily: "var(--font-family-body)", fontSize: "var(--font-size-extra-tiny)", color: "var(--color-text-weak)" },
+  groupSpots: {
+    fontFamily: "var(--font-family-body)",
+    fontSize: "var(--font-size-tiny)",
+    color: "var(--color-text-strong)",
+    lineHeight: 1.5,
+  },
+  groupMoved: {
+    fontFamily: "var(--font-family-body)",
+    fontSize: "var(--font-size-extra-tiny)",
+    color: "var(--color-text-success)",
   },
   leaseList: { margin: 0, display: "flex", flexDirection: "column", gap: "var(--spacing-8)" },
   leaseRow: { display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--spacing-16)" },
