@@ -50,8 +50,7 @@ function AvailabilityTabs() {
   // Owned here because the buttons that set them sit on the title row,
   // which this component renders. The modals themselves stay in the panel.
   const [creating, setCreating] = useState(false);
-  const [bulkAdding, setBulkAdding] = useState(false);
-  const [pricingRange, setPricingRange] = useState(false);
+  const [bulkEditing, setBulkEditing] = useState(false);
 
   return (
     <div style={{ padding: "var(--spacing-24)", display: "flex", flexDirection: "column" }}>
@@ -62,17 +61,19 @@ function AvailabilityTabs() {
         <div>
           <h1 style={st.h1}>Parking Spots</h1>
           <p style={st.sub}>
-            The spots your building owns, and the windows they are free to
-            book in.
+            The spots your building owns, and which ones you can rent out.
           </p>
         </div>
         {active === "spots" && (
           <div style={st.actions}>
-            <Button variant="secondary" size="small" style={st.action} onClick={() => setPricingRange(true)}>
-              Set prices by range
-            </Button>
-            <Button variant="secondary" size="small" style={st.action} onClick={() => setBulkAdding(true)}>
-              Add spots in bulk
+            {/* ONE bulk control, not two. "Add spots in bulk" and "Set
+                prices by range" asked for the same thing - a range of
+                numbers and what those spots are - and differed only in
+                whether the numbers already existed, which is a fact the
+                operator had to establish before they could pick a button.
+                See bulk-spots-modal.tsx. */}
+            <Button variant="secondary" size="small" style={st.action} onClick={() => setBulkEditing(true)}>
+              Add or edit in bulk
             </Button>
             <Button variant="primary" size="small" style={st.action} onClick={() => setCreating(true)}>
               Add spot
@@ -91,10 +92,8 @@ function AvailabilityTabs() {
         <SpotsPanel
           creating={creating}
           setCreating={setCreating}
-          bulkAdding={bulkAdding}
-          setBulkAdding={setBulkAdding}
-          pricingRange={pricingRange}
-          setPricingRange={setPricingRange}
+          bulkEditing={bulkEditing}
+          setBulkEditing={setBulkEditing}
         />
       )}
     </div>

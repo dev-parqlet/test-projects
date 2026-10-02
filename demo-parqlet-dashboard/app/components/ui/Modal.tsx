@@ -3,7 +3,7 @@
 import React from "react";
 import { IcClose } from "../icons/IcClose";
 
-export type ModalSize = "small" | "large";
+export type ModalSize = "small" | "large" | "xlarge";
 
 interface ModalProps {
   open: boolean;
@@ -18,6 +18,11 @@ interface ModalProps {
 const sizeWidths: Record<ModalSize, string> = {
   small: "480px",
   large: "600px",
+  // For a dialog whose rows are a form in themselves - the bulk spot
+  // editor puts four fields plus a running total on one line, and at
+  // 600px they wrapped into something that read as four separate
+  // questions rather than one rule.
+  xlarge: "780px",
 };
 
 export function Modal({

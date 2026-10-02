@@ -32,6 +32,7 @@ import {
   netToBuilding,
 } from "../../../lib/demo/apartments-data";
 import { BASE_PRICE_CENTS, BASE_PRICE_CREDITS } from "../../../lib/demo/pricing";
+import { useToast } from "../../../components/ui/use-toast";
 
 /** What a renter pays for a window: the base credit, plus this window's extra. */
 const windowTotal = (extraCents: number) => BASE_PRICE_CENTS + extraCents;
@@ -56,11 +57,14 @@ function seedWindows(now: Date): Window[] {
     d.setHours(hour, 0, 0, 0);
     return d.toISOString();
   };
+  // Only spots no lease covers. s3 and s4 used to be in here and are now
+  // a move-in and a leased bay, and a window on somebody's own space is
+  // the one thing this screen must never imply the building can open.
   return [
     { id: "w1", spotId: "s1", startsAt: at(0, 8),  endsAt: at(0, 20), extraCents: 900, booked: true },
-    { id: "w2", spotId: "s3", startsAt: at(1, 9),  endsAt: at(1, 18), extraCents: 1300, booked: false },
-    { id: "w3", spotId: "s2", startsAt: at(2, 7),  endsAt: at(3, 19), extraCents: 700, booked: false },
-    { id: "w4", spotId: "s4", startsAt: at(4, 10), endsAt: at(4, 22), extraCents: 300, booked: false },
+    { id: "w2", spotId: "s2", startsAt: at(1, 9),  endsAt: at(1, 18), extraCents: 1300, booked: false },
+    { id: "w3", spotId: "s6", startsAt: at(2, 7),  endsAt: at(3, 19), extraCents: 700, booked: false },
+    { id: "w4", spotId: "s9", startsAt: at(4, 10), endsAt: at(4, 22), extraCents: 300, booked: false },
   ];
 }
 
@@ -68,6 +72,10 @@ export function AvailabilityPanel() {
   const now = useMemo(() => new Date(), []);
   const [windows, setWindows] = useState<Window[]>(() => seedWindows(now));
   const [adding, setAdding] = useState(false);
+  // Same confirmation the spot list gives. A window added behind a modal
+  // lands somewhere in a table the operator is not looking at, and
+  // removing one leaves no trace at all that the click registered.
+  const toast = useToast();
 
   const spotName = (id: string) =>
     DEMO_SPOTS.find((s) => s.id === id)?.number ?? "—";
@@ -132,7 +140,12 @@ export function AvailabilityPanel() {
                   ) : (
                     <button
                       style={{ ...st.link, color: "var(--color-tag-text-expired)" }}
-                      onClick={() => setWindows((p) => p.filter((x) => x.id !== w.id))}
+                      onClick={() => {
+                        setWindows((p) => p.filter((x) => x.id !== w.id));
+                        toast.show(
+                          `Availability removed — spot ${spotName(w.spotId)}, ${fmt(w.startsAt)}`,
+                        );
+                      }}
                     >
                       Remove
                     </button>
@@ -151,6 +164,8 @@ export function AvailabilityPanel() {
         </table>
       </div>
 
+      {toast.node}
+
       {adding && (
         <AddWindowModal
           now={now}
@@ -158,6 +173,10 @@ export function AvailabilityPanel() {
           onAdd={(w) => {
             setWindows((p) => [...p, w]);
             setAdding(false);
+            toast.show(
+              `Spot ${spotName(w.spotId)} is open ${fmt(w.startsAt)} to ${fmt(w.endsAt)} at ` +
+                `${formatMoney(windowTotal(w.extraCents))} a day`,
+            );
           }}
         />
       )}

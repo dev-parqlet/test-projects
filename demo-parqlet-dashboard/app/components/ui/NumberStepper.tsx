@@ -19,6 +19,15 @@ import React from "react";
  */
 interface NumberStepperProps {
   label?:  string;
+  /**
+   * Drawn inside the shell, before the field - a "$" on a price.
+   *
+   * Inside rather than beside, so the unit travels with the focus ring
+   * and the control still lines up with the plain `<Input>`s around it.
+   */
+  prefix?: React.ReactNode;
+  /** Left-align the value, the way a prefixed field reads. Default centre. */
+  align?:  "left" | "center";
   value:   string;
   min:     number;
   max:     number;
@@ -30,6 +39,8 @@ interface NumberStepperProps {
 
 export function NumberStepper({
   label,
+  prefix,
+  align = "center",
   value,
   min,
   max,
@@ -121,6 +132,21 @@ export function NumberStepper({
           −
         </button>
 
+        {prefix != null && (
+          <span
+            style={{
+              flex: "0 0 auto",
+              paddingLeft: "var(--spacing-12)",
+              fontFamily: "var(--font-family-body)",
+              fontSize: "var(--font-size-tiny)",
+              color: "var(--color-text-weak)",
+              userSelect: "none",
+            }}
+          >
+            {prefix}
+          </span>
+        )}
+
         <input
           value={value}
           inputMode="numeric"
@@ -147,13 +173,15 @@ export function NumberStepper({
             border: "none",
             outline: "none",
             background: "transparent",
-            textAlign: "center",
+            textAlign: align,
             fontFamily: "var(--font-family-body)",
             fontSize: "var(--font-size-tiny)",
             lineHeight: "var(--line-height-tiny)",
             fontWeight: "var(--font-weight-medium)",
             color: "var(--color-text-strong)",
             padding: 0,
+            // After `padding`, or the shorthand resets it back to zero.
+            paddingLeft: prefix != null ? "var(--spacing-8)" : 0,
           }}
         />
 

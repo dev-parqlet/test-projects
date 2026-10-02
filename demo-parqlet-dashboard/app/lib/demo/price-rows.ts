@@ -9,7 +9,7 @@
  */
 
 import type { PriceRow } from '../../components/pricing/CreditPriceCard';
-import { DEMO_SPOTS } from './apartments-data';
+import { DEMO_SPOTS, canPrice } from './apartments-data';
 import {
   BASE_PRICE_CENTS,
   BASE_PRICE_CREDITS,
@@ -53,7 +53,7 @@ export const APARTMENT_PRICE_FOOTNOTE =
  * printing a $0.00-$0.00 range that reads like a bug.
  */
 export function apartmentPriceRows(): PriceRow[] {
-  const owned = DEMO_SPOTS.filter((sp) => sp.owner === 'building');
+  const owned = DEMO_SPOTS.filter((sp) => canPrice(sp));
   const extras = owned.map((sp) => sp.extraCents);
   const lo = Math.min(...extras, 0);
   const hi = Math.max(...extras, 0);
@@ -61,13 +61,13 @@ export function apartmentPriceRows(): PriceRow[] {
 
   return [
     {
-      label: "A resident's own spot",
-      note: 'They share it, you never price it',
+      label: 'A spot on a unit\'s lease',
+      note: 'The resident shares it, you never price it',
       price: `${BASE_PRICE_CREDITS} credit`,
       total: formatMoney(BASE_PRICE_CENTS),
     },
     {
-      label: 'A spot your building owns',
+      label: 'A spot no lease covers',
       note: hasExtra
         ? `The base, plus whatever you set - yours run ${formatMoney(lo)} to ${formatMoney(hi)}`
         : 'The base, plus whatever you set - yours are all at the base today',
