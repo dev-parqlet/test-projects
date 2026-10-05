@@ -601,8 +601,26 @@ function BookingsContent() {
   // Debounce search query to avoid excessive API calls
   const debouncedQuery = useDebounce(query, 300);
 
-  // Building ID: use first selected, or undefined (fetch all accessible) when isAll
-  const buildingId = selectedIds.length > 0 ? selectedIds[0] : undefined;
+  // Building ID: the one picked in the filter, else the building this
+  // admin belongs to.
+  //
+  // It used to fall through to `undefined`, which the mock reads as
+  // "every building" — so The Meridian's admin was served Oakline
+  // Park's bookings alongside her own. Oakline is the APARTMENT demo,
+  // where a spot with no owner is the building's own Community Spot,
+  // and those rows rendered here as a column of "—" under a header
+  // that said The Meridian. The names were never missing; the rows
+  // belonged to somebody else.
+  //
+  // A super admin keeps the unscoped view — seeing every building is
+  // the point of that role, and its own shell has the filter to narrow
+  // with.
+  const buildingId =
+    selectedIds.length > 0
+      ? selectedIds[0]
+      : isSuperAdmin
+        ? undefined
+        : user?.buildingId;
 
   // Fetch bookings via TanStack Query — search, status, and date range are
   // all resolved server-side (all fields, relevance-ranked), and the page
