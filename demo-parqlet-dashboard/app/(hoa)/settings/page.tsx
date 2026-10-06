@@ -22,7 +22,7 @@ import { TabBar } from "../../components/ui/TabBar";
 import { Button } from "../../components/ui/Button";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
 import { CREDIT_PRICE_CENTS, formatMoney, netToBuilding, reservePerCreditCents } from "../../lib/demo/pricing";
-import { productFromPath } from "../../lib/demo/product-path";
+import { condoShowsSavings, productFromPath } from "../../lib/demo/product-path";
 import { DEMO_IDENTITIES } from "../../lib/demo/variants";
 import "../../tokens.css";
 
@@ -990,7 +990,22 @@ function SmsSettingsTab() {
 const MIN_CREDIT_PRICE_DOLLARS = 6;
 const MAX_CREDIT_PRICE_DOLLARS = 40;
 
-function CreditPriceTab({ product }: { product: "condo" | "apartment" }) {
+function CreditPriceTab({
+  product,
+  showsEarnings,
+}: {
+  product: "condo" | "apartment";
+  /**
+   * Whether this building is told what it takes home per credit.
+   *
+   * An Apartment rents out spots it owns, so the net after commission
+   * and card fees is its revenue. A plain Condo's spots belong to its
+   * residents - the money is theirs, not the building's - so quoting
+   * the building a per-credit take reads as if it were skimming. Only
+   * the Condo + Earnings cut, which was sold on exactly that, sees it.
+   */
+  showsEarnings: boolean;
+}) {
   const [savedDollars, setSavedDollars] = useState(Math.round(CREDIT_PRICE_CENTS / 100));
   const [draft, setDraft] = useState(String(Math.round(CREDIT_PRICE_CENTS / 100)));
   const [confirming, setConfirming] = useState(false);
@@ -1067,15 +1082,17 @@ function CreditPriceTab({ product }: { product: "condo" | "apartment" }) {
               onChange={onChange}
             />
 
+            {showsEarnings && (
+              <Figure
+                label="You receive per credit"
+                value={inRange ? formatMoney(netToBuilding(draftCents)) : "—"}
+                note="after commission and card fees"
+              />
+            )}
             <Figure
-              label="You receive per credit"
-              value={inRange ? formatMoney(netToBuilding(draftCents)) : "—"}
-              note="after commission and card fees"
-            />
-            <Figure
-              label="Earns toward a gift card"
+              label="Resident earns toward a gift card"
               value={inRange ? formatMoney(reservePerCreditCents(draftCents)) : "—"}
-              note="per credit a resident earns"
+              note="per credit"
             />
           </div>
 
@@ -1347,7 +1364,12 @@ export default function SettingsPage() {
           <NotificationsTab savedPreferences={preferences} onSave={savePreferences} />
         )}
         {!loading && activeTab === "sms-settings" && <SmsSettingsTab />}
-        {!loading && activeTab === "credit-price" && <CreditPriceTab product={product} />}
+        {!loading && activeTab === "credit-price" && (
+          <CreditPriceTab
+            product={product}
+            showsEarnings={product === "apartment" || condoShowsSavings(pathname)}
+          />
+        )}
       </div>
   );
 }
