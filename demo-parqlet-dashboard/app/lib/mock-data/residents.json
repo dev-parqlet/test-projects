@@ -29,7 +29,8 @@
         }
       ],
       "excludedAt": "2026-09-11T10:30:00.000Z",
-      "excludedBy": "1f6e10dc-77f0-4d4d-8e51-1c5fbb4f8e9a"
+      "excludedBy": "1f6e10dc-77f0-4d4d-8e51-1c5fbb4f8e9a",
+      "parkingSpotNumbers": "108"
     },
     {
       "id": "33f8f2e8-63e2-4eb6-82ee-7098245ec61e",
@@ -55,7 +56,8 @@
       "licensePlate": "XYZ-5678",
       "notes": [],
       "excludedAt": "2026-09-11T10:30:00.000Z",
-      "excludedBy": "1f6e10dc-77f0-4d4d-8e51-1c5fbb4f8e9a"
+      "excludedBy": "1f6e10dc-77f0-4d4d-8e51-1c5fbb4f8e9a",
+      "parkingSpotNumbers": "222"
     },
     {
       "id": "e42e7e22-465f-4817-9c01-aadfa969eb77",
@@ -81,7 +83,8 @@
       "licensePlate": "LMN-9012",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "409"
     },
     {
       "id": "dc173c77-8a9e-4d24-a159-e4bb9206f9f4",
@@ -107,7 +110,8 @@
       "licensePlate": "DEF-3456",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "424"
     },
     {
       "id": "afc760a2-d3a0-487c-8219-f3d955aeaa8d",
@@ -133,7 +137,8 @@
       "licensePlate": "GHI-7890",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "251"
     },
     {
       "id": "dd910da1-9ac8-4039-9575-a161c9459086",
@@ -164,7 +169,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "438"
     },
     {
       "id": "b85abd3a-8861-4392-a38e-b91a085752f5",
@@ -190,7 +196,8 @@
       "licensePlate": "MNO-2468",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "101"
     },
     {
       "id": "c14cea2b-93a8-41d3-8e29-f6d5ef48cbf0",
@@ -216,7 +223,8 @@
       "licensePlate": "PQR-8024",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "330"
     },
     {
       "id": "f1102690-4db1-4704-ab1a-f4ec12c26454",
@@ -242,7 +250,8 @@
       "licensePlate": "STU-6913",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "419"
     },
     {
       "id": "5f00b553-b8af-4c2e-8e64-c2e33aba344d",
@@ -268,7 +277,8 @@
       "licensePlate": "VWX-4702",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "102"
     },
     {
       "id": "2b5cd040-437e-42e1-ae92-2f9d6376d643",
@@ -299,7 +309,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "519"
     },
     {
       "id": "a9f00c7b-ca92-4d6d-9add-4904e5fa742d",
@@ -325,7 +336,8 @@
       "licensePlate": "EFG-3047",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "07ca9883-622a-493e-a879-4e24b5f7e27a",
@@ -351,7 +363,8 @@
       "licensePlate": "HIJ-7263",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "103"
     },
     {
       "id": "a8be8c06-396a-4916-919a-022746276e24",
@@ -377,7 +390,8 @@
       "licensePlate": "KLM-9158",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "101"
     },
     {
       "id": "e545341f-68d3-4416-b5de-74b39f8d2c44",
@@ -403,7 +417,8 @@
       "licensePlate": "NOP-4036",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "9bd2c4d6-9c60-48a3-8c48-78800e75fdad",
@@ -434,7 +449,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "104"
     },
     {
       "id": "10c322eb-5a7b-4020-b85c-a28b26ea6235",
@@ -460,7 +476,8 @@
       "licensePlate": "TUV-8519",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "699d5f73-3996-49c8-811e-bbd695ad21df",
@@ -486,7 +503,8 @@
       "licensePlate": "WXY-6302",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "102"
     },
     {
       "id": "5ddc19d2-909e-43f8-81f4-f8babdff561c",
@@ -512,7 +530,8 @@
       "licensePlate": "ZAB-1748",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "105"
     },
     {
       "id": "e3f75137-4031-48d9-bbdc-068ca783463f",
@@ -538,7 +557,8 @@
       "licensePlate": "CDE-9265",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "103"
     },
     {
       "id": "7345ef24-0240-42f8-81f7-a0b9f177b753",
@@ -569,7 +589,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "e7b92990-850f-43e7-9a4a-0ce63deca77f",
@@ -595,7 +616,8 @@
       "licensePlate": "IJK-7052",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "104"
     },
     {
       "id": "08c615d5-1056-43b1-924f-2733401eda17",
@@ -621,7 +643,8 @@
       "licensePlate": "LMN-2396",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "106"
     },
     {
       "id": "53b3e3c9-d77a-4b1b-a8ee-0ca9b576890c",
@@ -647,7 +670,8 @@
       "licensePlate": "OPQ-5831",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "7d0b4c15-7cbd-4124-af13-cdb55378f066",
@@ -673,7 +697,8 @@
       "licensePlate": "RST-4170",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "107"
     },
     {
       "id": "9b05b4dd-b9f0-4061-a598-b489d405d173",
@@ -704,7 +729,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "105"
     },
     {
       "id": "3624c389-3fc3-42a8-a9dc-162b26e98177",
@@ -730,7 +756,8 @@
       "licensePlate": "XYZ-5678",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "6d15cf52-b5d0-468b-bb9b-4e37f7f9cce7",
@@ -756,7 +783,8 @@
       "licensePlate": "LMN-9012",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "108"
     },
     {
       "id": "efffdce0-b6f3-4d7c-8daa-fc627e038215",
@@ -782,7 +810,8 @@
       "licensePlate": "DEF-3456",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "93811e4e-b6b4-4750-adbd-d5d3d3f80966",
@@ -808,7 +837,8 @@
       "licensePlate": "GHI-7890",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "106"
     },
     {
       "id": "7214ffbe-e5d6-4d8c-a849-ae0bdc9f0de1",
@@ -839,7 +869,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "107"
     },
     {
       "id": "83e331c9-ab53-4ea5-afbc-f33ead6501d6",
@@ -865,7 +896,8 @@
       "licensePlate": "MNO-2468",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "f151bbad-7992-4e91-86d6-db82116d438e",
@@ -891,7 +923,8 @@
       "licensePlate": "PQR-8024",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "109"
     },
     {
       "id": "93ba39cb-c730-4ec7-aeb1-affe1cfb00f5",
@@ -917,7 +950,8 @@
       "licensePlate": "STU-6913",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "109"
     },
     {
       "id": "e1269b70-47ee-4b3a-a8b3-06c7682d0f83",
@@ -943,7 +977,8 @@
       "licensePlate": "VWX-4702",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "110"
     },
     {
       "id": "fe044654-848a-4cbf-9b7e-28e6cf8a1302",
@@ -974,7 +1009,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "302beb5b-721c-409f-a717-5e95d84693dd",
@@ -1000,7 +1036,8 @@
       "licensePlate": "EFG-3047",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "110"
     },
     {
       "id": "bc9f7a9a-b72c-4171-8089-33de4d82e6ef",
@@ -1026,7 +1063,8 @@
       "licensePlate": "HIJ-7263",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "111"
     },
     {
       "id": "9396d9ba-2f08-4cb0-9c64-185c4880f37c",
@@ -1052,7 +1090,8 @@
       "licensePlate": "KLM-9158",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "4d0d1084-0d6f-432b-b312-bf2cee4acc77",
@@ -1078,7 +1117,8 @@
       "licensePlate": "NOP-4036",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "111"
     },
     {
       "id": "24ad7201-0944-4b92-9622-6d76a6aeee50",
@@ -1109,7 +1149,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "112"
     },
     {
       "id": "26d678e2-87f8-472b-8011-b9743eae2751",
@@ -1135,7 +1176,8 @@
       "licensePlate": "TUV-8519",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "b5da7c27-faea-4753-9127-98441d205e89",
@@ -1161,7 +1203,8 @@
       "licensePlate": "WXY-6302",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "113"
     },
     {
       "id": "6270ec6e-4443-44ac-9e55-8cfd1c3f36af",
@@ -1187,7 +1230,8 @@
       "licensePlate": "ZAB-1748",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "112"
     },
     {
       "id": "59f175d7-e83e-4364-aecd-3369eb7a6825",
@@ -1213,7 +1257,8 @@
       "licensePlate": "CDE-9265",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "dbf4e767-ab57-4433-8d3d-edb234110154",
@@ -1244,7 +1289,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "114"
     },
     {
       "id": "6addf94d-6c71-4465-9929-5dca4d0459cf",
@@ -1270,7 +1316,8 @@
       "licensePlate": "IJK-7052",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "113"
     },
     {
       "id": "0f0ad6d5-69fc-4046-8ffa-1c5d9269034c",
@@ -1296,7 +1343,8 @@
       "licensePlate": "LMN-2396",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "a50507cb-a508-4ef6-a74e-b83eae32de55",
@@ -1322,7 +1370,8 @@
       "licensePlate": "OPQ-5831",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "114"
     },
     {
       "id": "117177a8-3f56-4e0e-b23f-7377fb2da52e",
@@ -1348,7 +1397,8 @@
       "licensePlate": "RST-4170",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "23b06cbe-931e-451a-b507-c1d55402915d",
@@ -1379,7 +1429,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "115"
     },
     {
       "id": "6f352bd2-9d77-4664-b81e-f27b5b14cd16",
@@ -1405,7 +1456,8 @@
       "licensePlate": "XYZ-5678",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "115"
     },
     {
       "id": "3354cec7-b671-45ce-8411-7b208a1c1982",
@@ -1431,7 +1483,8 @@
       "licensePlate": "LMN-9012",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "116"
     },
     {
       "id": "08cd797e-6691-48ef-b161-f458454ffd9e",
@@ -1457,7 +1510,8 @@
       "licensePlate": "DEF-3456",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "ed00e665-6c35-4c87-9fae-6aab68b4a8c2",
@@ -1483,7 +1537,8 @@
       "licensePlate": "GHI-7890",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "117"
     },
     {
       "id": "58762efa-1ad2-4d7c-813f-a53e29ab7633",
@@ -1514,7 +1569,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "116"
     },
     {
       "id": "e0fd728f-0949-4dc4-a202-f05c64d4919e",
@@ -1540,7 +1596,8 @@
       "licensePlate": "MNO-2468",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "d7489367-6444-44ba-93a3-b62cb564f504",
@@ -1566,7 +1623,8 @@
       "licensePlate": "PQR-8024",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "117"
     },
     {
       "id": "4c9a050e-8d4e-4e0a-a960-b95daafc8fb2",
@@ -1592,7 +1650,8 @@
       "licensePlate": "STU-6913",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "118"
     },
     {
       "id": "c01523d5-991f-4b8e-ac49-df48b4aa9980",
@@ -1618,7 +1677,8 @@
       "licensePlate": "VWX-4702",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "1672c798-b294-4316-a827-6a4a4ea32b0e",
@@ -1649,7 +1709,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "119"
     },
     {
       "id": "a11f835e-ba74-43f3-9bac-4aa80e29164e",
@@ -1675,7 +1736,8 @@
       "licensePlate": "EFG-3047",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "118"
     },
     {
       "id": "6ba812dd-7aed-43a6-8fc1-b188a1b183d4",
@@ -1701,7 +1763,8 @@
       "licensePlate": "HIJ-7263",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "dc57bb22-0642-4de1-9c03-197c77255a33",
@@ -1727,7 +1790,8 @@
       "licensePlate": "KLM-9158",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "120"
     },
     {
       "id": "a8ffeeee-0c9a-40c0-8a24-39c1d28055c5",
@@ -1753,7 +1817,8 @@
       "licensePlate": "NOP-4036",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "dc11b923-00b8-4201-a57b-6415485bd828",
@@ -1784,7 +1849,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "119"
     },
     {
       "id": "8080f876-da8f-403f-8ad4-712b188926fd",
@@ -1810,7 +1876,8 @@
       "licensePlate": "TUV-8519",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "120"
     },
     {
       "id": "be172962-0543-41c6-b165-ffe66e2a76ae",
@@ -1836,7 +1903,8 @@
       "licensePlate": "WXY-6302",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "121"
     },
     {
       "id": "f1ff2900-613d-44e3-b4fe-37a978a8a45e",
@@ -1862,7 +1930,8 @@
       "licensePlate": "ZAB-1748",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "3112d218-242c-48c9-99a7-9bb6d3744b2b",
@@ -1888,7 +1957,8 @@
       "licensePlate": "CDE-9265",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "121"
     },
     {
       "id": "37a1f8e4-7d2b-4fae-894a-c3f2bbc55088",
@@ -1919,7 +1989,8 @@
         }
       ],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "122"
     },
     {
       "id": "5598cf3a-b1cf-4763-8c00-868fe8e8ea4e",
@@ -1945,7 +2016,8 @@
       "licensePlate": "IJK-7052",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     },
     {
       "id": "b78c674e-40ef-4938-81c8-cc2ace2bf31a",
@@ -1971,7 +2043,8 @@
       "licensePlate": "LMN-2396",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "123"
     },
     {
       "id": "da6bbcdf-5909-4c35-b22e-dca775899a77",
@@ -1997,7 +2070,8 @@
       "licensePlate": "OPQ-5831",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": "122"
     },
     {
       "id": "ad549844-ba23-4f21-973c-38cb7d0e6b98",
@@ -2023,7 +2097,8 @@
       "licensePlate": "RST-4170",
       "notes": [],
       "excludedAt": null,
-      "excludedBy": null
+      "excludedBy": null,
+      "parkingSpotNumbers": null
     }
   ],
   "total": 75,
