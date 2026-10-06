@@ -71,7 +71,12 @@ export function buildMockBookingsResponse(params: URLSearchParams) {
     if (tab === "past" && !(end != null && end < now)) return false;
     if (tab === "future" && !(start != null && start > now)) return false;
 
-    if (status && status !== "All" && b.status !== status) return false;
+    // "Active" is the Apartments page's label for an Assigned booking
+    // that is running right now; the backend has no such status, and
+    // the fixture no longer carries one. Alias it so the dropdown still
+    // filters instead of silently returning nothing.
+    const wantedStatus = status === "Active" ? "Assigned" : status;
+    if (wantedStatus && wantedStatus !== "All" && b.status !== wantedStatus) return false;
 
     if (dateFrom) {
       const from = new Date(dateFrom);

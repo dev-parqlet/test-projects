@@ -23,29 +23,52 @@ const FILE = path.join(ROOT, "app/lib/mock-data/bookings.json");
 const RESIDENTS_FILE = path.join(ROOT, "app/lib/mock-data/residents.json");
 
 /**
- * Spot owners are drawn from the building's REAL residents.
+ * WHO OWNS WHICH SPOT, read straight out of residents.json.
  *
- * They used to be generated from the same name pools as everyone else, so
- * a booking could name a spot owner who appears nowhere in the Resident
- * Directory - and Top Contributors, which joins the two on name, credited
- * people who do not exist and showed their unit as a dash.
+ * `parkingSpotNumbers` on a resident row is the only statement anywhere
+ * in the demo about who owns a spot, and the Resident Directory renders
+ * it directly. So a booking has to read the owner off THE SPOT, not pick
+ * a plausible name.
+ *
+ * It used to pick: `pool[SHARER_PATTERN[i % 16] % 6]`, keyed on the
+ * booking index while the spot was keyed on the same index through a
+ * different cycle. The two drifted, so one spot showed different owners
+ * on different bookings, and the first three Current bookings - indices
+ * 0, 1, 2, which the pattern maps to 0, 0, 0 - all showed the SAME
+ * owner on three DIFFERENT spots. That is the "Liam Baker owns
+ * everything" the demo kept showing (reported 2026-10-06, three times,
+ * because fixing the generated file by hand could not survive the next
+ * `prebuild`).
+ *
+ * Keyed on the spot, the Bookings table and the Resident Directory
+ * cannot disagree: there is one fact and one place it comes from.
  */
-function residentsByBuilding() {
+function spotOwnersByBuilding() {
   try {
     const raw = JSON.parse(fs.readFileSync(RESIDENTS_FILE, "utf-8"));
     const rows = (Array.isArray(raw) ? raw : raw.data) ?? [];
     const out = new Map();
     for (const r of rows) {
-      if (!r?.name || !r?.buildingId) continue;
-      if (!out.has(r.buildingId)) out.set(r.buildingId, []);
-      out.get(r.buildingId).push(r.name);
+      if (!r?.name || !r?.buildingId || !r?.parkingSpotNumbers) continue;
+      if (!out.has(r.buildingId)) out.set(r.buildingId, new Map());
+      // The field is a comma-separated string - a resident may own more
+      // than one spot, and each maps back to the same person.
+      for (const spot of String(r.parkingSpotNumbers).split(",")) {
+        const key = spot.trim();
+        if (key) out.get(r.buildingId).set(key, { name: r.name, phone: r.phone });
+      }
     }
     return out;
   } catch {
     return new Map();
   }
 }
-const RESIDENT_NAMES = residentsByBuilding();
+const SPOT_OWNERS = spotOwnersByBuilding();
+
+/** The resident who owns this spot, or null if the building owns it. */
+function spotOwner(buildingId, spotNumber) {
+  return SPOT_OWNERS.get(buildingId)?.get(String(spotNumber)) ?? null;
+}
 
 const HOA = "e6565d1b-1f25-4c51-bfa6-7db4932702cd";        // The Meridian
 const APARTMENTS = "80f9ac2e-b884-4634-ac02-0682a9a12662"; // Oakline Park
@@ -97,35 +120,31 @@ function uuid(seed) {
  *                   has one. Pass nothing for an HOA, where every spot is
  *                   a resident's.
  */
-/**
- * A real resident of this building, picked deterministically.
- *
- * Concentrated on a handful of them on purpose. Spreading shares evenly
- * across all 38 residents gave every contributor exactly one share, and a
- * leaderboard where everybody ties is not a leaderboard. In a real
- * building a few people share constantly and most never do, so the
- * pattern below leans on the first few and tapers.
- */
-const SHARER_PATTERN = [0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 0, 1, 4, 2, 5, 0];
-
-function spotOwner(buildingId, i) {
-  const pool = RESIDENT_NAMES.get(buildingId);
-  if (!pool || pool.length === 0) return name(i * 5 + 2);
-  const active = Math.min(6, pool.length);
-  return pool[SHARER_PATTERN[i % SHARER_PATTERN.length] % active];
-}
-
 function makeBookings(buildingId, counts, spots, owned, startIndex, sharedSpots = []) {
   const now = new Date();
   const rows = [];
   let i = startIndex;
 
+  /**
+   * When each spot is already taken, so two cars are never parked in one
+   * space at the same time.
+   *
+   * Round-robin on the row index is not enough: the four groups below
+   * (current / upcoming / pending / past) each walk the spot list on the
+   * same counter but lay down overlapping time windows, so an "upcoming"
+   * booking and a "pending" one would land on the same spot on the same
+   * afternoon. The demo showed exactly that - three double-booked spots,
+   * reported by the client 2026-10-02.
+   */
+  const busy = new Map();
+  const free = (spot, startMs, endMs) =>
+    !(busy.get(spot) ?? []).some(([s0, e0]) => startMs < e0 && endMs > s0);
+
   const push = (startOffsetHours, durationHours, status) => {
     // A quarter of an Apartment's bookings are on a spot a resident lent.
     // An HOA's are all on residents' spots - nobody else owns any.
-    const shared = !owned || (sharedSpots.length > 0 && i % 4 === 3);
-    const buildingOwned = !shared;
-    const spotList = shared && owned ? sharedSpots : spots;
+    const wantShared = !owned || (sharedSpots.length > 0 && i % 4 === 3);
+    const spotList = wantShared && owned ? sharedSpots : spots;
     const days = Math.max(1, Math.ceil(durationHours / 24));
 
     /**
@@ -138,12 +157,30 @@ function makeBookings(buildingId, counts, spots, owned, startIndex, sharedSpots 
      * bookings on a resident's spot spend a credit, most on the building's
      * own are paid outright.
      */
-    const paidWithCredit = shared ? i % 8 !== 3 : i % 5 === 1;
-    const extraCents = spotPriceCents(pick(spotList, i)) - BASE_CENTS;
     const start = new Date(now.getTime() + startOffsetHours * 3600_000);
     start.setMinutes(i % 2 === 0 ? 0 : 30, 0, 0);
     const end = new Date(start.getTime() + durationHours * 3600_000);
     const unitLetter = "ABCDEF"[i % 6];
+
+    // Start where the round robin would have put it, then walk the list
+    // until a spot is actually free for this window. Still deterministic
+    // - same input, same walk, same answer on every build.
+    const offset = spotList.indexOf(pick(spotList, i));
+    let spotNumber = pick(spotList, i);
+    for (let k = 0; k < spotList.length; k++) {
+      const candidate = spotList[(offset + k) % spotList.length];
+      if (free(candidate, start.getTime(), end.getTime())) {
+        spotNumber = candidate;
+        break;
+      }
+    }
+    busy.set(spotNumber, [...(busy.get(spotNumber) ?? []), [start.getTime(), end.getTime()]]);
+
+    const owner = spotOwner(buildingId, spotNumber);
+    const shared = owner !== null;
+    const buildingOwned = !shared;
+    const paidWithCredit = shared ? i % 8 !== 3 : i % 5 === 1;
+    const extraCents = spotPriceCents(spotNumber) - BASE_CENTS;
     rows.push({
       id: uuid(i),
       buildingId,
@@ -173,7 +210,7 @@ function makeBookings(buildingId, counts, spots, owned, startIndex, sharedSpots 
        * a second, divergent number.
        */
       amountCents: buildingOwned
-        ? (paidWithCredit ? extraCents : spotPriceCents(pick(spotList, i))) * days
+        ? (paidWithCredit ? extraCents : spotPriceCents(spotNumber)) * days
         : paidWithCredit
           ? null
           : BASE_CENTS * days,
@@ -183,16 +220,26 @@ function makeBookings(buildingId, counts, spots, owned, startIndex, sharedSpots 
       idShort: uuid(i).slice(-6),
       notes: [],
       unitNumber: `${1 + (i % 9)}${unitLetter}`,
-      spotNumber: pick(spotList, i),
-      spotOwnerName: shared ? spotOwner(buildingId, i) : null,
-      spotOwnerPhone: shared ? `(555) 10${i % 10}-${1000 + ((i * 17) % 9000)}` : null,
+      spotNumber,
+      spotOwnerName: owner?.name ?? null,
+      spotOwnerPhone: owner?.phone ?? null,
       i,
     });
     i++;
   };
 
-  // Running right now — started a few hours ago, ends later today.
-  for (let n = 0; n < counts.current; n++) push(-(2 + (n % 6)), 8 + (n % 10), "Active");
+  /**
+   * Running right now — started a few hours ago, ends later today.
+   *
+   * "Assigned", NOT "Active". The backend has no Active status: a
+   * booking in progress is an Assigned one whose window contains now,
+   * and the dashboard derives the green "Active" badge from the tab it
+   * is rendered under. The condo Bookings table checks the status
+   * against a whitelist of real backend statuses and falls back to
+   * "Expired" for anything else, so seeding "Active" made every
+   * in-progress booking render as EXPIRED (reported 2026-10-06).
+   */
+  for (let n = 0; n < counts.current; n++) push(-(2 + (n % 6)), 8 + (n % 10), "Assigned");
   // The week ahead.
   for (let n = 0; n < counts.upcoming; n++) push(6 + n * 9, 6 + (n % 12), "Assigned");
   // Waiting on a spot owner. Only meaningful for an HOA.
@@ -207,8 +254,17 @@ function makeBookings(buildingId, counts, spots, owned, startIndex, sharedSpots 
 // or a booking cites a spot the Parking Spots page does not list.
 const APARTMENT_SPOTS = ["4", "11", "23", "38", "204", "217", "228", "305", "312"];
 
-/** Oakline Park spots that RESIDENTS share - the 401+ blocks. */
-const APARTMENT_SHARED_SPOTS = ["403", "409", "418", "424", "433", "438"];
+/**
+ * Oakline Park spots that RESIDENTS share - the 401+ block.
+ *
+ * Derived from residents.json rather than written out, because a
+ * hardcoded list drifts: it used to name 403, 418 and 433, which NO
+ * resident owns, so every fourth Apartment booking claimed to be on a
+ * neighbour's spot and then showed an empty Spot Owner column.
+ */
+const APARTMENT_SHARED_SPOTS = [...(SPOT_OWNERS.get(APARTMENTS)?.keys() ?? [])]
+  .filter((n) => Number(n) >= 401 && Number(n) <= 440)
+  .sort((a, b) => Number(a) - Number(b));
 
 /**
  * Daily price for a numbered spot, mirroring the blocks in
