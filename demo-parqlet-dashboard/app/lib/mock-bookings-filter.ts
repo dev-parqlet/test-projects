@@ -1,8 +1,25 @@
-import * as fs from "fs";
-import * as path from "path";
 import { parseBookingDate } from "./parse-booking-date";
 
-const MOCK_FILE = path.join(process.cwd(), "app/lib/mock-data/bookings.json");
+/**
+ * IMPORTED, not read off disk at request time.
+ *
+ * This used to be `fs.readFileSync(process.cwd() + "app/lib/mock-data/
+ * bookings.json")`. That works locally and is a coin toss on Vercel:
+ * whether a file reached by a path the compiler cannot see gets traced
+ * into the deployment, and whether a cached build refreshes it, is not
+ * something the code controls. On 2026-10-06 it lost the toss - the
+ * deployment served a months-old bookings.json while serving the
+ * CURRENT residents.json beside it, so the Bookings table showed one
+ * resident owning five spots that the Residents table had already
+ * reassigned.
+ *
+ * An import is resolved at build time and bundled, so the data cannot
+ * be a different vintage from the code that reads it.
+ *
+ * Only safe because nothing writes this file. `buildings.json` IS
+ * written by the mock settings route, so that one has to stay on fs.
+ */
+import bookingsData from "./mock-data/bookings.json";
 
 interface MockBooking {
   id: string;
@@ -28,7 +45,7 @@ interface MockBooking {
  * and the full static file came back unfiltered every time.
  */
 export function buildMockBookingsResponse(params: URLSearchParams) {
-  const raw = JSON.parse(fs.readFileSync(MOCK_FILE, "utf-8")) as { data: MockBooking[] };
+  const raw = bookingsData as unknown as { data: MockBooking[] };
 
   const buildingId = params.get("buildingId");
   const tab = params.get("tab");
