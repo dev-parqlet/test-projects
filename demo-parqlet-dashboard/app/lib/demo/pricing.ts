@@ -110,15 +110,43 @@ export function apartmentSpotTotalCents(extraCents: number): number {
 // ─── The gift-card reserve ──────────────────────────────────────────
 
 /**
- * What one credit a resident earns puts aside towards a gift card: 40% of
- * the credit price, rounded to the nearest $0.25 - the backend's formula.
+ * What one credit a resident earns puts aside towards a gift card.
  *
- * The rounding is why the credit price is whole dollars only: a price
- * carrying cents produces a reserve that does not divide evenly into a
- * $25 card and leaves a remainder nobody can spend.
+ * TWO TIERS, mirroring api-backend's gift-card-pricing.ts.
+ *
+ *   standard   40% of the credit price, rounded to the nearest $0.25.
+ *              Apartments, with or without Earnings, and Condo +
+ *              Savings. $2.50 at $6.00.
+ *   condo      a Condo with Savings OFF. Its residents own every spot,
+ *              so the money the sharing makes is theirs and this tier
+ *              hands them far more of it: $4.00 at $6.00, and a card
+ *              costs 7 credits rather than 10.
+ *
+ * The condo line is `0.75 x price - $0.50` up to $14 and
+ * `0.75 x price - $0.25` from $15, which reproduces the client's table
+ * of 2026-10-06 exactly, $15's deliberate 25c step included.
+ *
+ * The standard rounding is why the credit price is whole dollars only:
+ * a price carrying cents produces a reserve that does not divide evenly
+ * into a $25 card and leaves a remainder nobody can spend.
  */
-export function reservePerCreditCents(priceCents: number): number {
+export function reservePerCreditCents(
+  priceCents: number,
+  tier: "standard" | "condo" = "standard",
+): number {
+  if (tier === "condo") {
+    return Math.floor((priceCents * 75) / 100) - (priceCents <= 1400 ? 50 : 25);
+  }
   return Math.round((priceCents * 0.4) / 25) * 25;
+}
+
+/** Credits a $25 card costs on that tier. Seven at $6.00 on the condo
+ *  rate, ten on the standard one. */
+export function creditsPerGiftCard(
+  priceCents: number,
+  tier: "standard" | "condo" = "standard",
+): number {
+  return Math.ceil(2500 / reservePerCreditCents(priceCents, tier));
 }
 
 // ─── Subscriptions ──────────────────────────────────────────────────

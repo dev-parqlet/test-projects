@@ -21,7 +21,7 @@ import { NumberStepper } from "../../components/ui/NumberStepper";
 import { TabBar } from "../../components/ui/TabBar";
 import { Button } from "../../components/ui/Button";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
-import { CREDIT_PRICE_CENTS, formatMoney, netToBuilding, reservePerCreditCents } from "../../lib/demo/pricing";
+import { CREDIT_PRICE_CENTS, creditsPerGiftCard, formatMoney, netToBuilding, reservePerCreditCents } from "../../lib/demo/pricing";
 import { condoShowsSavings, productFromPath } from "../../lib/demo/product-path";
 import { DEMO_IDENTITIES } from "../../lib/demo/variants";
 import "../../tokens.css";
@@ -1006,6 +1006,13 @@ function CreditPriceTab({
    */
   showsEarnings: boolean;
 }) {
+  /**
+   * A plain Condo runs the generous gift-card tier - its residents own
+   * every spot, so the money the sharing makes is theirs. The signal is
+   * the same one that hides the building's take: no Earnings and no
+   * Savings means a Condo nobody sold either story to.
+   */
+  const reserveTier = showsEarnings ? "standard" : "condo";
   const [savedDollars, setSavedDollars] = useState(Math.round(CREDIT_PRICE_CENTS / 100));
   const [draft, setDraft] = useState(String(Math.round(CREDIT_PRICE_CENTS / 100)));
   const [confirming, setConfirming] = useState(false);
@@ -1091,8 +1098,12 @@ function CreditPriceTab({
             )}
             <Figure
               label="Resident earns toward a gift card"
-              value={inRange ? formatMoney(reservePerCreditCents(draftCents)) : "—"}
-              note="per credit"
+              value={inRange ? formatMoney(reservePerCreditCents(draftCents, reserveTier)) : "—"}
+              note={
+                inRange
+                  ? `per credit \u00b7 ${creditsPerGiftCard(draftCents, reserveTier)} credits a card`
+                  : "per credit"
+              }
             />
           </div>
 
@@ -1144,8 +1155,8 @@ function CreditPriceTab({
                 <strong>Gift cards move for balances that already exist.</strong>{" "}
                 What a credit earns toward a gift card is a share of its
                 price, so it goes from{" "}
-                {formatMoney(reservePerCreditCents(savedCents))} to{" "}
-                {formatMoney(reservePerCreditCents(draftCents))} per credit.
+                {formatMoney(reservePerCreditCents(savedCents, reserveTier))} to{" "}
+                {formatMoney(reservePerCreditCents(draftCents, reserveTier))} per credit.
                 Residents who have been saving will see their progress change
                 without having done anything.
               </li>
