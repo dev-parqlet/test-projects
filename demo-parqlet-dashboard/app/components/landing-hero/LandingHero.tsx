@@ -60,6 +60,8 @@ const C = {
   tagActiveText: "#2B5718",
   tagNeutral: "#F1EEE9",
   tagNeutralText: "#6A6A6A",
+  tagWarn: "#F4E6C3",
+  tagWarnText: "#6B521A",
   heroBg: "#1A1A1A",
   heroCard: "#222222",
 } as const;
@@ -76,21 +78,23 @@ const C = {
    on the dashboard. Two copies would drift.
    ══════════════════════════════════════════════════════════════════ */
 const FEATURED = {
-  id: "BK-48217",
-  unit: "1412",
+  // Ids, units, spots and plates all follow the real dashboard's shapes:
+  // six hex-ish characters, a floor-letter unit, a bare spot number and a
+  // LLL-NNNN plate. The invented versions ("BK-48217", "#135") were the
+  // giveaway that this was a drawing of the product.
+  id: "7C41D9",
+  unit: "4D",
   resident: "Elena Ruiz",
-  spot: "#135",
-  owner: "Daniel Okafor",
-  ownerUnit: "1708",
+  spot: "519",
+  owner: "Mia Kim",
   guest: "Marcus Webb",
-  plate: "TX 8KJ-2049",
-  vehicle: "Tesla Model 3",
-  dayLabel: "Fri, May 16",
-  timeLabel: "6:00 PM – 11:00 PM",
-  startsIn: "Starts in 3h",
-  // One line, so the confirmation card cannot push the CTAs out of frame.
-  shortWhen: "Fri, May 16 · 6–11 PM",
-  credits: 1,
+  plate: "APC-1234",
+  vehicle: "Tesla Model Y",
+  start: "7pm, Feb 20",
+  end: "11pm, Feb 22",
+  whenApp: "Feb 20 7pm - Feb 22 11pm",
+  startsIn: "Starts in 2h",
+  credits: 5,
 };
 
 type Row = {
@@ -98,10 +102,12 @@ type Row = {
   unit: string;
   resident: string;
   spot: string;
+  owner: string;
   guest: string;
   plate: string;
-  when: string;
-  status: "Upcoming" | "Active" | "Completed" | "Cancelled";
+  start: string;
+  end: string;
+  status: "Upcoming" | "Active" | "Completed" | "Awaiting conf.";
 };
 
 const FEATURED_ROW: Row = {
@@ -109,27 +115,29 @@ const FEATURED_ROW: Row = {
   unit: FEATURED.unit,
   resident: FEATURED.resident,
   spot: FEATURED.spot,
+  owner: FEATURED.owner,
   guest: FEATURED.guest,
   plate: FEATURED.plate,
-  when: `${FEATURED.dayLabel} · 6:00 PM`,
+  start: FEATURED.start,
+  end: FEATURED.end,
   status: "Upcoming",
 };
 
 const ROWS: Record<"current" | "future" | "past", Row[]> = {
   current: [
-    { id: "BK-48203", unit: "0907", resident: "Priya N.",     spot: "#042", guest: "Jonah Feldt",    plate: "TX 4RK-1180", when: "Today · 2:15 PM",  status: "Active" },
-    { id: "BK-48198", unit: "2104", resident: "Marcus D.",  spot: "#211", guest: "Ana Petrova",    plate: "TX 9ML-3321", when: "Today · 1:40 PM",  status: "Active" },
-    { id: "BK-48191", unit: "0612", resident: "Hannah Lind.",spot: "#088", guest: "Tomas Ruiz",     plate: "TX 2WD-7764", when: "Today · 11:05 AM", status: "Active" },
+    { id: "CB3284", unit: "7A", resident: "Mia Nelson",      spot: "419", owner: "Isabella Irwin", guest: "Liam Kelly",       plate: "QWC-7870", start: "1pm, Feb 19",    end: "2am, Feb 20",    status: "Active" },
+    { id: "94944C", unit: "6F", resident: "Lucas Garcia",    spot: "330", owner: "Mason Harris",   guest: "Evelyn Jenkins",   plate: "PTX-7733", start: "4:30am, Feb 19", end: "4:30pm, Feb 19", status: "Active" },
+    { id: "5DF615", unit: "5E", resident: "Isabella Turner", spot: "108", owner: "Emma Anderson",  guest: "Benjamin Irwin",   plate: "OQS-7596", start: "7pm, Feb 18",    end: "6am, Feb 19",    status: "Active" },
   ],
   future: [
     FEATURED_ROW,
-    { id: "BK-48219", unit: "1806", resident: "Owen B.",   spot: "#174", guest: "Clara Nwosu",    plate: "TX 6PH-0912", when: "Sat, May 17 · 9:00 AM", status: "Upcoming" },
-    { id: "BK-48224", unit: "0321", resident: "Sofia B.",  spot: "#029", guest: "Victor Hale",    plate: "TX 1JN-5508", when: "Sun, May 18 · 4:30 PM", status: "Upcoming" },
+    { id: "700D2A", unit: "1D", resident: "James Owens",     spot: "330", owner: "Mason Harris",   guest: "Mia Nelson",       plate: "TFR-8281", start: "4:30pm, Feb 21", end: "2:30am, Feb 22", status: "Awaiting conf." },
+    { id: "2657DE", unit: "4D", resident: "Mason Murphy",    spot: "519", owner: "Mia Kim",        guest: "Charlotte Hughes", plate: "NNN-7459", start: "10:30am, Feb 22",end: "8:30pm, Feb 22", status: "Upcoming" },
   ],
   past: [
-    { id: "BK-48102", unit: "1105", resident: "Nadia H.",    spot: "#119", guest: "Eli Thornton",   plate: "TX 7QS-2240", when: "May 12 · 7:00 PM", status: "Completed" },
-    { id: "BK-48077", unit: "0450", resident: "Jonas E.",   spot: "#061", guest: "Maya Bhatt",     plate: "TX 3CF-8816", when: "May 11 · 5:30 PM", status: "Completed" },
-    { id: "BK-48061", unit: "1930", resident: "Camille R.",spot: "#203", guest: "Dev Patel",      plate: "TX 5TG-4493", when: "May 10 · 8:15 PM", status: "Cancelled" },
+    { id: "396EF3", unit: "9C", resident: "Charlotte Hughes",spot: "108", owner: "Emma Anderson",  guest: "Mason Murphy",     plate: "SCM-8144", start: "2am, Feb 8",     end: "12pm, Feb 8",    status: "Awaiting conf." },
+    { id: "EFB9A6", unit: "3C", resident: "Sophia Foster",   spot: "222", owner: "Liam Baker",     guest: "Lucas Garcia",     plate: "MKI-7322", start: "1am, Feb 8",     end: "10am, Feb 8",    status: "Completed" },
+    { id: "B81B6F", unit: "2B", resident: "Ethan Simmons",   spot: "251", owner: "Ava Evans",      guest: "Sophia Foster",    plate: "LHD-7185", start: "4:30pm, Feb 7",  end: "12:30am, Feb 8", status: "Completed" },
   ],
 };
 
@@ -147,9 +155,9 @@ const NAV = [
 ] as const;
 
 const TABS = [
-  { id: "current", label: "Current" },
-  { id: "future", label: "Upcoming" },
-  { id: "past", label: "Past" },
+  { id: "current", label: "Current bookings" },
+  { id: "future", label: "Upcoming bookings" },
+  { id: "past", label: "Past bookings" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -163,15 +171,17 @@ type TabId = (typeof TABS)[number]["id"];
  * can only ever be changed in one place.
  */
 const COLS = [
-  { key: "id",       label: "Booking ID", flex: "0 0 72px",  cls: "plh-mono" },
-  { key: "unit",     label: "Unit",       flex: "0 0 40px",  cls: "" },
-  { key: "resident", label: "Resident",   flex: "1 1 92px",  cls: "plh-trunc" },
-  { key: "spot",     label: "Spot",       flex: "0 0 42px",  cls: "" },
-  { key: "guest",    label: "Guest",      flex: "1 1 92px",  cls: "plh-trunc" },
-  { key: "plate",    label: "Plate",      flex: "0 0 86px",  cls: "plh-mono plh-col-plate" },
-  { key: "when",     label: "When",       flex: "0 0 110px", cls: "plh-trunc" },
-  { key: "status",   label: "Status",     flex: "0 0 76px",  cls: "" },
-] as const satisfies readonly { key: keyof Row; label: string; flex: string; cls: string }[];
+  { key: "id",       label: "Booking ID",    cls: "plh-mono" },
+  { key: "unit",     label: "Unit #",        cls: "" },
+  { key: "resident", label: "Resident Name", cls: "plh-trunc plh-hasphone" },
+  { key: "spot",     label: "Booked Spot",   cls: "" },
+  { key: "owner",    label: "Spot Owner",    cls: "plh-trunc plh-hasphone" },
+  { key: "guest",    label: "Guest Name",    cls: "plh-trunc plh-hasphone" },
+  { key: "plate",    label: "License Plate", cls: "plh-mono" },
+  { key: "start",    label: "Booking Start", cls: "plh-trunc" },
+  { key: "end",      label: "Booking End",   cls: "plh-trunc" },
+  { key: "status",   label: "Status",        cls: "" },
+] as const satisfies readonly { key: keyof Row; label: string; cls: string }[];
 
 /* ══════════════════════════════════════════════════════════════════
    CHOREOGRAPHY
@@ -187,33 +197,51 @@ type Scene = {
   hold: number;
   tab: TabId;
   phone: "confirmed" | "home";
+  /** Pixels inside the dashboard frame, not stage percentages. */
   cursor: { x: number; y: number } | null;
-  press?: "cursor" | "touch";
-  /** Highlights the featured row as it lands. */
+  /** Two separate presses, because the point of the film is that one beat
+      carries both: the thumb on the phone and the click on the dashboard
+      happen together, not one after the other. */
+  pressCursor?: boolean;
+  pressTouch?: boolean;
+  /** The row lands with the green line and a nudge of scale. */
   flash?: boolean;
 };
 
+
+/**
+ * Where each tab pill sits inside the dashboard box.
+ *
+ * SIDEBAR(256) + BODY_PAD(24) puts the first pill's left edge at 280, and
+ * the pills run 72 / 80 / 56 wide with an 8px gap. Y is HEADER(64) +
+ * BODY_PAD(24) + half a 34px pill. Keep in step with the CSS below.
+ */
+const TAB_HIT = {
+  current: { x: 338, y: 172 },
+  future: { x: 492, y: 172 },
+  past: { x: 632, y: 172 },
+} as const;
+
 const SCENES: Scene[] = [
-  // 1. Settle. The phone is on the confirmation splash, dashboard on Current.
+  // 1. Settle. Phone on the confirmation splash, dashboard on Current.
   { hold: 1500, tab: "current", phone: "confirmed", cursor: null },
-  // 2. A thumb presses "Go to home screen".
-  { hold: 700,  tab: "current", phone: "confirmed", cursor: null, press: "touch" },
-  // 3. The phone lands on Home, the new booking sitting there as Upcoming.
-  { hold: 1900, tab: "current", phone: "home", cursor: null },
-  // 4. The cursor arrives and travels to the Upcoming tab.
-  { hold: 1100, tab: "current", phone: "home", cursor: { x: 30.5, y: 25.5 } },
-  // 5. Click. The dashboard switches, and the same booking flashes in.
-  { hold: 600,  tab: "current", phone: "home", cursor: { x: 30.5, y: 25.5 }, press: "cursor" },
-  { hold: 2600, tab: "future",  phone: "home", cursor: { x: 30.5, y: 25.5 }, flash: true },
-  // 6. On to Past.
-  { hold: 900,  tab: "future",  phone: "home", cursor: { x: 38.5, y: 25.5 } },
-  { hold: 600,  tab: "future",  phone: "home", cursor: { x: 38.5, y: 25.5 }, press: "cursor" },
-  { hold: 2000, tab: "past",    phone: "home", cursor: { x: 38.5, y: 25.5 } },
-  // 7. Back to Current, and the cursor leaves.
-  { hold: 900,  tab: "past",    phone: "home", cursor: { x: 23.0, y: 25.5 } },
-  { hold: 600,  tab: "past",    phone: "home", cursor: { x: 23.0, y: 25.5 }, press: "cursor" },
-  { hold: 1800, tab: "current", phone: "home", cursor: { x: 23.0, y: 25.5 } },
-  { hold: 1200, tab: "current", phone: "home", cursor: null },
+  // 2. The cursor arrives and travels to the Upcoming tab, ready.
+  { hold: 1100, tab: "current", phone: "confirmed", cursor: TAB_HIT.future },
+  // 3. THE BEAT. The thumb presses "Go to home screen" and the cursor
+  //    clicks "Upcoming bookings" at the same instant.
+  { hold: 650,  tab: "current", phone: "confirmed", cursor: TAB_HIT.future, pressCursor: true, pressTouch: true },
+  // 4. Both land together: the phone shows the booking on its home tab
+  //    while the same booking flashes into the dashboard's Upcoming list.
+  { hold: 3400, tab: "future",  phone: "home", cursor: TAB_HIT.future, flash: true },
+  // 5. On to Past.
+  { hold: 950,  tab: "future",  phone: "home", cursor: TAB_HIT.past },
+  { hold: 600,  tab: "future",  phone: "home", cursor: TAB_HIT.past, pressCursor: true },
+  { hold: 2200, tab: "past",    phone: "home", cursor: TAB_HIT.past },
+  // 6. Back to Current, and the cursor leaves.
+  { hold: 950,  tab: "past",    phone: "home", cursor: TAB_HIT.current },
+  { hold: 600,  tab: "past",    phone: "home", cursor: TAB_HIT.current, pressCursor: true },
+  { hold: 1800, tab: "current", phone: "home", cursor: TAB_HIT.current },
+  { hold: 1400, tab: "current", phone: "confirmed", cursor: null },
 ];
 
 /* ══════════════════════════════════════════════════════════════════
@@ -243,14 +271,17 @@ function NavIcon({ d, color }: { d: string; color: string }) {
    ══════════════════════════════════════════════════════════════════ */
 
 function StatusPill({ status }: { status: Row["status"] }) {
-  const map = {
-    Upcoming:  { bg: C.tagUpcoming, fg: C.tagUpcomingText },
-    Active:    { bg: C.tagActive,   fg: C.tagActiveText },
-    Completed: { bg: C.tagActive,   fg: C.tagActiveText },
-    Cancelled: { bg: C.tagNeutral,  fg: C.tagNeutralText },
-  }[status];
+  const map: Record<Row["status"], { bg: string; fg: string }> = {
+    Upcoming: { bg: C.tagUpcoming, fg: C.tagUpcomingText },
+    Active: { bg: C.tagActive, fg: C.tagActiveText },
+    Completed: { bg: C.tagActive, fg: C.tagActiveText },
+    // Amber, as in the real table - it is a state waiting on someone, not
+    // a finished or a cancelled one.
+    "Awaiting conf.": { bg: C.tagWarn, fg: C.tagWarnText },
+  };
+  const t = map[status];
   return (
-    <span className="plh-pill" style={{ background: map.bg, color: map.fg }}>
+    <span className="plh-pill" style={{ background: t.bg, color: t.fg }}>
       {status}
     </span>
   );
@@ -262,13 +293,7 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
     <div className="plh-dash">
       {/* ── Sidebar ── */}
       <aside className="plh-side">
-        <div className="plh-side-logo">
-          <svg width={86} height={18} viewBox="0 0 86 18" fill="none" aria-hidden>
-            <text x="0" y="14" fill={C.white} fontFamily="Inter, system-ui, sans-serif" fontSize="15" fontWeight="700" letterSpacing="-0.4">
-              parqlet
-            </text>
-          </svg>
-        </div>
+        <div className="plh-side-logo">PARQLET</div>
         <nav className="plh-nav">
           {NAV.map((item) => {
             const active = item.id === "bookings";
@@ -280,19 +305,37 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
             );
           })}
         </nav>
+        {/* The real sidebar is anchored by these, and their absence was part
+            of why the panel read as empty below the nav. */}
+        <div className="plh-side-foot">
+          <span>Terms of Service</span>
+          <span>Privacy Policy</span>
+          <span>© 2026 Parqlet</span>
+        </div>
       </aside>
 
       {/* ── Main ── */}
       <div className="plh-main">
         <header className="plh-head">
-          <span className="plh-head-title">Bookings</span>
+          <span className="plh-head-title">The Meridian</span>
           <div className="plh-head-right">
-            <span className="plh-building">The Meridian</span>
-            <span className="plh-avatar">ER</span>
+            <span className="plh-ico">☾</span>
+            <span className="plh-ico">◔</span>
+            <span className="plh-avatar">SJ</span>
+            <span className="plh-whoami">
+              <b>Sarah Johnson</b>
+              <i>Admin</i>
+            </span>
+            <span className="plh-ico plh-ico-sm">⌄</span>
+            <span className="plh-ico">?</span>
           </div>
         </header>
 
         <div className="plh-body">
+          <h2 className="plh-h2">Bookings</h2>
+          <p className="plh-sub">View current bookings and complete booking history</p>
+
+          {/* Underlined text tabs, not pills. */}
           <div className="plh-tabs">
             {TABS.map((t) => (
               <div key={t.id} className={`plh-tab${t.id === tab ? " is-active" : ""}`}>
@@ -301,10 +344,25 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
             ))}
           </div>
 
+          <div className="plh-toolbar">
+            <div className="plh-search">
+              <svg width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden>
+                <circle cx="11" cy="11" r="7" stroke={C.textWeaker} strokeWidth={1.8} />
+                <path d="m20 20-3.6-3.6" stroke={C.textWeaker} strokeWidth={1.8} strokeLinecap="round" />
+              </svg>
+              <span>Search by unit, spot, resident, spot owner, guest, or plate</span>
+            </div>
+            <div className="plh-filters">
+              {["Notes", "Status", "Sort", "Date range"].map((f) => (
+                <span key={f} className="plh-filter">{f} <i>⌄</i></span>
+              ))}
+            </div>
+          </div>
+
           <div className="plh-table">
             <div className="plh-thead">
               {COLS.map((c) => (
-                <span key={c.key} className={c.cls} style={{ flex: c.flex }}>
+                <span key={c.key} className={`plh-c-${c.key} ${c.cls}`}>
                   {c.label}
                 </span>
               ))}
@@ -320,18 +378,39 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
                     style={{ animationDelay: `${i * 70}ms` }}
                   >
                     {COLS.map((c) => (
-                      <span key={c.key} className={c.cls} style={{ flex: c.flex }}>
+                      <span key={c.key} className={`plh-c-${c.key} ${c.cls}`}>
                         {c.key === "status" ? <StatusPill status={r.status} /> : r[c.key]}
+                        {c.cls.includes("plh-hasphone") && <PhoneGlyph />}
                       </span>
                     ))}
                   </div>
                 );
               })}
             </div>
+            <div className="plh-tfoot">
+              <span>Showing 1 to {rows.length} of 28 bookings</span>
+              <span className="plh-pager">
+                Rows per page <i>10</i> <i>‹</i> <b>1</b> <i>2</i> <i>3</i> <i>›</i>
+              </span>
+            </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/** The little handset beside every name column in the real table. */
+function PhoneGlyph() {
+  return (
+    <svg className="plh-phglyph" width={13} height={13} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M7 3.5h2l1.4 3.5-1.8 1.2a11 11 0 0 0 5.2 5.2l1.2-1.8L18.5 13v2a2 2 0 0 1-2.2 2A14.5 14.5 0 0 1 5 5.7 2 2 0 0 1 7 3.5"
+        stroke={C.textWeaker}
+        strokeWidth={1.5}
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
@@ -366,29 +445,74 @@ function CheckSplash() {
   );
 }
 
+/** Tab-bar glyphs, 24x24 like the app's. */
+const TAB_ICONS: Record<string, string> = {
+  Home: "M3 10.6 12 3.5l9 7.1V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z",
+  Availability: "M12 7v5l3.2 1.9M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18",
+  Bookings: "M7 3v3M17 3v3M3.5 9.5h17M5 6h14a1.5 1.5 0 0 1 1.5 1.5V19A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V7.5A1.5 1.5 0 0 1 5 6",
+  Profile: "M18 20v-1.6a4 4 0 0 0-4-4h-4a4 4 0 0 0-4 4V20M12 11.2a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2",
+};
+
+function Hourglass() {
+  return (
+    <svg width={16} height={16} viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path d="M4.7 6.9A5.3 5.3 0 0 0 8 8a5.3 5.3 0 0 0 3.3-1.1c2.2-1.8 1-3.9.4-6H4.3c-.6 2.1-1.8 4.2.4 6" stroke={C.textStrong} strokeWidth={1.1} strokeLinejoin="round" />
+      <path d="M4.7 9.1A5.3 5.3 0 0 1 8 8a5.3 5.3 0 0 1 3.3 1.1c2.2 1.8 1 3.9.4 6H4.3c-.6-2.1-1.8-4.2.4-6" stroke={C.textStrong} strokeWidth={1.1} strokeLinejoin="round" />
+      <path d="M8 11.4c0-.8.4-1.3 1-1.8H7c.6.5 1 1 1 1.8" fill={C.textStrong} />
+    </svg>
+  );
+}
+
+/** The spot pill + EV bolt + countdown that heads every booking card. */
+function CardTop({ note }: { note: string }) {
+  return (
+    <div className="plh-ph-cardtop">
+      <span className="plh-spotpill">P #{FEATURED.spot}</span>
+      <span className="plh-bolt">
+        <svg width={13} height={16} viewBox="0 0 24 24" aria-hidden>
+          <path d="M13 2 4 14h6l-1 8 9-12h-6z" fill={C.accent} stroke={C.accent} strokeWidth={1.4} strokeLinejoin="round" />
+        </svg>
+      </span>
+      <span className="plh-ph-startsin"><Hourglass /> {note}</span>
+    </div>
+  );
+}
+
+/** The booking card, identical on both screens because it is one card. */
+function BookingCard({ note, status }: { note: string; status: "Upcoming" | "Active" }) {
+  return (
+    <div className="plh-ph-card">
+      <CardTop note={note} />
+      <div className="plh-ph-namerow">
+        <span className="plh-ph-name">{FEATURED.guest}</span>
+        <span
+          className="plh-pill plh-ph-statuspill"
+          style={
+            status === "Active"
+              ? { background: C.tagActive, color: C.tagActiveText }
+              : { background: C.tagUpcoming, color: C.tagUpcomingText }
+          }
+        >
+          {status}
+        </span>
+      </div>
+      <div className="plh-ph-row"><span>Model &amp; make</span><b>{FEATURED.vehicle} • {FEATURED.plate}</b></div>
+      <div className="plh-ph-row"><span>Date and time</span><b>{FEATURED.whenApp}</b></div>
+      <span className="plh-manage">Manage booking</span>
+    </div>
+  );
+}
+
 function PhoneConfirmed({ pressing }: { pressing: boolean }) {
   return (
     <div className="plh-screen">
       <CheckSplash />
-      <h3 className="plh-ph-title">Booking confirmed</h3>
+      <h3 className="plh-ph-title">Parking spot for your guest is confirmed!</h3>
       <p className="plh-ph-sub">
-        Reserved. We&apos;ve sent {FEATURED.guest.split(" ")[0]} the details.
+        Your guest can park during the selected time. Spot details are shown below
       </p>
 
-      <div className="plh-ph-card">
-        <div className="plh-ph-cardtop">
-          <span className="plh-ph-startsin">⏳ {FEATURED.startsIn}</span>
-        </div>
-        <div className="plh-ph-namerow">
-          <span className="plh-ph-name">{FEATURED.guest}</span>
-          <span className="plh-pill" style={{ background: C.tagUpcoming, color: C.tagUpcomingText }}>
-            Upcoming
-          </span>
-        </div>
-        <div className="plh-ph-row"><span>Model &amp; make</span><b>{FEATURED.vehicle}</b></div>
-        <div className="plh-ph-row"><span>Date &amp; time</span><b>{FEATURED.shortWhen}</b></div>
-        <div className="plh-ph-row"><span>Credits paid</span><b>◉ {FEATURED.credits} credit</b></div>
-      </div>
+      <BookingCard note={FEATURED.startsIn} status="Upcoming" />
 
       <div className="plh-ph-ctas">
         <div className="plh-btn plh-btn-primary">Book one more spot</div>
@@ -404,47 +528,62 @@ function PhoneConfirmed({ pressing }: { pressing: boolean }) {
 function PhoneHome() {
   return (
     <div className="plh-screen plh-screen-home">
-      <div className="plh-ph-greet">
-        <div>
-          <span className="plh-ph-hi">Hi, {FEATURED.resident.split(" ")[0]}</span>
-          <span className="plh-ph-unit">Unit {FEATURED.unit} · The Meridian</span>
-        </div>
-        <span className="plh-ph-credits">◉ 4</span>
+      <div className="plh-ph-appbar">
+        <span className="plh-wordmark">PARQLET</span>
+        <span className="plh-credits">
+          <i className="plh-star">★</i> {FEATURED.credits} Credits
+        </span>
       </div>
 
-      <div className="plh-ph-hero">
-        <span className="plh-ph-herotitle">Need a spot for a guest?</span>
-        <span className="plh-ph-herocta">Book a spot</span>
+      <span className="plh-ph-section"><i /> UPCOMING GUEST BOOKING</span>
+      <div className="plh-ph-cardwrap">
+        <BookingCard note={FEATURED.startsIn} status="Upcoming" />
       </div>
 
-      <span className="plh-ph-section">Your bookings</span>
+      <div className="plh-promo">
+        <b>Book parking for your guest</b>
+        <span>Reserve a spot in seconds</span>
+        <span className="plh-promo-cta">Book parking spot →</span>
+        <span className="plh-promo-cal">📅</span>
+        <span className="plh-promo-car">🚗</span>
+      </div>
 
-      {/* The booking just made on the previous screen, now on the home tab. */}
-      <div className="plh-ph-card plh-ph-card-new">
-        <div className="plh-ph-cardtop">
-          <span className="plh-ph-startsin">⏳ {FEATURED.startsIn}</span>
+      <div className="plh-avail">
+        <div className="plh-avail-txt">
+          <b>Add availability for your parking spot</b>
+          <span>Earn credits while sharing your spot</span>
         </div>
-        <div className="plh-ph-namerow">
-          <span className="plh-ph-name">{FEATURED.guest}</span>
-          <span className="plh-pill" style={{ background: C.tagUpcoming, color: C.tagUpcomingText }}>
-            Upcoming
+        <span className="plh-avail-cta">Add +</span>
+      </div>
+
+      <div className="plh-tabbar">
+        {["Home", "Availability", "Bookings", "Profile"].map((l) => (
+          <span key={l} className={l === "Home" ? "is-on" : ""}>
+            <svg width={23} height={23} viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d={TAB_ICONS[l]} stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            {l}
           </span>
-        </div>
-        <div className="plh-ph-row"><span>Spot</span><b>{FEATURED.spot}</b></div>
-        <div className="plh-ph-row"><span>Date &amp; time</span><b>{FEATURED.shortWhen}</b></div>
-      </div>
-
-      <div className="plh-ph-card plh-ph-card-ghost">
-        <div className="plh-ph-namerow">
-          <span className="plh-ph-name">Clara Nwosu</span>
-          <span className="plh-pill" style={{ background: C.tagNeutral, color: C.tagNeutralText }}>
-            Completed
-          </span>
-        </div>
-        <div className="plh-ph-row"><span>Spot</span><b>#174</b></div>
+        ))}
       </div>
     </div>
   );
+}
+
+/**
+ * Reading `?scene=N`, after mount.
+ *
+ * Read during render it produced a hydration mismatch - the server had no
+ * query string and rendered scene 0 while the browser rendered scene N, and
+ * the row ids differed. An effect is the boring answer and the correct one:
+ * the first client render matches the HTML, and the pin applies a tick
+ * later. A review aid can afford one frame.
+ */
+function readPinnedScene(): number | null {
+  const raw = new URLSearchParams(window.location.search).get("scene");
+  if (raw === null) return null;
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 0 && n < SCENES.length ? n : null;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -460,12 +599,10 @@ export default function LandingHero() {
    * beat exactly as a viewer sees it once it settles. Harmless unpinned -
    * no link carries the parameter.
    */
-  const pinned = useMemo(() => {
-    if (typeof window === "undefined") return null;
-    const raw = new URLSearchParams(window.location.search).get("scene");
-    if (raw === null) return null;
-    const n = Number(raw);
-    return Number.isInteger(n) && n >= 0 && n < SCENES.length ? n : null;
+  const [pinned, setPinned] = useState<number | null>(null);
+  useEffect(() => {
+    const t = setTimeout(() => setPinned(readPinnedScene()), 0);
+    return () => clearTimeout(t);
   }, []);
 
   const [i, setI] = useState(0);
@@ -534,33 +671,56 @@ export default function LandingHero() {
 
       {/* The stage is inert: a film, not a control surface. */}
       <div className="plh-stage" ref={stageRef} aria-hidden>
+        {/* Full container width, so the dashboard can be drawn at its REAL
+            dimensions - 256px sidebar, 64px header, 14px body text - rather
+            than a shrunken approximation of them. */}
         <div className="plh-frame plh-frame-dash">
           <Dashboard tab={scene.tab} flash={!!scene.flash} />
+
+          {/* The cursor lives INSIDE the dashboard frame and is positioned in
+              pixels, not stage percentages. The tabs it clicks are at fixed
+              offsets from this box (sidebar + padding), so pixels land on them
+              at any viewport; percentages of a stage that changes height with
+              the phone's overhang did not. */}
+          <div
+            className={`plh-cursor${scene.cursor ? " is-on" : ""}${scene.pressCursor ? " is-click" : ""}`}
+            style={
+              {
+                "--plh-x": `${(scene.cursor ?? TAB_HIT.current).x}px`,
+                "--plh-y": `${(scene.cursor ?? TAB_HIT.current).y}px`,
+              } as React.CSSProperties
+            }
+          >
+            <svg width={22} height={22} viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M5 2.5 19 11l-6.2 1.6L10 19.5z" fill={C.white} stroke={C.textStrong} strokeWidth={1.2} strokeLinejoin="round" />
+            </svg>
+            <span className="plh-ripple" />
+          </div>
         </div>
 
+        {/* Floats over the dashboard on desktop; drops below it on a phone,
+            where there is no room to overlap anything. */}
         <div className="plh-frame plh-frame-phone">
           <div className="plh-phone">
-            <span className="plh-notch" />
+            {/* Everything inside is laid out at 390px, the app's real design
+                width, and scaled to the device box by this one element. */}
+            <div className="plh-scale">
+            <span className="plh-statusbar">
+              <span className="plh-sb-time">9:41</span>
+              <span className="plh-notch" />
+              <span className="plh-sb-icons">▮▮▮ ⌁</span>
+            </span>
             <div className={`plh-screenwrap${scene.phone === "home" ? " is-home" : ""}`}>
               <div className="plh-slide plh-slide-a">
-                <PhoneConfirmed pressing={scene.press === "touch"} />
+                <PhoneConfirmed pressing={!!scene.pressTouch} />
               </div>
               <div className="plh-slide plh-slide-b">
                 <PhoneHome />
               </div>
             </div>
+            <span className="plh-homebar" />
+            </div>
           </div>
-        </div>
-
-        {/* Scripted cursor */}
-        <div
-          className={`plh-cursor${scene.cursor ? " is-on" : ""}${scene.press === "cursor" ? " is-click" : ""}`}
-          style={scene.cursor ? { left: `${scene.cursor.x}%`, top: `${scene.cursor.y}%` } : undefined}
-        >
-          <svg width={22} height={22} viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M5 2.5 19 11l-6.2 1.6L10 19.5z" fill={C.white} stroke={C.textStrong} strokeWidth={1.2} strokeLinejoin="round" />
-          </svg>
-          <span className="plh-ripple" />
         </div>
       </div>
     </section>
@@ -575,7 +735,7 @@ export default function LandingHero() {
    ══════════════════════════════════════════════════════════════════ */
 const CSS = `
 .plh-root{
-  position:relative;overflow:hidden;isolation:isolate;
+  position:relative;overflow-x:clip;isolation:isolate;max-width:100vw;
   background:${C.heroBg};
   padding:72px 24px 0;
   font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -638,12 +798,9 @@ const CSS = `
 /* Stage ────────────────────────────────────────────────── */
 .plh-stage{
   position:relative;z-index:2;
-  margin:56px auto 0;max-width:1240px;
-  display:flex;align-items:flex-end;justify-content:center;gap:28px;
+  margin:120px auto 0;max-width:1240px;
   pointer-events:none; /* a film, not a control surface */
 }
-@media(max-width:1100px){ .plh-stage{gap:18px;} }
-@media(max-width:860px){ .plh-stage{flex-direction:column;align-items:center;gap:28px;} }
 
 /* The glass frames, to the supplied spec. */
 .plh-frame{
@@ -655,113 +812,278 @@ const CSS = `
   background:rgba(255,255,255,.07);
   -webkit-backdrop-filter:blur(14px) saturate(140%);
   backdrop-filter:blur(14px) saturate(140%);
-  animation:plh-rise 1.1s cubic-bezier(.16,1,.3,1) .5s both;
+  animation:plh-rise 1.1s cubic-bezier(.16,1,.3,1) .5s backwards;
+  transition:transform .65s cubic-bezier(.16,1,.3,1),right .65s cubic-bezier(.16,1,.3,1);
 }
-.plh-frame-dash{flex:1 1 0;min-width:0;max-width:860px;}
-.plh-frame-phone{flex:0 0 auto;animation-delay:.64s;}
-@media(max-width:860px){ .plh-frame-dash{width:100%;} }
+.plh-frame-dash{width:100%;min-width:0;}
+
+/* The phone hangs over the dashboard's top-right corner: 15% in from the
+   right edge, lifted 100px so it breaks the frame line. z-index puts it
+   above the dashboard rather than beside it. */
+.plh-frame-phone{
+  position:absolute;right:15%;top:-100px;z-index:5;
+  width:300px;animation-delay:.68s;
+}
 @keyframes plh-rise{
   from{opacity:0;transform:translateY(42px) scale(.985)}
   to{opacity:1;transform:none}
 }
 
+/* Wide screens only: hovering the hero steps the phone out to the right
+   and eases the dashboard left, so the whole table is readable without
+   losing the overlap that makes the composition. Below 1920 there is not
+   the room to move anything without it reading as a glitch, so nothing
+   moves.
+
+   The hover sits on the section, not on the stage: the stage is
+   pointer-events:none and would never receive one.
+
+   This is also why the frames' entrance animation uses a backwards
+   fill rather than both: a both-fill keeps the animation's final
+   transform forever and
+   silently wins over anything hover sets here. */
+@media(min-width:1920px){
+  .plh-root:hover .plh-frame-phone{right:1%;}
+  .plh-root:hover .plh-frame-dash{transform:translateX(-46px);}
+}
+
+/* ── Narrow: nothing overlaps anything. Dashboard first, phone under it,
+      both in normal flow and centred. An absolutely-positioned phone on a
+      390px screen would sit on top of the only thing worth reading. ── */
+@media(max-width:900px){
+  .plh-stage{margin-top:44px;display:flex;flex-direction:column;align-items:center;gap:26px;}
+  .plh-frame-phone{position:static;right:auto;top:auto;width:300px;}
+}
+
 /* Dashboard ────────────────────────────────────────────── */
+/* Real dimensions - 256px sidebar, 14px body text - which is the whole
+   reason the frame is full width. Height is 450px: 150 shorter than the
+   first cut, which was mostly empty table. */
 .plh-dash{
-  display:flex;height:430px;overflow:hidden;
+  display:flex;height:450px;overflow:hidden;min-width:0;max-width:100%;
   border-radius:9px 9px 0 0;background:${C.fillWeak};
-  font-size:11px;color:${C.textStrong};
+  font-size:14px;color:${C.textStrong};
 }
-@media(max-width:860px){ .plh-dash{height:360px;} }
+@media(max-width:900px){ .plh-dash{height:400px;font-size:12px;} }
 .plh-side{
-  width:178px;flex:0 0 178px;background:${C.sidebarBg};
-  display:flex;flex-direction:column;padding-bottom:12px;
+  width:256px;flex:0 0 256px;background:${C.sidebarBg};
+  display:flex;flex-direction:column;padding-bottom:14px;
 }
-@media(max-width:1100px){ .plh-side{width:150px;flex-basis:150px;} }
-@media(max-width:620px){ .plh-side{display:none;} }
-.plh-side-logo{height:52px;display:flex;align-items:center;padding:0 16px;}
-.plh-nav{display:flex;flex-direction:column;gap:3px;padding:0 10px;}
+@media(max-width:1040px){ .plh-side{width:200px;flex-basis:200px;} }
+@media(max-width:700px){ .plh-side{display:none;} }
+.plh-side-logo{
+  height:60px;display:flex;align-items:center;padding:0 24px;flex:0 0 60px;
+  color:${C.white};font-size:17px;font-weight:800;letter-spacing:-.02em;font-style:italic;
+}
+.plh-nav{display:flex;flex-direction:column;gap:4px;padding:0 16px;flex:1 1 auto;}
 .plh-nav-item{
-  display:flex;align-items:center;gap:9px;height:34px;padding:0 11px;
-  border-radius:7px;color:${C.sidebarText};font-size:11px;white-space:nowrap;
+  display:flex;align-items:center;gap:10px;height:42px;padding:0 16px;
+  border-radius:8px;color:${C.sidebarText};font-size:14px;white-space:nowrap;
   transition:background .3s ease,color .3s ease;
 }
 .plh-nav-item.is-active{background:${C.sidebarItemActive};color:${C.accent};}
+.plh-side-foot{
+  display:flex;flex-direction:column;gap:5px;padding:0 24px;
+  font-size:11px;color:#6E6E6E;
+}
 .plh-main{flex:1 1 0;min-width:0;display:flex;flex-direction:column;background:${C.fillWeak};}
 .plh-head{
-  height:52px;flex:0 0 52px;display:flex;align-items:center;justify-content:space-between;
-  padding:0 18px;background:${C.white};border-bottom:1px solid ${C.strokeMedium};
+  height:60px;flex:0 0 60px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;background:${C.white};border-bottom:1px solid ${C.strokeMedium};
 }
-.plh-head-title{font-size:14px;font-weight:500;}
-.plh-head-right{display:flex;align-items:center;gap:10px;}
-.plh-building{font-size:11px;color:${C.textWeak};}
+@media(max-width:900px){ .plh-head{height:50px;flex-basis:50px;padding:0 14px;} }
+.plh-head-title{font-size:16px;font-weight:500;}
+.plh-head-right{display:flex;align-items:center;gap:12px;}
+.plh-ico{font-size:14px;color:${C.textWeak};}
+.plh-ico-sm{font-size:11px;}
 .plh-avatar{
-  width:26px;height:26px;border-radius:999px;background:${C.accent};
-  display:grid;place-items:center;font-size:10px;font-weight:600;color:${C.textStrong};
+  width:30px;height:30px;border-radius:999px;background:${C.strokeMedium};
+  display:grid;place-items:center;font-size:11px;font-weight:600;color:${C.textStrong};
 }
-.plh-body{flex:1 1 0;min-height:0;padding:14px 18px;display:flex;flex-direction:column;gap:12px;}
+.plh-whoami{display:flex;flex-direction:column;line-height:1.15;}
+.plh-whoami b{font-size:13px;font-weight:600;}
+.plh-whoami i{font-size:11px;font-style:normal;color:${C.textWeak};}
+@media(max-width:1180px){ .plh-whoami{display:none;} }
 
-.plh-tabs{display:flex;gap:6px;}
+.plh-body{flex:1 1 0;min-height:0;padding:16px 22px 0;display:flex;flex-direction:column;}
+@media(max-width:900px){ .plh-body{padding:12px 14px 0;} }
+.plh-h2{margin:0;font-size:26px;line-height:31px;font-weight:400;letter-spacing:-.01em;}
+.plh-sub{margin:3px 0 0;font-size:13px;color:${C.textWeak};}
+
+/* Underlined text tabs - the real ones are not pills. */
+.plh-tabs{display:flex;gap:28px;margin-top:12px;border-bottom:1px solid ${C.strokeMedium};}
 .plh-tab{
-  padding:7px 15px;border-radius:999px;font-size:11px;font-weight:500;
-  color:${C.textWeak};background:transparent;border:1px solid transparent;
-  transition:background .24s cubic-bezier(.16,1,.3,1),color .24s ease,border-color .24s ease;
+  padding:0 0 9px;font-size:14px;color:${C.textWeak};font-weight:400;
+  border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;
+  transition:color .24s ease,border-color .24s ease;
 }
-.plh-tab.is-active{background:${C.textStrong};color:${C.white};}
+.plh-tab.is-active{color:${C.textStrong};font-weight:600;border-bottom-color:${C.textStrong};}
+/* Three two-word tabs do not fit across a phone at 14px. */
+@media(max-width:900px){
+  .plh-tabs{gap:16px;}
+  .plh-tab{font-size:12px;padding-bottom:7px;}
+}
+@media(max-width:520px){ .plh-tabs{gap:12px;} .plh-tab{font-size:11px;} }
+
+.plh-toolbar{display:flex;align-items:center;gap:12px;margin-top:12px;}
+.plh-search{
+  flex:1 1 auto;min-width:0;height:36px;display:flex;align-items:center;gap:9px;
+  padding:0 14px;border-radius:9px;background:${C.white};
+  border:1px solid ${C.strokeMedium};color:${C.textWeaker};font-size:13px;
+}
+.plh-search span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.plh-filters{display:flex;gap:8px;flex:0 0 auto;}
+.plh-filter{
+  height:36px;display:flex;align-items:center;gap:7px;padding:0 13px;
+  border-radius:9px;background:${C.white};border:1px solid ${C.strokeMedium};
+  font-size:13px;color:${C.textStrong};white-space:nowrap;
+}
+.plh-filter i{font-style:normal;font-size:10px;color:${C.textWeak};}
+@media(max-width:1280px){ .plh-filters{display:none;} }
 
 .plh-table{
-  flex:1 1 0;min-height:0;background:${C.white};
-  border:1px solid ${C.strokeMedium};border-radius:10px;overflow:hidden;
+  flex:1 1 0;min-height:0;min-width:0;background:${C.white};margin-top:12px;
+  border:1px solid ${C.strokeMedium};border-radius:12px 12px 0 0;overflow:hidden;
   display:flex;flex-direction:column;
 }
 .plh-thead{
-  display:flex;gap:8px;padding:9px 14px;flex:0 0 auto;
-  border-bottom:1px solid ${C.strokeMedium};background:${C.fillWeak};
-  font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${C.textWeaker};
+  display:flex;gap:10px;padding:10px 18px;flex:0 0 auto;
+  border-bottom:1px solid ${C.strokeMedium};
+  font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:${C.textWeaker};
 }
 .plh-thead span,.plh-row span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-/* The plate is the first thing to go when the frame narrows - it is the
-   least load-bearing column in a marketing still. */
-@media(max-width:1180px){ .plh-col-plate{display:none!important;} }
+.plh-thead .plh-phglyph{display:none;}
+
+/* Column widths live here, not in the JSX. As inline styles they beat any
+   media query, so the narrow layout could not drop or shrink a column and
+   the table forced the whole page wider than the viewport.
+
+   Columns leave in order of how little they carry. What survives at 430px
+   is the booking, the spot, when it starts and its status. */
+.plh-c-id{flex:0 0 72px}
+.plh-c-unit{flex:0 0 48px}
+.plh-c-resident{flex:1 1 104px}
+.plh-c-spot{flex:0 0 76px}
+.plh-c-owner{flex:1 1 104px}
+.plh-c-guest{flex:1 1 104px}
+.plh-c-plate{flex:0 0 90px}
+.plh-c-start{flex:0 0 100px}
+.plh-c-end{flex:0 0 100px}
+.plh-c-status{flex:0 0 86px}
+@media(max-width:1440px){ .plh-c-owner{display:none} }
+@media(max-width:1260px){ .plh-c-end{display:none} }
+@media(max-width:1100px){ .plh-c-plate{display:none} }
+@media(max-width:900px){ .plh-c-guest{display:none} }
+@media(max-width:700px){
+  .plh-c-resident{display:none}
+  .plh-c-unit{flex:0 0 38px}
+  .plh-c-id{flex:0 0 64px}
+  .plh-c-spot{flex:0 0 52px}
+  .plh-c-start{flex:1 1 78px}
+  .plh-c-status{flex:0 0 84px}
+  .plh-pill{font-size:10px;padding:4px 8px;}
+}
+@media(max-width:520px){ .plh-c-unit{display:none} }
 .plh-rows{flex:1 1 0;min-height:0;}
 .plh-row{
-  display:flex;gap:8px;align-items:center;padding:0 14px;height:48px;
-  border-bottom:1px solid ${C.strokeWeak};font-size:11px;color:${C.textWeak};
+  display:flex;gap:10px;align-items:center;padding:0 18px;height:50px;
+  border-bottom:1px solid ${C.strokeWeak};font-size:13px;color:${C.textStrong};
   animation:plh-row-in .55s cubic-bezier(.16,1,.3,1) both;
+}
+.plh-phglyph{flex:0 0 auto;margin-left:7px;vertical-align:-2px;}
+.plh-tfoot{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+  padding:9px 18px;border-top:1px solid ${C.strokeMedium};
+  font-size:12px;color:${C.textWeak};
+}
+.plh-pager{display:flex;align-items:center;gap:7px;}
+.plh-pager i{font-style:normal;padding:2px 6px;border-radius:5px;border:1px solid ${C.strokeMedium};}
+.plh-pager b{padding:2px 7px;border-radius:5px;background:${C.textStrong};color:${C.white};}
+@media(max-width:900px){
+  .plh-row{height:44px;padding:0 12px;font-size:12px;}
+  .plh-thead{padding:9px 12px;}
+  .plh-tfoot{display:none;}
 }
 @keyframes plh-row-in{
   from{opacity:0;transform:translateY(8px)}
   to{opacity:1;transform:none}
 }
-.plh-row.is-flash{animation:plh-row-in .55s cubic-bezier(.16,1,.3,1) both,plh-flash 2.4s ease-out .25s both;}
-@keyframes plh-flash{
-  0%{background:rgba(199,229,31,.42);box-shadow:inset 3px 0 0 ${C.accent}}
-  70%{background:rgba(199,229,31,.14);box-shadow:inset 3px 0 0 ${C.accent}}
-  100%{background:transparent;box-shadow:inset 3px 0 0 transparent}
+/* The row arriving. One animation rather than two stacked, because the
+   entrance and the highlight both want transform, and the second would
+   simply win. Scale is nudged from the left edge so the row grows into
+   the table instead of drifting sideways. */
+.plh-row.is-flash{
+  position:relative;z-index:1;transform-origin:left center;
+  animation:plh-land 2.6s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes plh-land{
+  0%{
+    opacity:0;transform:translateY(10px) scale(.985);
+    background:rgba(199,229,31,.55);
+    box-shadow:inset 4px 0 0 ${C.accent},0 6px 18px rgba(199,229,31,.30);
+  }
+  18%{
+    opacity:1;transform:translateY(0) scale(1.018);
+    background:rgba(199,229,31,.5);
+    box-shadow:inset 4px 0 0 ${C.accent},0 10px 24px rgba(199,229,31,.38);
+  }
+  55%{
+    transform:scale(1.012);background:rgba(199,229,31,.2);
+    box-shadow:inset 4px 0 0 ${C.accent},0 6px 16px rgba(199,229,31,.18);
+  }
+  100%{
+    transform:scale(1);background:transparent;
+    box-shadow:inset 4px 0 0 transparent,0 0 0 rgba(199,229,31,0);
+  }
 }
 .plh-trunc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .plh-mono{font-variant-numeric:tabular-nums;letter-spacing:-.01em;}
 .plh-pill{
-  display:inline-block;padding:4px 9px;border-radius:999px;
-  font-size:9px;font-weight:600;white-space:nowrap;
+  display:inline-block;padding:4px 10px;border-radius:999px;
+  font-size:11px;font-weight:600;white-space:nowrap;
 }
 
-/* Phone ────────────────────────────────────────────────── */
+/* Phone ──────────────────────────────────────────────────
+   DESIGNED AT THE APP'S REAL WIDTH, THEN SCALED.
+
+   The previous pass hand-picked sizes to suit a 300px-wide box, which is
+   why it never quite read as the app: every radius, gap and type size was
+   a guess at 77% rather than the real value. Now the screen is laid out at
+   390px - the width the app is actually designed for - with the app's own
+   numbers, and the whole device is scaled down by transform. Proportions
+   are therefore exact by construction, and the only thing that changes
+   when the device resizes is one number. */
 .plh-phone{
-  position:relative;width:258px;height:430px;
-  border-radius:30px 30px 0 0;background:${C.white};
-  overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.42);
+  position:relative;width:300px;height:560px;
+  border-radius:38px 38px 0 0;background:${C.white};
+  overflow:hidden;box-shadow:0 26px 70px rgba(0,0,0,.5);
 }
-@media(max-width:860px){ .plh-phone{height:360px;} }
+@media(max-width:900px){ .plh-phone{width:290px;height:540px;} }
+/* 300 / 390 = .7692 - the factor that maps the design width onto the box. */
+.plh-scale{
+  position:absolute;top:0;left:0;width:390px;height:728px;
+  transform:scale(.7692);transform-origin:top left;
+}
+@media(max-width:900px){ .plh-scale{transform:scale(.7436);} }
+
+.plh-statusbar{
+  position:absolute;top:0;left:0;right:0;height:54px;z-index:4;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 30px;font-size:16px;font-weight:600;color:${C.textStrong};
+}
+.plh-sb-icons{font-size:12px;letter-spacing:1px;}
 .plh-notch{
-  position:absolute;top:8px;left:50%;transform:translateX(-50%);
-  width:84px;height:20px;border-radius:999px;background:${C.textStrong};z-index:3;
+  position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:120px;height:33px;border-radius:999px;background:${C.textStrong};
+}
+.plh-homebar{
+  position:absolute;bottom:9px;left:50%;transform:translateX(-50%);z-index:6;
+  width:150px;height:5px;border-radius:999px;background:rgba(34,34,34,.32);
 }
 .plh-screenwrap{position:absolute;inset:0;}
 /* The outgoing screen clears FAST and the incoming one arrives slower.
-   Cross-fading both over the same curve left the two legible on top of
-   each other through the middle of the transition, which reads as a
-   glitch rather than a navigation. iOS does the same thing: the screen
-   you are leaving is gone before the one you are entering has settled. */
+   Cross-fading both over one curve left them legible on top of each other
+   through the middle, which reads as a glitch rather than a navigation. */
 .plh-slide{position:absolute;inset:0;}
 .plh-slide-a{
   opacity:1;transform:translateX(0) scale(1);
@@ -775,87 +1097,150 @@ const CSS = `
 .plh-screenwrap.is-home .plh-slide-b{opacity:1;transform:translateX(0) scale(1);}
 
 .plh-screen{
-  position:absolute;inset:0;padding:36px 16px 0;overflow:hidden;
+  position:absolute;inset:0;padding:66px 20px 0;overflow:hidden;
   display:flex;flex-direction:column;align-items:center;background:${C.white};
 }
-.plh-screen-home{align-items:stretch;padding-top:38px;}
+.plh-screen-home{align-items:stretch;padding-top:62px;}
 
-.plh-splash{position:relative;display:grid;place-items:center;margin-top:2px;transform:scale(.86);}
+/* Confirmation */
+.plh-splash{position:relative;display:grid;place-items:center;margin-top:10px;}
 .plh-halo{
-  position:absolute;width:112px;height:112px;border-radius:999px;
-  background:rgba(184,212,27,.22);filter:blur(10px);
+  position:absolute;width:190px;height:190px;border-radius:999px;
+  background:rgba(184,212,27,.38);filter:blur(22px);
   animation:plh-pulse 2.8s ease-in-out infinite;
 }
-@keyframes plh-pulse{0%,100%{transform:scale(1);opacity:.75}50%{transform:scale(1.12);opacity:1}}
-.plh-ph-title{margin:8px 0 0;font-size:16px;font-weight:600;color:${C.textStrong};}
-.plh-ph-sub{margin:4px 0 0;font-size:10.5px;line-height:1.45;color:${C.textWeak};text-align:center;}
+@keyframes plh-pulse{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.1);opacity:1}}
+.plh-ph-title{
+  margin:26px 0 0;font-size:26px;line-height:32px;font-weight:700;
+  color:${C.textStrong};text-align:center;letter-spacing:-.01em;
+}
+.plh-ph-sub{margin:12px 0 0;font-size:16px;line-height:22px;color:${C.textWeak};text-align:center;}
 
+/* Booking card - one component, both screens. */
 .plh-ph-card{
-  width:100%;margin-top:10px;padding:10px;border-radius:13px;
-  background:${C.fillWeak};display:flex;flex-direction:column;gap:6px;
+  width:100%;padding:16px;border-radius:20px;
+  background:${C.fillWeak};display:flex;flex-direction:column;gap:10px;
 }
-.plh-ph-card-new{
-  border:1px solid ${C.accentSoft};
-  animation:plh-card-in .7s cubic-bezier(.16,1,.3,1) .2s both;
-}
+.plh-ph-cardwrap{animation:plh-card-in .7s cubic-bezier(.16,1,.3,1) .2s both;}
 @keyframes plh-card-in{
   from{opacity:0;transform:translateY(14px) scale(.97)}
   to{opacity:1;transform:none}
 }
-.plh-ph-card-ghost{opacity:.5;}
-.plh-ph-cardtop{display:flex;align-items:center;justify-content:flex-start;}
-.plh-ph-startsin{font-size:9px;color:${C.textWeak};}
-.plh-ph-namerow{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.plh-ph-name{font-size:13px;font-weight:600;color:${C.textStrong};}
-.plh-ph-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10px;color:${C.textWeak};}
-.plh-ph-row b{font-size:10px;font-weight:600;color:${C.textStrong};text-align:right;}
+.plh-ph-card{margin-top:22px;}
+.plh-ph-cardwrap .plh-ph-card{margin-top:0;}
+.plh-ph-cardtop{display:flex;align-items:center;gap:8px;}
+.plh-spotpill{
+  height:30px;display:inline-flex;align-items:center;padding:0 14px;
+  border-radius:999px;background:${C.textStrong};
+  color:${C.white};font-size:14px;font-weight:600;white-space:nowrap;
+}
+.plh-bolt{
+  width:40px;height:30px;border-radius:999px;background:${C.white};
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.plh-ph-startsin{
+  margin-left:auto;display:inline-flex;align-items:center;gap:6px;
+  font-size:14px;font-weight:600;color:${C.textStrong};white-space:nowrap;
+}
+.plh-ph-namerow{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.plh-ph-name{font-size:26px;line-height:30px;font-weight:700;color:${C.textStrong};white-space:nowrap;}
+.plh-ph-statuspill{height:28px;display:inline-flex;align-items:center;padding:0 13px;font-size:14px;}
+.plh-ph-row{display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:15px;line-height:21px;color:${C.textWeak};white-space:nowrap;}
+.plh-ph-row b{font-size:15px;line-height:21px;font-weight:700;color:${C.textStrong};text-align:right;white-space:nowrap;}
+.plh-manage{
+  align-self:flex-end;font-size:15px;font-weight:700;color:${C.textStrong};
+  text-decoration:underline;
+}
 
-.plh-ph-ctas{width:100%;margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+.plh-ph-ctas{width:100%;margin-top:auto;padding-bottom:26px;display:flex;flex-direction:column;gap:10px;}
 .plh-btn{
-  position:relative;overflow:hidden;height:37px;border-radius:11px;
-  display:grid;place-items:center;font-size:12px;font-weight:500;
+  position:relative;overflow:hidden;height:56px;border-radius:14px;
+  display:grid;place-items:center;font-size:17px;font-weight:700;
   transition:transform .22s cubic-bezier(.16,1,.3,1),filter .22s ease;
 }
 .plh-btn-primary{background:${C.accent};color:${C.textStrong};}
 .plh-btn-secondary{background:${C.white};color:${C.textStrong};border:1px solid ${C.strokeMedium};}
 .plh-btn.is-pressed{transform:scale(.967);filter:brightness(.97);}
 .plh-touch{
-  position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;
+  position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;
   border-radius:999px;background:rgba(34,34,34,.18);
   animation:plh-touch .62s cubic-bezier(.16,1,.3,1) both;
 }
 @keyframes plh-touch{
   from{transform:scale(.4);opacity:.85}
-  to{transform:scale(7);opacity:0}
+  to{transform:scale(8);opacity:0}
 }
 
-.plh-ph-greet{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
-.plh-ph-hi{display:block;font-size:15px;font-weight:600;color:${C.textStrong};}
-.plh-ph-unit{display:block;margin-top:2px;font-size:10px;color:${C.textWeak};}
-.plh-ph-credits{
-  flex:0 0 auto;padding:5px 10px;border-radius:999px;background:${C.fillWeak};
-  font-size:10px;font-weight:600;color:${C.textStrong};
+/* Home tab */
+.plh-ph-appbar{display:flex;align-items:center;justify-content:space-between;}
+.plh-wordmark{font-size:25px;font-weight:800;font-style:italic;letter-spacing:-.03em;color:${C.textStrong};}
+.plh-credits{
+  height:40px;display:inline-flex;align-items:center;gap:8px;padding:0 16px;
+  border-radius:999px;border:1px solid ${C.strokeMedium};
+  background:${C.white};font-size:15px;font-weight:700;color:${C.textStrong};white-space:nowrap;
 }
-.plh-ph-hero{
-  margin-top:12px;padding:13px;border-radius:14px;background:${C.textStrong};
-  display:flex;flex-direction:column;gap:9px;
+.plh-star{
+  width:22px;height:22px;border-radius:999px;background:${C.textStrong};
+  color:${C.white};display:inline-grid;place-items:center;font-size:11px;font-style:normal;
 }
-.plh-ph-herotitle{font-size:12px;font-weight:500;color:${C.white};}
-.plh-ph-herocta{
-  align-self:flex-start;padding:7px 13px;border-radius:9px;
-  background:${C.accent};color:${C.textStrong};font-size:10px;font-weight:600;
+.plh-ph-section{
+  display:flex;align-items:center;gap:9px;margin:12px 0 8px;
+  font-size:13px;font-weight:700;letter-spacing:.08em;color:${C.textStrong};
 }
-.plh-ph-section{display:block;margin:15px 0 8px;font-size:11px;font-weight:600;color:${C.textStrong};}
+.plh-ph-section i{width:9px;height:9px;border-radius:999px;background:${C.accent};}
+.plh-promo{
+  position:relative;overflow:hidden;margin-top:12px;padding:16px;border-radius:20px;
+  background:${C.textStrong};display:flex;flex-direction:column;
+}
+.plh-promo b{font-size:20px;line-height:25px;font-weight:700;color:${C.white};max-width:210px;}
+.plh-promo>span:not(.plh-promo-cta):not(.plh-promo-cal):not(.plh-promo-car){
+  margin-top:6px;font-size:15px;color:rgba(255,255,255,.72);
+}
+.plh-promo-cta{
+  align-self:flex-start;margin-top:12px;height:44px;display:inline-flex;align-items:center;
+  padding:0 20px;border-radius:12px;
+  background:${C.accent};color:${C.textStrong};font-size:16px;font-weight:700;
+}
+.plh-promo-cal{position:absolute;right:26px;top:20px;font-size:30px;}
+.plh-promo-car{position:absolute;right:18px;bottom:16px;font-size:40px;}
+.plh-avail{
+  margin-top:10px;padding:14px;border-radius:20px;background:${C.fillWeak};
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+}
+.plh-avail-txt b{display:block;font-size:17px;font-weight:700;color:${C.textStrong};line-height:22px;}
+.plh-avail-txt span{display:block;margin-top:5px;font-size:14px;color:${C.textWeak};}
+.plh-avail-cta{
+  flex:0 0 auto;height:44px;display:inline-flex;align-items:center;padding:0 16px;
+  border-radius:12px;background:${C.accent};color:${C.textStrong};font-size:16px;font-weight:700;
+}
+/* Floating tab bar, as in the app. */
+.plh-tabbar{
+  position:absolute;left:18px;right:18px;bottom:16px;height:66px;
+  display:flex;align-items:center;justify-content:space-around;
+  border-radius:999px;background:${C.white};
+  box-shadow:0 8px 30px rgba(0,0,0,.16);border:1px solid ${C.strokeWeak};
+  font-size:11px;font-weight:600;color:${C.textWeaker};
+}
+.plh-tabbar span{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.plh-tabbar .is-on{color:${C.textStrong};font-weight:700;}
 
 /* Cursor ───────────────────────────────────────────────── */
+/* Positioned by transform, not by left/top.
+   Two reasons. Animating left/top asks the browser to lay the page out
+   again on every frame of a one-second glide; a transform is composited
+   and touches no layout at all. And it is unambiguous: the element is
+   pinned at the frame's origin and MOVED, so nothing about the
+   containing block can quietly relocate it. */
 .plh-cursor{
-  position:absolute;left:50%;top:50%;z-index:6;
-  opacity:0;transform:translate(-2px,-2px) scale(.9);
-  transition:left 1s cubic-bezier(.33,0,.15,1),top 1s cubic-bezier(.33,0,.15,1),opacity .45s ease,transform .3s ease;
+  position:absolute;left:0;top:0;z-index:6;
+  opacity:0;
+  transform:translate3d(var(--plh-x,0),var(--plh-y,0),0) scale(.9);
+  transition:transform 1s cubic-bezier(.33,0,.15,1),opacity .45s ease;
   filter:drop-shadow(0 3px 7px rgba(0,0,0,.45));
+  will-change:transform;
 }
-.plh-cursor.is-on{opacity:1;transform:translate(-2px,-2px) scale(1);}
-.plh-cursor.is-click{transform:translate(-2px,-2px) scale(.84);}
+.plh-cursor.is-on{opacity:1;transform:translate3d(var(--plh-x,0),var(--plh-y,0),0) scale(1);}
+.plh-cursor.is-click{transform:translate3d(var(--plh-x,0),var(--plh-y,0),0) scale(.84);}
 .plh-ripple{
   position:absolute;left:2px;top:2px;width:14px;height:14px;margin:-7px 0 0 -7px;
   border-radius:999px;border:1.5px solid ${C.accent};opacity:0;
