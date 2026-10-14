@@ -363,7 +363,7 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
             <div className="plh-thead">
               {COLS.map((c) => (
                 <span key={c.key} className={`plh-c-${c.key} ${c.cls}`}>
-                  {c.label}
+                  <span className="plh-celltxt">{c.label}</span>
                 </span>
               ))}
             </div>
@@ -377,12 +377,25 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
                     className={`plh-row${isFeatured ? " is-flash" : ""}`}
                     style={{ animationDelay: `${i * 70}ms` }}
                   >
-                    {COLS.map((c) => (
-                      <span key={c.key} className={`plh-c-${c.key} ${c.cls}`}>
-                        {c.key === "status" ? <StatusPill status={r.status} /> : r[c.key]}
-                        {c.cls.includes("plh-hasphone") && <PhoneGlyph />}
-                      </span>
-                    ))}
+                    {COLS.map((c) => {
+                      const hasPhone = c.cls.includes("plh-hasphone");
+                      return (
+                        <span key={c.key} className={`plh-c-${c.key} ${c.cls}`}>
+                          {/* The handset is a sibling of a truncating span,
+                              not a trailing child of one. Inline after the
+                              text it dropped onto a second line as soon as
+                              the name needed ellipsing. */}
+                          {hasPhone ? (
+                            <span className="plh-celltxt">{r[c.key]}</span>
+                          ) : c.key === "status" ? (
+                            <StatusPill status={r.status} />
+                          ) : (
+                            r[c.key]
+                          )}
+                          {hasPhone && <PhoneGlyph />}
+                        </span>
+                      );
+                    })}
                   </div>
                 );
               })}
@@ -822,7 +835,17 @@ const CSS = `
    above the dashboard rather than beside it. */
 .plh-frame-phone{
   position:absolute;right:15%;top:-100px;z-index:5;
-  width:300px;animation-delay:.68s;
+  animation-delay:.68s;
+  /* NO width. It was 300px, and because the frame is border-box that left
+     a 274px content box holding a 300px phone - the phone hung out past
+     its own frame by 26px, which is the misfit. Sizing to the content
+     makes the frame exactly the phone plus its padding, whatever the
+     phone's width becomes. */
+  width:max-content;
+  /* The frame traces the phone's corners rather than cutting across them:
+     the phone's 38px radius plus the 12px of padding between the two. A
+     12px radius around a 38px-rounded device reads as a mistake. */
+  border-radius:50px 50px 0 0;
 }
 @keyframes plh-rise{
   from{opacity:0;transform:translateY(42px) scale(.985)}
@@ -831,9 +854,8 @@ const CSS = `
 
 /* Wide screens only: hovering the hero steps the phone out to the right
    and eases the dashboard left, so the whole table is readable without
-   losing the overlap that makes the composition. Below 1920 there is not
-   the room to move anything without it reading as a glitch, so nothing
-   moves.
+   losing the overlap that makes the composition. Narrower than the
+   threshold there is no room to move into, so nothing moves.
 
    The hover sits on the section, not on the stage: the stage is
    pointer-events:none and would never receive one.
@@ -842,9 +864,13 @@ const CSS = `
    fill rather than both: a both-fill keeps the animation's final
    transform forever and
    silently wins over anything hover sets here. */
-@media(min-width:1920px){
-  .plh-root:hover .plh-frame-phone{right:1%;}
-  .plh-root:hover .plh-frame-dash{transform:translateX(-46px);}
+/* 1280, not 1920. A 1920-pixel monitor is usually a ~1420px CSS viewport
+   once the display scaling is applied, so a 1920 query never matched on
+   the machine it was written for. 1280 is the point at which the stage
+   (1240 wide) has margin to move into. */
+@media(min-width:1280px){
+  .plh-root:hover .plh-frame-phone{right:2%;}
+  .plh-root:hover .plh-frame-dash{transform:translateX(-34px);}
 }
 
 /* ── Narrow: nothing overlaps anything. Dashboard first, phone under it,
@@ -990,7 +1016,11 @@ const CSS = `
   border-bottom:1px solid ${C.strokeWeak};font-size:13px;color:${C.textStrong};
   animation:plh-row-in .55s cubic-bezier(.16,1,.3,1) both;
 }
-.plh-phglyph{flex:0 0 auto;margin-left:7px;vertical-align:-2px;}
+/* A flex row, so the handset sits beside the name instead of being an
+   inline box that wraps the moment the name is too long for the column. */
+.plh-hasphone{display:flex;align-items:center;gap:6px;}
+.plh-celltxt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.plh-phglyph{flex:0 0 auto;}
 .plh-tfoot{
   flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
   padding:9px 18px;border-top:1px solid ${C.strokeMedium};
