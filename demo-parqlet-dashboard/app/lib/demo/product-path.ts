@@ -110,7 +110,7 @@ export function productPrefix(pathname: string): string {
  * must let them through rather than asking a visitor to pick a product
  * before showing them a page that has nothing to do with either.
  */
-const UNSCOPED_PATHS = ['/demo-home'];
+const UNSCOPED_PATHS = ['/demo-home', '/landing-hero'];
 
 export function isUnscopedPath(pathname: string): boolean {
   return UNSCOPED_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));
