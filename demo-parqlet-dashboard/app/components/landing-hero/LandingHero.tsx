@@ -478,15 +478,38 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
         <header className="plh-head">
           <span className="plh-head-title">The Condominium Complex</span>
           <div className="plh-head-right">
-            <span className="plh-ico">☾</span>
-            <span className="plh-ico">◔</span>
-            <span className="plh-avatar">SJ</span>
-            <span className="plh-whoami">
-              <b>Sarah Johnson</b>
-              <i>Admin</i>
+            {/* HeaderThemeToggle's moon, 18x18 in a 36x36 hit box. */}
+            <span className="plh-iconbtn">
+              <svg width={18} height={18} viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" strokeWidth={1.6} strokeLinejoin="round" />
+              </svg>
             </span>
-            <span className="plh-ico plh-ico-sm">⌄</span>
-            <span className="plh-ico">?</span>
+            {/* IcNotification. The real header has a bell here and this
+                did not have one at all. */}
+            <span className="plh-iconbtn">
+              <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M10 5.5C7.79 6.24 6 8.22 6 10.5V14L4 17H20L18 14V10.5C18 8.22 16.21 6.24 14 5.5M10 5.5C10.1 4.37 10.95 3.5 12 3.5C13.05 3.5 13.9 4.37 14 5.5" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M9 17V18C9 19.66 10.34 21 12 21C13.66 21 15 19.66 15 18V17" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" />
+              </svg>
+            </span>
+            <span className="plh-account">
+              <span className="plh-avatar">SJ</span>
+              <span className="plh-whoami">
+                <b>Sarah Johnson</b>
+                <i>Admin</i>
+              </span>
+              <svg className="plh-chev-sm" width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M6 9l6 6 6-6" stroke={C.textWeak} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            {/* IcQuestion, not a question mark character. */}
+            <span className="plh-iconbtn">
+              <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth={1.5} />
+                <path d="M10 9.5C10 8.4 10.9 7.5 12 7.5C13.1 7.5 14 8.4 14 9.5C14 10.3 13.5 11 12.8 11.4L12 11.9V13" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" />
+                <circle cx="12" cy="15.5" r="0.75" fill="currentColor" />
+              </svg>
+            </span>
           </div>
         </header>
 
@@ -513,7 +536,12 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
             </div>
             <div className="plh-filters">
               {["Notes", "Status", "Sort", "Date range"].map((f) => (
-                <span key={f} className="plh-filter">{f} <i>⌄</i></span>
+                <span key={f} className="plh-filter">
+                  {f}
+                  <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path d="M6 9l6 6 6-6" stroke={C.textWeak} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
               ))}
             </div>
           </div>
@@ -1299,16 +1327,23 @@ const CSS = `
 }
 @media(max-width:900px){ .plh-head{height:50px;flex-basis:50px;padding:0 14px;} }
 .plh-head-title{font-size:16px;line-height:20px;font-weight:500;}
-.plh-head-right{display:flex;align-items:center;gap:12px;}
-.plh-ico{font-size:14px;color:${C.textWeak};}
-.plh-ico-sm{font-size:11px;}
-.plh-avatar{
-  width:32px;height:32px;border-radius:999px;background:${C.strokeMedium};
-  display:grid;place-items:center;font-size:12px;line-height:16px;font-weight:500;color:${C.textStrong};
+.plh-head-right{display:flex;align-items:center;gap:4px;}
+/* HeaderThemeToggle / the bell / IcQuestion all sit in a 36x36 box. */
+.plh-iconbtn{
+  width:36px;height:36px;border-radius:8px;flex:0 0 auto;
+  display:inline-flex;align-items:center;justify-content:center;
+  color:${C.textStrong};
 }
-.plh-whoami{display:flex;flex-direction:column;line-height:1.15;}
-.plh-whoami b{font-size:14px;line-height:16px;font-weight:500;}
-.plh-whoami i{font-size:12px;line-height:16px;font-style:normal;color:${C.textWeak};}
+/* AccountMenu's trigger: gap 8, 4x8 padding, 8-dp corners. */
+.plh-account{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:8px;}
+.plh-chev-sm{flex:0 0 auto;margin-left:2px;display:block;}
+.plh-avatar{
+  width:32px;height:32px;border-radius:50%;background:${C.textStrong};
+  display:grid;place-items:center;font-size:13px;font-weight:600;color:${C.white};
+}
+.plh-whoami{display:flex;flex-direction:column;}
+.plh-whoami b{font-size:13px;line-height:16px;font-weight:500;}
+.plh-whoami i{font-size:11px;line-height:14px;font-style:normal;color:${C.textWeak};}
 @media(max-width:1180px){ .plh-whoami{display:none;} }
 
 .plh-body{flex:1 1 0;min-height:0;padding:16px 24px 0;display:flex;flex-direction:column;}
@@ -1340,11 +1375,11 @@ const CSS = `
 .plh-search span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .plh-filters{display:flex;gap:8px;flex:0 0 auto;}
 .plh-filter{
-  height:36px;display:flex;align-items:center;gap:8px;padding:0 12px;
-  border-radius:8px;background:${C.white};border:1px solid ${C.strokeMedium};
-  font-size:14px;line-height:16px;color:${C.textStrong};white-space:nowrap;
+  display:flex;align-items:center;gap:8px;padding:8px 10px;
+  border-radius:12px;background:${C.white};border:1px solid ${C.strokeMedium};
+  font-size:14px;line-height:16px;color:${C.textWeak};white-space:nowrap;
 }
-.plh-filter i{font-style:normal;font-size:12px;color:${C.textWeak};}
+.plh-filter svg{flex:0 0 auto;display:block;}
 @media(max-width:1280px){ .plh-filters{display:none;} }
 
 .plh-table{
