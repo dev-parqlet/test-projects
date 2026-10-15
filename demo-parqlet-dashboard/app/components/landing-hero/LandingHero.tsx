@@ -864,13 +864,33 @@ const CSS = `
    fill rather than both: a both-fill keeps the animation's final
    transform forever and
    silently wins over anything hover sets here. */
-/* 1280, not 1920. A 1920-pixel monitor is usually a ~1420px CSS viewport
-   once the display scaling is applied, so a 1920 query never matched on
-   the machine it was written for. 1280 is the point at which the stage
-   (1240 wide) has margin to move into. */
+/* A ladder, because how far the two can separate depends entirely on how
+   much margin the 1240-wide stage has beside it. Shifting the dashboard
+   left by more than that margin just pushes it under the clip and the
+   left edge disappears.
+
+   1280 is where the stage first has room, but only ~20px of it - enough
+   to step the phone across, not enough to move the dashboard at all. The
+   real separation starts at 1400 (a "1920" monitor is ~1420 CSS pixels
+   once display scaling is applied, so that is the tier most machines
+   actually land on) and opens up further from there.
+
+   A negative right offset is deliberate past that point: the phone is meant to
+   break out beyond the stage's edge, not stop politely at it. */
 @media(min-width:1280px){
   .plh-root:hover .plh-frame-phone{right:2%;}
-  .plh-root:hover .plh-frame-dash{transform:translateX(-34px);}
+}
+@media(min-width:1400px){
+  .plh-root:hover .plh-frame-phone{right:-2%;}
+  .plh-root:hover .plh-frame-dash{transform:translateX(-70px);}
+}
+@media(min-width:1700px){
+  .plh-root:hover .plh-frame-phone{right:-5%;}
+  .plh-root:hover .plh-frame-dash{transform:translateX(-100px);}
+}
+@media(min-width:2000px){
+  .plh-root:hover .plh-frame-phone{right:-8%;}
+  .plh-root:hover .plh-frame-dash{transform:translateX(-130px);}
 }
 
 /* ── Narrow: nothing overlaps anything. Dashboard first, phone under it,
