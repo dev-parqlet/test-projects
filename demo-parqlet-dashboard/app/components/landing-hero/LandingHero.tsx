@@ -765,7 +765,12 @@ export default function LandingHero() {
    ══════════════════════════════════════════════════════════════════ */
 const CSS = `
 .plh-root{
-  position:relative;overflow-x:clip;isolation:isolate;max-width:100vw;
+  /* overflow:hidden, not overflow-x:clip. The frames are meant to run off
+     the bottom of the hero, and the phone's drop shadow was spilling past
+     the section edge and smudging the first few pixels of the white
+     section below it. Clipping both axes cuts them on the section's own
+     line. */
+  position:relative;overflow:hidden;isolation:isolate;max-width:100vw;
   background:${C.heroBg};
   padding:72px 24px 0;
   font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -910,12 +915,14 @@ const CSS = `
 }
 /* Top tier starts at 1900 and travels a further ~50px each way than the
    one below it. There is room: at 1900 the stage has 330px of margin
-   beside it, so -230px still leaves the dashboard's left edge 100px
-   inside the viewport, and -16% puts the phone 198px past the stage edge
-   with ~130px to spare. */
+   beside it, so -280px still leaves the dashboard's left edge 50px
+   inside the viewport, and -20% puts the phone 248px past the stage edge
+   with ~80px to spare. That is close to the limit: the stage has 330px of
+   margin at 1900, and the dashboard cannot travel further than that
+   without its left edge going under the clip. */
 @media(min-width:1900px){
-  .plh-root:hover .plh-frame-phone{right:-16%;}
-  .plh-root:hover .plh-frame-dash{transform:translateX(-230px);}
+  .plh-root:hover .plh-frame-phone{right:-20%;}
+  .plh-root:hover .plh-frame-dash{transform:translateX(-280px);}
 }
 
 /* ── Narrow: nothing overlaps anything. Dashboard first, phone under it,
@@ -1141,7 +1148,7 @@ const CSS = `
 .plh-phone{
   position:relative;width:300px;height:560px;
   border-radius:38px 38px 0 0;background:${C.white};
-  overflow:hidden;box-shadow:0 26px 70px rgba(0,0,0,.5);
+  overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.32);
 }
 @media(max-width:900px){ .plh-phone{width:290px;height:540px;} }
 /* 300 / 390 = .7692 - the factor that maps the design width onto the box. */
