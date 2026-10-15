@@ -317,7 +317,7 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
       {/* ── Main ── */}
       <div className="plh-main">
         <header className="plh-head">
-          <span className="plh-head-title">The Meridian</span>
+          <span className="plh-head-title">The Condominium Complex</span>
           <div className="plh-head-right">
             <span className="plh-ico">☾</span>
             <span className="plh-ico">◔</span>
@@ -673,11 +673,11 @@ export default function LandingHero() {
       <div className="plh-copy">
         <span className="plh-eyebrow">Live in select high-rise buildings in Austin, TX</span>
         <h1 className="plh-h1">
-          Run guest parking <span>without the front-desk calls</span>
+          Not enough <span>guest parking</span>? Meet Parqlet
         </h1>
         <p className="plh-lede">
-          Residents share the spots they are not using. Guests arrive to a space that is
-          already theirs. Management sees every vehicle in the building, in real time.
+          Parqlet is a peer-to-peer platform where residents securely share unused
+          parking with neighbors and earn credits toward rewards.
         </p>
         <div className="plh-cta">Book a demo <span aria-hidden>→</span></div>
       </div>
@@ -888,9 +888,14 @@ const CSS = `
   .plh-root:hover .plh-frame-phone{right:-5%;}
   .plh-root:hover .plh-frame-dash{transform:translateX(-100px);}
 }
-@media(min-width:2000px){
-  .plh-root:hover .plh-frame-phone{right:-8%;}
-  .plh-root:hover .plh-frame-dash{transform:translateX(-130px);}
+/* Top tier starts at 1900 and travels a further ~50px each way than the
+   one below it. There is room: at 1900 the stage has 330px of margin
+   beside it, so -180px still leaves the dashboard's left edge 150px
+   inside the viewport, and -12% puts the phone 149px past the stage edge
+   with ~180px to spare. */
+@media(min-width:1900px){
+  .plh-root:hover .plh-frame-phone{right:-12%;}
+  .plh-root:hover .plh-frame-dash{transform:translateX(-180px);}
 }
 
 /* ── Narrow: nothing overlaps anything. Dashboard first, phone under it,
@@ -1154,12 +1159,15 @@ const CSS = `
 
 /* Confirmation */
 .plh-splash{position:relative;display:grid;place-items:center;margin-top:10px;}
+/* Tight to the icon. It was 190px at .38 behind a 96px check, which read
+   as a lens flare rather than a glow. Roughly half the radius, a bit over
+   half the opacity, and a far gentler pulse. */
 .plh-halo{
-  position:absolute;width:190px;height:190px;border-radius:999px;
-  background:rgba(184,212,27,.38);filter:blur(22px);
+  position:absolute;width:104px;height:104px;border-radius:999px;
+  background:rgba(184,212,27,.22);filter:blur(13px);
   animation:plh-pulse 2.8s ease-in-out infinite;
 }
-@keyframes plh-pulse{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.1);opacity:1}}
+@keyframes plh-pulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.06);opacity:.9}}
 .plh-ph-title{
   margin:26px 0 0;font-size:26px;line-height:32px;font-weight:700;
   color:${C.textStrong};text-align:center;letter-spacing:-.01em;
