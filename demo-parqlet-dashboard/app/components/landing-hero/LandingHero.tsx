@@ -11,6 +11,20 @@
  * and the whole cast of fake data live in this file. Copy it across, render
  * <LandingHero />, and it works - the only dependency is React.
  *
+ * ONE EXCEPTION, added when the glyphs were replaced with the product's
+ * real ones: three image files under `public/landing-hero/` (see ASSET
+ * below). The SVG icons are all inlined as markup, but those three are
+ * PNG/SVG files whose base64 would be ~90KB of string here. Copy that
+ * folder alongside the file, or repoint BASE.
+ *
+ * Every glyph in here is now COPIED from the thing it depicts, not drawn
+ * to resemble it - the sidebar icons out of app/components/icons (which
+ * diff clean against web-dashboard's), the bottom-nav icons out of
+ * mobile-app/components/ui/TabIcons.tsx, the sandwatch out of its
+ * BookingCard. A designer spotted the hand-drawn ones immediately, and
+ * the lesson is the same one the type pass learned: measure and copy,
+ * never approximate.
+ *
  * That isolation is also what keeps the promise made when this was
  * commissioned: /condo, /condo+savings, /condo+earnings, /apartment and
  * /demo-home must stay byte-identical. Nothing here is imported by them and
@@ -78,6 +92,26 @@ const C = {
  */
 const ART_CAR =
   "data:image/webp;base64,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";
+/**
+ * Three files that travel WITH this component, under
+ * public/landing-hero/, copied straight out of the app:
+ *
+ *   il-ev.png               assets/images/booking/il-ev.png
+ *   success-check-glow.png  assets/images/onboarding/ (downscaled 1024 -> 256)
+ *   ic_credit_basic.svg     assets/images/ic_credit_basic.svg
+ *
+ * Not base64-inlined like the two card illustrations below, because at
+ * their real sizes that is ~90KB of string in a source file. They are
+ * the one exception to the "copy one file" note at the top: copy the
+ * folder too, and change BASE if it lands somewhere else.
+ */
+const BASE = "/landing-hero";
+const ASSET = {
+  ev: `${BASE}/il-ev.png`,
+  check: `${BASE}/success-check-glow.png`,
+  credit: `${BASE}/ic_credit_basic.svg`,
+} as const;
+
 const ART_CALENDAR =
   "data:image/webp;base64,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";
 
@@ -263,15 +297,89 @@ const SCENES: Scene[] = [
    ICONS — inline, so the component carries no asset dependencies.
    24x24, currentColor, stroked at 1.5 to sit with the UI's weight.
    ══════════════════════════════════════════════════════════════════ */
-const I = {
-  dashboard: "M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z",
-  residents: "M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-1.5a4 4 0 0 0-3-3.87M16.5 3.8a4 4 0 0 1 0 7.4",
-  bookings: "M7 3v3M17 3v3M3.5 9.5h17M5 6h14a1.5 1.5 0 0 1 1.5 1.5V19A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V7.5A1.5 1.5 0 0 1 5 6",
-  tickets: "M12 17h.01M9.2 9a2.9 2.9 0 1 1 3.9 2.7c-.7.3-1.1 1-1.1 1.8v.5M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18",
-  subscription: "M3 10h18M3 7.5A1.5 1.5 0 0 1 4.5 6h15A1.5 1.5 0 0 1 21 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5zM6.5 14h4",
-  settings: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1v.2a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7.1 19l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.7 7.1L4.6 7a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1",
-  notifications: "M18 8a6 6 0 1 0-12 0c0 7-2.5 9-2.5 9h17S18 15 18 8M13.7 21a2 2 0 0 1-3.4 0",
-};
+/**
+ * The dashboard's OWN sidebar glyphs, copied verbatim.
+ *
+ * These were eight `d` strings I traced by eye, and a designer called it:
+ * the frames read as "close, not the same". The real components were in
+ * this repo the whole time (app/components/icons), byte-identical to
+ * web-dashboard/app/components/icons - verified with diff.
+ *
+ * COPIED, NOT IMPORTED. The header contract above is that this file goes
+ * to the `landing` repo as one piece with React as its only dependency,
+ * and an import would quietly add seven more files to that move. The
+ * markup below is lifted straight out of those components, so the glyph
+ * here and the glyph a logged-in building admin sees are the same
+ * drawing - but this file still travels alone.
+ */
+function NavIcon({ name, color }: { name: string; color: string }) {
+  if (name === "dashboard") return (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <g transform="translate(3,3)">
+      <rect x="1.5"   y="1.5"   width="5.83" height="7.5"  rx="0.83" stroke={color} strokeWidth="1.5" />
+      <rect x="10.67" y="1.5"   width="5.83" height="4.17" rx="0.83" stroke={color} strokeWidth="1.5" />
+      <rect x="1.5"   y="12.33" width="5.83" height="4.17" rx="0.83" stroke={color} strokeWidth="1.5" />
+      <rect x="10.67" y="9"     width="5.83" height="7.5"  rx="0.83" stroke={color} strokeWidth="1.5" />
+      </g>
+      </svg>
+  );
+  if (name === "residents") return (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <g transform="translate(2.25, 3.25)">
+      <path
+      d="M9.75 4.30556C9.75 3.36256 9.37072 2.45819 8.69558 1.7914C8.02045 1.1246 7.10478 0.75 6.15 0.75H0.75V14.0833H7.05C7.76608 14.0833 8.45284 14.3643 8.95919 14.8644C9.46554 15.3645 9.75 16.0428 9.75 16.75M9.75 4.30556V16.75M9.75 4.30556C9.75 3.36256 10.1293 2.45819 10.8044 1.7914C11.4795 1.1246 12.3952 0.75 13.35 0.75H18.75V14.0833H12.45C11.7339 14.0833 11.0472 14.3643 10.5408 14.8644C10.0345 15.3645 9.75 16.0428 9.75 16.75"
+      stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+      />
+      </g>
+      </svg>
+  );
+  if (name === "bookings") return (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <rect x="4.75" y="5.75" width="14.5" height="14.5" rx="1.25" stroke={color} strokeWidth="1.5" />
+      <line x1="8"  y1="3" x2="8"  y2="7"  stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="16" y1="3" x2="16" y2="7"  stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="5"  y1="11" x2="19" y2="11" stroke={color} strokeWidth="1.5" />
+      </svg>
+  );
+  if (name === "tickets") return (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.5" />
+      <path d="M10 9.5C10 8.4 10.9 7.5 12 7.5C13.1 7.5 14 8.4 14 9.5C14 10.3 13.5 11 12.8 11.4L12 11.9V13" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="12" cy="15.5" r="0.75" fill={color} />
+      </svg>
+  );
+  if (name === "subscription") return (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="5" width="18" height="14" rx="3" stroke={color} strokeWidth="1.5" />
+      <line x1="3"  y1="10" x2="21" y2="10" stroke={color} strokeWidth="1.5" />
+      <circle cx="7.01" cy="15" r="0.75" fill={color} />
+      <line x1="11" y1="15" x2="13" y2="15" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+  );
+  if (name === "settings") return (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+      transform="translate(3,3)"
+      d="M 7.325 1.317 C 7.751 -0.439 10.249 -0.439 10.675 1.317 C 10.739 1.581 10.864 1.826 11.041 2.032 C 11.217 2.238 11.44 2.4 11.691 2.504 C 11.941 2.608 12.213 2.651 12.484 2.63 C 12.754 2.609 13.016 2.524 13.248 2.383 C 14.791 1.443 16.558 3.209 15.618 4.753 C 15.477 4.985 15.392 5.246 15.372 5.517 C 15.351 5.787 15.394 6.059 15.498 6.309 C 15.601 6.56 15.763 6.783 15.969 6.959 C 16.175 7.136 16.419 7.261 16.683 7.325 C 18.439 7.751 18.439 10.249 16.683 10.675 C 16.419 10.739 16.174 10.864 15.968 11.041 C 15.762 11.217 15.6 11.44 15.496 11.691 C 15.392 11.941 15.349 12.213 15.37 12.484 C 15.391 12.754 15.476 13.016 15.617 13.248 C 16.557 14.791 14.791 16.558 13.247 15.618 C 13.015 15.477 12.754 15.392 12.483 15.372 C 12.213 15.351 11.941 15.394 11.691 15.498 C 11.44 15.601 11.217 15.763 11.041 15.969 C 10.864 16.175 10.739 16.419 10.675 16.683 C 10.249 18.439 7.751 18.439 7.325 16.683 C 7.261 16.419 7.136 16.174 6.959 15.968 C 6.783 15.762 6.56 15.6 6.309 15.496 C 6.059 15.392 5.787 15.349 5.516 15.37 C 5.246 15.391 4.984 15.476 4.752 15.617 C 3.209 16.557 1.442 14.791 2.382 13.247 C 2.523 13.015 2.608 12.754 2.628 12.483 C 2.649 12.213 2.606 11.941 2.502 11.691 C 2.399 11.44 2.237 11.217 2.031 11.041 C 1.825 10.864 1.581 10.739 1.317 10.675 C -0.439 10.249 -0.439 7.751 1.317 7.325 C 1.581 7.261 1.826 7.136 2.032 6.959 C 2.238 6.783 2.4 6.56 2.504 6.309 C 2.608 6.059 2.651 5.787 2.63 5.516 C 2.609 5.246 2.524 4.984 2.383 4.752 C 1.443 3.209 3.209 1.442 4.753 2.382 C 5.753 2.99 7.049 2.452 7.325 1.317 Z"
+      stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+      />
+      <circle cx="12" cy="12" r="3" stroke={color} strokeWidth="1.5" />
+      </svg>
+  );
+  if (name === "notifications") return (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+      d="M10 5.5C7.79 6.24 6 8.22 6 10.5V14L4 17H20L18 14V10.5C18 8.22 16.21 6.24 14 5.5M10 5.5C10.1 4.37 10.95 3.5 12 3.5C13.05 3.5 13.9 4.37 14 5.5"
+      stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+      />
+      <path
+      d="M9 17V18C9 19.66 10.34 21 12 21C13.66 21 15 19.66 15 18V17"
+      stroke={color} strokeWidth="1.5" strokeLinecap="round"
+      />
+      </svg>
+  );
+  return null;
+}
 
 /**
  * The product's own wordmark, inlined from public/parqlet-logo-light.svg.
@@ -317,14 +425,6 @@ function ParqletWordmark() {
   );
 }
 
-function NavIcon({ d, color }: { d: string; color: string }) {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d={d} stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 /* ══════════════════════════════════════════════════════════════════
    DASHBOARD
    ══════════════════════════════════════════════════════════════════ */
@@ -358,7 +458,7 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
             const active = item.id === "bookings";
             return (
               <div key={item.id} className={`plh-nav-item${active ? " is-active" : ""}`}>
-                <NavIcon d={I[item.id as keyof typeof I]} color={active ? C.accent : C.sidebarText} />
+                <NavIcon name={item.id} color={active ? C.accent : C.sidebarText} />
                 <span>{item.label}</span>
               </div>
             );
@@ -473,14 +573,20 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
   );
 }
 
-/** The little handset beside every name column in the real table. */
+/**
+ * The handset beside every name column, copied from the dashboard's own
+ * `IcPhone` (residents/components/icons.tsx) at its real 16x16. What
+ * was here was a 13px silhouette I drew, which is the sort of thing
+ * nobody notices until a designer puts the two side by side.
+ */
 function PhoneGlyph() {
   return (
-    <svg className="plh-phglyph" width={13} height={13} viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg className="plh-phglyph" width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden>
       <path
-        d="M7 3.5h2l1.4 3.5-1.8 1.2a11 11 0 0 0 5.2 5.2l1.2-1.8L18.5 13v2a2 2 0 0 1-2.2 2A14.5 14.5 0 0 1 5 5.7 2 2 0 0 1 7 3.5"
-        stroke={C.textWeaker}
+        d="M5 4H9L11 9L8.5 10.5C9.57096 12.6715 11.3285 14.429 13.5 15.5L15 13L20 15V19C20 19.5304 19.7893 20.0391 19.4142 20.4142C19.0391 20.7893 18.5304 21 18 21C14.0993 20.763 10.4202 19.0669 7.65683 16.3032C4.89348 13.5395 3.19732 9.86016 2.96 5.96C2.96 5.42956 3.17071 4.92085 3.54579 4.54578C3.92086 4.1707 4.42957 3.96 4.96 3.96L5 4Z"
+        stroke={C.textWeak}
         strokeWidth={1.5}
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
     </svg>
@@ -499,39 +605,146 @@ function PhoneGlyph() {
    and copy are taken from those files so it reads as the same product.
    ══════════════════════════════════════════════════════════════════ */
 
+/**
+ * The app's own success artwork - assets/images/onboarding/
+ * success-check-glow.png, the same file SuccessSplash renders.
+ *
+ * It was a rounded square I drew in SVG with a linear gradient faked
+ * over it. The real asset is a 3D mark with the lime glow baked in, so
+ * the drawing was never going to land: it is a different object, not a
+ * slightly-off version of the same one. Downscaled to 256px (it ships
+ * at 1024) because it renders at ~150.
+ *
+ * The CSS halo stays. It is the pulse, which is motion the PNG has no
+ * way to carry.
+ */
 function CheckSplash() {
   return (
     <div className="plh-splash">
       <span className="plh-halo" />
-      <svg width={64} height={64} viewBox="0 0 64 64" fill="none" aria-hidden>
-        <rect x="6" y="6" width="52" height="52" rx="17" fill={C.accent} />
-        <rect x="6" y="6" width="52" height="52" rx="17" fill="url(#plhg)" />
-        <path d="M20 33.5 28.5 42 45 24" stroke={C.white} strokeWidth={5.5} strokeLinecap="round" strokeLinejoin="round" />
-        <defs>
-          <linearGradient id="plhg" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#FFFFFF" stopOpacity="0.45" />
-            <stop offset="1" stopColor="#8FAE16" stopOpacity="0.35" />
-          </linearGradient>
-        </defs>
-      </svg>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={ASSET.check} alt="" width={88} height={88} className="plh-checkart" />
     </div>
   );
 }
 
-/** Tab-bar glyphs, 24x24 like the app's. */
-const TAB_ICONS: Record<string, string> = {
-  Home: "M3 10.6 12 3.5l9 7.1V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z",
-  Availability: "M12 7v5l3.2 1.9M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18",
-  Bookings: "M7 3v3M17 3v3M3.5 9.5h17M5 6h14a1.5 1.5 0 0 1 1.5 1.5V19A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V7.5A1.5 1.5 0 0 1 5 6",
-  Profile: "M18 20v-1.6a4 4 0 0 0-4-4h-4a4 4 0 0 0-4 4V20M12 11.2a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2",
+/**
+ * The app's OWN bottom-nav glyphs, copied verbatim.
+ *
+ * mobile-app/components/ui/TabIcons.tsx says it best: each one is "the
+ * EXACT SVG export from Figma's Parqlet-Library (node 11029:155), no
+ * path math, no re-composition". What stood here instead were four
+ * one-line `d` strings I drew from memory, with no active/inactive
+ * distinction at all - the app has eight glyphs, a filled one per tab.
+ *
+ * Two substitutions, the same two TabIcons.tsx makes at render time:
+ * the baked `#222222` (Figma Text/Strong) becomes `currentColor` so the
+ * glyph tracks its label, and the literal `white` - a Figma compositing
+ * trick that paints the profile body the colour of whatever is behind
+ * it, masking the head-circle's stroke - becomes the tab bar's own
+ * white. The clip ids are prefixed because eight copies share one
+ * document here, where in the app each is its own SvgXml.
+ */
+const TAB_SVG: Record<string, string> = {
+  HOME_DEFAULT: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M19.0013 8.70977L13.6683 4.56177C13.2002 4.19768 12.6242 4 12.0312 4C11.4383 4 10.8623 4.19768 10.3942 4.56177L5.06025 8.70977C4.73969 8.95905 4.48034 9.2783 4.30201 9.64312C4.12367 10.0079 4.03106 10.4087 4.03125 10.8148V18.0148C4.03125 18.5452 4.24196 19.0539 4.61704 19.429C4.99211 19.8041 5.50082 20.0148 6.03125 20.0148H18.0313C18.5617 20.0148 19.0704 19.8041 19.4455 19.429C19.8205 19.0539 20.0312 18.5452 20.0312 18.0148V10.8148C20.0312 9.99177 19.6513 9.21477 19.0013 8.70977Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M9 20V14C9 13.4696 9.21071 12.9609 9.58579 12.5858C9.96086 12.2107 10.4696 12 11 12H13C13.5304 12 14.0391 12.2107 14.4142 12.5858C14.7893 12.9609 15 13.4696 15 14V20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`,
+  HOME_ACTIVE: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M19.0013 8.70977L13.6683 4.56177C13.2002 4.19768 12.6242 4 12.0312 4C11.4383 4 10.8623 4.19768 10.3942 4.56177L5.06025 8.70977C4.73969 8.95905 4.48034 9.2783 4.30201 9.64312C4.12367 10.0079 4.03106 10.4087 4.03125 10.8148V18.0148C4.03125 18.5452 4.24196 19.0539 4.61704 19.429C4.99211 19.8041 5.50082 20.0148 6.03125 20.0148H18.0313C18.5617 20.0148 19.0704 19.8041 19.4455 19.429C19.8205 19.0539 20.0312 18.5452 20.0312 18.0148V10.8148C20.0312 9.99177 19.6513 9.21477 19.0013 8.70977Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M4.5 10V18.5L6 19.5L8.5 19L9 17.5L8.5 15L9.5 13L10 12.5L11.5 12H13.5L15 12.5V14V16.5V18.5L16 19.5H18H19L20 17.5V14V12L19 10L18 8L15 6L12 4.5L8.5 6.5L4.5 10Z" fill="currentColor" stroke="currentColor"/>
+<path d="M9 20V14C9 13.4696 9.21071 12.9609 9.58579 12.5858C9.96086 12.2107 10.4696 12 11 12H13C13.5304 12 14.0391 12.2107 14.4142 12.5858C14.7893 12.9609 15 13.4696 15 14V20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`,
+  AVAILABILITY_DEFAULT: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#plhclip_avail_default)">
+<path d="M12 3.75C14.188 3.75 16.2868 4.61884 17.834 6.16602C19.3812 7.71319 20.25 9.81196 20.25 12C20.25 13.0834 20.0367 14.1563 19.6221 15.1572C19.2075 16.1581 18.6001 17.0679 17.834 17.834C17.0679 18.6001 16.1581 19.2075 15.1572 19.6221C14.1563 20.0367 13.0834 20.25 12 20.25C10.9166 20.25 9.84371 20.0367 8.84277 19.6221C7.84186 19.2075 6.93209 18.6001 6.16602 17.834C5.39995 17.0679 4.79253 16.1581 4.37793 15.1572C3.96333 14.1563 3.75 13.0834 3.75 12C3.75 9.81196 4.61884 7.71319 6.16602 6.16602C7.71319 4.61884 9.81196 3.75 12 3.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 7V12L15 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="plhclip_avail_default">
+<rect width="24" height="24" fill="#FFFFFF"/>
+</clipPath>
+</defs>
+</svg>`,
+  AVAILABILITY_ACTIVE: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#plhclip_avail_active)">
+<path d="M12 3C14.3869 3 16.6764 3.94791 18.3643 5.63574C20.0521 7.32357 21 9.61305 21 12C21 13.1819 20.7667 14.3524 20.3145 15.4443C19.8622 16.5361 19.1999 17.5286 18.3643 18.3643C17.5286 19.1999 16.5361 19.8622 15.4443 20.3145C14.3524 20.7667 13.1819 21 12 21C10.8181 21 9.64759 20.7667 8.55566 20.3145C7.46386 19.8622 6.47139 19.1999 5.63574 18.3643C4.8001 17.5286 4.13784 16.5361 3.68555 15.4443C3.23325 14.3524 3 13.1819 3 12C3 9.61305 3.94791 7.32357 5.63574 5.63574C7.32357 3.94791 9.61305 3 12 3ZM12 6.25C11.5858 6.25 11.25 6.58579 11.25 7V12C11.25 12.1989 11.3291 12.3896 11.4697 12.5303L14.4697 15.5303C14.7626 15.8232 15.2374 15.8232 15.5303 15.5303C15.8232 15.2374 15.8232 14.7626 15.5303 14.4697L12.75 11.6895V7C12.75 6.58579 12.4142 6.25 12 6.25Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="plhclip_avail_active">
+<rect width="24" height="24" fill="#FFFFFF"/>
+</clipPath>
+</defs>
+</svg>`,
+  BOOKINGS_DEFAULT: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#plhclip_book_default)">
+<path d="M6 5.75H18C18.3315 5.75 18.6494 5.88179 18.8838 6.11621C19.1182 6.35063 19.25 6.66848 19.25 7V19C19.25 19.3315 19.1182 19.6494 18.8838 19.8838C18.6494 20.1182 18.3315 20.25 18 20.25H6C5.66848 20.25 5.35063 20.1182 5.11621 19.8838C4.88179 19.6494 4.75 19.3315 4.75 19V7C4.75 6.66848 4.88179 6.35063 5.11621 6.11621C5.35063 5.88179 5.66848 5.75 6 5.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M16 3V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8 3V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M5 11L19 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="plhclip_book_default">
+<rect width="24" height="24" fill="#FFFFFF"/>
+</clipPath>
+</defs>
+</svg>`,
+  BOOKINGS_ACTIVE: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#plhclip_book_active)">
+<path d="M16 3V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8 3V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M18 5C18.5304 5 19.039 5.21086 19.4141 5.58594C19.7891 5.96101 20 6.46957 20 7V19C20 19.5304 19.7891 20.039 19.4141 20.4141C19.039 20.7891 18.5304 21 18 21H6C5.53581 21 5.08833 20.8385 4.73242 20.5469L4.58594 20.4141C4.21086 20.039 4 19.5304 4 19V7C4 6.53581 4.16145 6.08833 4.45312 5.73242L4.58594 5.58594C4.96101 5.21086 5.46957 5 6 5H18ZM6 6.5C5.86739 6.5 5.74025 6.55272 5.64648 6.64648C5.55272 6.74025 5.5 6.86739 5.5 7V19C5.5 19.1326 5.55272 19.2597 5.64648 19.3535C5.74025 19.4473 5.86739 19.5 6 19.5H18C18.1326 19.5 18.2597 19.4473 18.3535 19.3535C18.4473 19.2597 18.5 19.1326 18.5 19V7C18.5 6.86739 18.4473 6.74025 18.3535 6.64648C18.2597 6.55272 18.1326 6.5 18 6.5H6Z" fill="currentColor"/>
+<path d="M5 10.75H19C19.0962 10.75 19.1788 10.7508 19.25 10.752V19C19.25 19.3315 19.1182 19.6494 18.8838 19.8838C18.6494 20.1182 18.3315 20.25 18 20.25H6C5.66848 20.25 5.35063 20.1182 5.11621 19.8838C4.88179 19.6494 4.75 19.3315 4.75 19V10.7529C4.8218 10.7526 4.9043 10.75 5 10.75Z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="plhclip_book_active">
+<rect width="24" height="24" fill="#FFFFFF"/>
+</clipPath>
+</defs>
+</svg>`,
+  PROFILE_DEFAULT: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#plhclip_profile_default)">
+<path d="M12 3.75C12.862 3.75 13.6884 4.09266 14.2979 4.70215C14.9073 5.31164 15.25 6.13805 15.25 7C15.25 7.86195 14.9073 8.68836 14.2979 9.29785C13.6884 9.90734 12.862 10.25 12 10.25C11.138 10.25 10.3116 9.90734 9.70215 9.29785C9.09266 8.68836 8.75 7.86195 8.75 7L8.75391 6.83887C8.79375 6.03558 9.13074 5.27356 9.70215 4.70215C10.2736 4.13074 11.0356 3.79375 11.8389 3.75391L12 3.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10 14.75H14C15.7949 14.75 17.25 16.2051 17.25 18V20C17.25 20.1381 17.1381 20.25 17 20.25H7C6.86193 20.25 6.75 20.1381 6.75 20V18C6.75 16.2051 8.20507 14.75 10 14.75Z" fill="#FFFFFF" stroke="currentColor" stroke-width="1.5"/>
+</g>
+<defs>
+<clipPath id="plhclip_profile_default">
+<rect width="24" height="24" fill="#FFFFFF"/>
+</clipPath>
+</defs>
+</svg>`,
+  PROFILE_ACTIVE: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#plhclip_profile_active)">
+<path d="M12 3.75C12.862 3.75 13.6884 4.09266 14.2979 4.70215C14.9073 5.31164 15.25 6.13805 15.25 7C15.25 7.86195 14.9073 8.68836 14.2979 9.29785C13.6884 9.90734 12.862 10.25 12 10.25C11.138 10.25 10.3116 9.90734 9.70215 9.29785C9.09266 8.68836 8.75 7.86195 8.75 7L8.75391 6.83887C8.79375 6.03558 9.13074 5.27356 9.70215 4.70215C10.2736 4.13074 11.0356 3.79375 11.8389 3.75391L12 3.75Z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10 14.75H14C15.7949 14.75 17.25 16.2051 17.25 18V20C17.25 20.1381 17.1381 20.25 17 20.25H7C6.86193 20.25 6.75 20.1381 6.75 20V18C6.75 16.2051 8.20507 14.75 10 14.75Z" fill="currentColor" stroke="currentColor" stroke-width="1.5"/>
+</g>
+<defs>
+<clipPath id="plhclip_profile_active">
+<rect width="24" height="24" fill="#FFFFFF"/>
+</clipPath>
+</defs>
+</svg>`,
 };
 
+
+/** Figma `ic_sandwatch` (956:2423), copied from the booking card. */
 function Hourglass() {
   return (
     <svg width={16} height={16} viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path d="M4.7 6.9A5.3 5.3 0 0 0 8 8a5.3 5.3 0 0 0 3.3-1.1c2.2-1.8 1-3.9.4-6H4.3c-.6 2.1-1.8 4.2.4 6" stroke={C.textStrong} strokeWidth={1.1} strokeLinejoin="round" />
-      <path d="M4.7 9.1A5.3 5.3 0 0 1 8 8a5.3 5.3 0 0 1 3.3 1.1c2.2 1.8 1 3.9.4 6H4.3c-.6-2.1-1.8-4.2.4-6" stroke={C.textStrong} strokeWidth={1.1} strokeLinejoin="round" />
-      <path d="M8 11.4c0-.8.4-1.3 1-1.8H7c.6.5 1 1 1 1.8" fill={C.textStrong} />
+      <path
+        d="M7.99849 11.4286C7.99849 11.4286 7.99844 10.4073 8.4831 9.67782C8.96777 8.94834 12.1108 7.43684 11.997 4.57143L4 4.57143C4 7.13238 6.66566 8.65655 7.39266 9.67782C7.87733 10.2614 7.99849 11.4286 7.99849 11.4286Z"
+        fill={C.textStrong}
+      />
+      <path
+        d="M4.67202 6.87342C5.55466 7.59472 6.75178 7.99994 8.00003 7.99994C9.24827 7.99994 10.4454 7.59472 11.328 6.87342C13.4917 5.1053 12.3369 2.94565 11.698 0.857083L4.30206 0.857082C3.66309 2.94565 2.50835 5.1053 4.67202 6.87342Z"
+        stroke={C.textStrong} strokeLinecap="round" strokeLinejoin="round"
+      />
+      <path
+        d="M4.67202 9.12646C5.55466 8.40517 6.75178 7.99995 8.00003 7.99995C9.24827 7.99995 10.4454 8.40517 11.328 9.12646C13.4917 10.8946 12.3369 13.0543 11.698 15.1428L4.30206 15.1428C3.66309 13.0543 2.50835 10.8946 4.67202 9.12646Z"
+        stroke={C.textStrong} strokeLinecap="round" strokeLinejoin="round"
+      />
+      <path d="M14.0439 15.1428L1.956 15.1428" stroke={C.textStrong} strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M14.0439 0.857087L1.956 0.857086" stroke={C.textStrong} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -542,9 +755,8 @@ function CardTop({ note }: { note: string }) {
     <div className="plh-ph-cardtop">
       <span className="plh-spotpill">P #{FEATURED.spot}</span>
       <span className="plh-bolt">
-        <svg width={13} height={16} viewBox="0 0 24 24" aria-hidden>
-          <path d="M13 2 4 14h6l-1 8 9-12h-6z" fill={C.accent} stroke={C.accent} strokeWidth={1.4} strokeLinejoin="round" />
-        </svg>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={ASSET.ev} alt="" width={14} height={16} />
       </span>
       <span className="plh-ph-startsin"><Hourglass /> {note}</span>
     </div>
@@ -571,6 +783,16 @@ function BookingCard({ note, status }: { note: string; status: "Upcoming" | "Act
       </div>
       <div className="plh-ph-row"><span>Model &amp; make</span><b>{FEATURED.vehicle} • {FEATURED.plate}</b></div>
       <div className="plh-ph-row"><span>Date &amp; time</span><b>{FEATURED.whenApp}</b></div>
+      {/* The real card has this row and this glyph (ic_credit_basic.svg);
+          leaving it out was why the card looked a line short. */}
+      <div className="plh-ph-row">
+        <span>Credits paid</span>
+        <b className="plh-credrow">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={ASSET.credit} alt="" width={16} height={16} />
+          {FEATURED.credits}
+        </b>
+      </div>
       <span className="plh-manage">Manage booking</span>
     </div>
   );
@@ -648,14 +870,20 @@ function PhoneHome() {
       </div>
 
       <div className="plh-tabbar">
-        {["Home", "Availability", "Bookings", "Profile"].map((l) => (
-          <span key={l} className={l === "Home" ? "is-on" : ""}>
-            <svg width={23} height={23} viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d={TAB_ICONS[l]} stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            {l}
-          </span>
-        ))}
+        {(["Home", "Availability", "Bookings", "Profile"] as const).map((l) => {
+          const on = l === "Home";
+          const key = `${l === "Home" ? "HOME" : l.toUpperCase()}_${on ? "ACTIVE" : "DEFAULT"}`;
+          return (
+            <span key={l} className={on ? "is-on" : ""}>
+              <span
+                className="plh-tabglyph"
+                aria-hidden
+                dangerouslySetInnerHTML={{ __html: TAB_SVG[key] }}
+              />
+              {l}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
@@ -1326,9 +1554,16 @@ const CSS = `
 }
 .plh-ph-startsin{
   margin-left:auto;display:inline-flex;align-items:center;gap:4px;
-  font-size:14px;line-height:16px;font-weight:500;color:${C.textStrong};white-space:nowrap;
+  font-size:12px;line-height:16px;font-weight:500;color:${C.textStrong};white-space:nowrap;
 }
 .plh-ph-namerow{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+/* The app's bottom-nav glyphs are 24x24 Figma exports; the wrapper only
+   has to stop them inheriting the label's line box. */
+.plh-tabglyph{display:block;width:24px;height:24px;}
+.plh-tabglyph svg{display:block;width:24px;height:24px;}
+/* Credits value sits beside its glyph, Spacing.xs apart as in the app. */
+.plh-credrow{display:inline-flex;align-items:center;gap:4px;}
+.plh-checkart{display:block;width:88px;height:88px;object-fit:contain;}
 .plh-ph-name{font-size:18px;line-height:24px;font-weight:500;color:${C.textStrong};white-space:nowrap;}
 .plh-ph-statuspill{align-self:center;}
 .plh-ph-row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:16px;line-height:20px;color:${C.textWeak};white-space:nowrap;}
