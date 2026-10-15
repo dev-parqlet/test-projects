@@ -853,7 +853,7 @@ const CSS = `
   animation:plh-rise 1.1s cubic-bezier(.16,1,.3,1) .5s backwards;
   transition:transform .65s cubic-bezier(.16,1,.3,1),right .65s cubic-bezier(.16,1,.3,1);
 }
-.plh-frame-dash{width:100%;min-width:0;}
+.plh-frame-dash{width:100%;min-width:0;transform-origin:left center;}
 
 /* The phone hangs over the dashboard's top-right corner: 15% in from the
    right edge, lifted 100px so it breaks the frame line. z-index puts it
@@ -889,40 +889,34 @@ const CSS = `
    fill rather than both: a both-fill keeps the animation's final
    transform forever and
    silently wins over anything hover sets here. */
-/* A ladder, because how far the two can separate depends entirely on how
-   much margin the 1240-wide stage has beside it. Shifting the dashboard
-   left by more than that margin just pushes it under the clip and the
-   left edge disappears.
-
-   1280 is where the stage first has room, but only ~20px of it - enough
-   to step the phone across, not enough to move the dashboard at all. The
-   real separation starts at 1400 (a "1920" monitor is ~1420 CSS pixels
-   once display scaling is applied, so that is the tier most machines
-   actually land on) and opens up further from there.
-
-   A negative right offset is deliberate past that point: the phone is meant to
-   break out beyond the stage's edge, not stop politely at it. */
+/* ONE hover state, not a ladder - and the dashboard shrinks rather than
+   only sliding.
+   
+   The ladder was solving the wrong problem. Both frames are positioned
+   against the same 1240px stage, so their overlap does not depend on the
+   viewport at all; only whether they FIT does. Sliding them apart far
+   enough to uncover the table therefore stopped them overlapping
+   entirely at wide widths, while at 1400 - where the stage has only 90px
+   of margin to move into - the phone still buried a third of the table.
+   There was no pair of offsets that worked at both.
+   
+   Scaling the dashboard makes the room instead of borrowing it from a
+   margin that is not there. At .9 from its left edge the dashboard's
+   right edge pulls in 124px, which is more than the 1400 tier could ever
+   have slid, and it costs no margin at all.
+   
+   The result is a constant ~84px overlap at every width: the phone sits
+   over the dashboard's right edge rather than over its table.
+   
+   Safe from 1400 up: the phone reaches 62px past the stage's right edge
+   and the dashboard 56px past its left, against 90px of margin either
+   side. Below that, only the phone moves. */
 @media(min-width:1280px){
   .plh-root:hover .plh-frame-phone{right:2%;}
 }
 @media(min-width:1400px){
-  .plh-root:hover .plh-frame-phone{right:-2%;}
-  .plh-root:hover .plh-frame-dash{transform:translateX(-70px);}
-}
-@media(min-width:1700px){
   .plh-root:hover .plh-frame-phone{right:-5%;}
-  .plh-root:hover .plh-frame-dash{transform:translateX(-100px);}
-}
-/* Top tier starts at 1900 and travels a further ~50px each way than the
-   one below it. There is room: at 1900 the stage has 330px of margin
-   beside it, so -280px still leaves the dashboard's left edge 50px
-   inside the viewport, and -20% puts the phone 248px past the stage edge
-   with ~80px to spare. That is close to the limit: the stage has 330px of
-   margin at 1900, and the dashboard cannot travel further than that
-   without its left edge going under the clip. */
-@media(min-width:1900px){
-  .plh-root:hover .plh-frame-phone{right:-20%;}
-  .plh-root:hover .plh-frame-dash{transform:translateX(-280px);}
+  .plh-root:hover .plh-frame-dash{transform:translateX(-56px) scale(.9);}
 }
 
 /* ── Narrow: nothing overlaps anything. Dashboard first, phone under it,
@@ -930,7 +924,12 @@ const CSS = `
       390px screen would sit on top of the only thing worth reading. ── */
 @media(max-width:900px){
   .plh-stage{margin-top:44px;display:flex;flex-direction:column;align-items:center;gap:26px;}
-  .plh-frame-phone{position:static;right:auto;top:auto;width:300px;}
+  /* width:max-content, matching the desktop rule. A fixed 300px here was
+     a border-box width, so the frame's content box came to 274px around a
+     290px phone and the device hung out of its own glass by 16px on the
+     narrow layout - the same bug that was fixed for desktop, reintroduced
+     by this override. Let it size to the phone. */
+  .plh-frame-phone{position:static;right:auto;top:auto;width:max-content;}
 }
 
 /* Dashboard ────────────────────────────────────────────── */
