@@ -1210,6 +1210,11 @@ export default function LandingHero() {
           </radialGradient>
         </defs>
       </svg>
+      {/* Clears the grid from behind the copy. Sits above the grid and
+          BELOW the glow, so the lime bloom still reaches the headline -
+          it is the ruled lines that make the text hard to read, not the
+          light. */}
+      <div className="plh-copyveil" aria-hidden />
       <div className="plh-glow" aria-hidden />
 
       <div className="plh-copy">
@@ -1331,6 +1336,37 @@ const CSS = `
 }
 /* Below the copy it would sit behind the text rather than beside it. */
 @media(max-width:760px){ .plh-spark{display:none;} }
+/**
+ * The grid, cleared from behind the copy.
+ *
+ * A 1px rule crossing a letterform is the sort of thing that reads as
+ * dirt on the screen rather than as a background, and the headline
+ * runs the full width of the hero, so it was catching two of them.
+ *
+ * It is a radial of the hero's OWN background rather than a panel: a
+ * rectangle would need an edge, and any edge over a ruled grid is more
+ * conspicuous than the rules it hides. Fading to rgba of the same
+ * colour rather than to transparent matters too - browsers
+ * interpolate toward transparent BLACK, which would smear a grey halo
+ * across a dark-but-not-black background.
+ *
+ * Above .plh-grid, below .plh-glow, by DOM order - all three are
+ * z-index 0 and the copy is z-index 2.
+ */
+.plh-copyveil{
+  position:absolute;z-index:0;pointer-events:none;
+  left:50%;transform:translateX(-50%);
+  top:0;width:min(1240px,100%);height:560px;
+  background:radial-gradient(
+    ellipse 62% 56% at 50% 40%,
+    ${C.heroBg} 0%,
+    ${C.heroBg} 42%,
+    rgba(34,34,34,.72) 64%,
+    rgba(34,34,34,0) 88%
+  );
+  animation:plh-fade 1.6s ease-out both;
+}
+@media(max-width:760px){ .plh-copyveil{height:460px;} }
 .plh-glow{
   position:absolute;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(ellipse at 50% 42%,rgba(199,229,31,.17) 0%,rgba(59,109,17,.09) 38%,transparent 66%);
