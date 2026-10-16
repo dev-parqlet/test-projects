@@ -1100,7 +1100,7 @@ function PhoneHome({ active }: { active: boolean }) {
 
       <div className="plh-avail">
         <div className="plh-avail-txt">
-          <b>Add availability for your parking spot</b>
+          <b>Add availability for your\u00a0parking\u00a0spot</b>
           <span>Earn credits while sharing your spot</span>
         </div>
         <span className="plh-avail-cta">Add +</span>
@@ -1765,14 +1765,16 @@ const CSS = `
 
 .plh-toolbar{display:flex;align-items:center;gap:12px;margin-top:12px;}
 .plh-search{
-  flex:1 1 auto;min-width:0;height:36px;display:flex;align-items:center;gap:9px;
-  padding:0 16px;border-radius:8px;background:${C.white};
+  flex:1 1 auto;min-width:0;height:40px;box-sizing:border-box;
+  display:flex;align-items:center;gap:8px;
+  padding:0 10px;border-radius:8px;background:${C.white};
   border:1px solid ${C.strokeMedium};color:${C.textWeaker};font-size:14px;line-height:16px;
 }
 .plh-search span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .plh-filters{display:flex;gap:8px;flex:0 0 auto;}
 .plh-filter{
-  display:flex;align-items:center;gap:8px;padding:8px 10px;
+  height:40px;box-sizing:border-box;
+  display:flex;align-items:center;gap:8px;padding:0 10px;
   border-radius:12px;background:${C.white};border:1px solid ${C.strokeMedium};
   font-size:14px;line-height:16px;color:${C.textWeak};white-space:nowrap;
 }
@@ -2135,13 +2137,13 @@ const CSS = `
 .plh-promo-cal{position:absolute;right:10px;top:0;width:46px;height:46px;object-fit:contain;}
 .plh-avail{
   margin-top:12px;padding:16px;border-radius:16px;background:${C.fillWeak};
-  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
 }
 /* The text column must be allowed to shrink or nowrap pushes the
    Add button off the card instead of fitting beside it. */
 .plh-avail-txt{min-width:0;}
-.plh-avail-txt b{display:block;font-size:16px;line-height:20px;font-weight:500;color:${C.textStrong};white-space:nowrap;}
-.plh-avail-txt span{display:block;margin-top:4px;font-size:14px;line-height:16px;color:${C.textWeak};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.plh-avail-txt b{display:block;font-size:16px;line-height:20px;font-weight:500;color:${C.textStrong};}
+.plh-avail-txt span{display:block;margin-top:4px;font-size:14px;line-height:16px;color:${C.textWeak};}
 .plh-avail-cta{
   flex:0 0 auto;height:42px;display:inline-flex;align-items:center;padding:0 16px;
   border-radius:8px;background:${C.accent};color:${C.textStrong};font-size:14px;line-height:16px;font-weight:500;
