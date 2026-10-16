@@ -277,8 +277,17 @@ type Scene = {
   flash?: boolean;
   /** The booking has started: both screens say Active, together. */
   active?: boolean;
+  /**
+   * Pan the table to its right-hand end.
+   *
+   * The Status column is the payoff of every beat in this film and it
+   * sits past the fold of a 1310px table, so without this the row
+   * lands and the one thing it is meant to say is off screen. It
+   * doubles as the hint that the table scrolls at all, which is not
+   * discoverable on a page where nothing else takes a pointer.
+   */
+  panRight?: boolean;
 };
-
 
 /** Where the cursor rests before it has anywhere to be. */
 const HIT_NAV_BOOKINGS = "nav:bookings";
@@ -314,17 +323,22 @@ const SCENES: Scene[] = [
   // ── ACT 3. THE BEAT: the thumb presses "Go to home screen" and the
   //    cursor clicks "Upcoming bookings" at the same instant. ──
   { hold: 650,  view: "bookings", tab: "current", phone: "confirmed", target: "tab:future", pressCursor: true, pressTouch: true },
-  { hold: 3600, view: "bookings", tab: "future", phone: "home", target: "tab:future", flash: true },
+  { hold: 2200, view: "bookings", tab: "future", phone: "home", target: "tab:future", flash: true },
+  // The row has landed; now show what it SAYS. Status is past the fold
+  // of a 1310px table, so the beat is only half told until this pans.
+  { hold: 2600, view: "bookings", tab: "future", phone: "home", target: null, panRight: true },
 
   // ── ACT 4. The booking starts, and in doing so changes which list
   //    it belongs to. The cursor reaches for Current bookings... ──
-  { hold: 1000, view: "bookings", tab: "future", phone: "home", target: "tab:current" },
+  { hold: 1100, view: "bookings", tab: "future", phone: "home", target: "tab:current" },
   // ...and THE SECOND BEAT: the click lands at the same instant the
   // booking goes live on the phone.
   { hold: 650,  view: "bookings", tab: "future", phone: "home", target: "tab:current", pressCursor: true },
   // It is gone from Upcoming and sitting at the top of Current, Active
   // and highlighted, while the phone card says Active too.
-  { hold: 3600, view: "bookings", tab: "current", phone: "home", target: "tab:current", active: true, flash: true },
+  { hold: 2000, view: "bookings", tab: "current", phone: "home", target: "tab:current", active: true, flash: true },
+  // ...and the table pans again, to the pill that now reads Active.
+  { hold: 2600, view: "bookings", tab: "current", phone: "home", target: null, active: true, panRight: true },
 
   // Back to the Dashboard page, and round again.
   { hold: 900,  view: "bookings", tab: "current", phone: "home", target: "nav:dashboard", active: true },
@@ -502,13 +516,15 @@ function DashboardPage() {
       <div className="plh-stats">
         {[
           ["Bookings today", "14", "today"],
-          ["Bookings this month", "291", "this month"],
-          ["Bookings year to date", "3,480", "year to date"],
-          ["Gift cards redeemed", "62", "year to date"],
+          ["Bookings this month", "28", "this month"],
+          ["Bookings year to date", "28", "year to date"],
+          ["Gift cards redeemed", "4", "year to date"],
         ].map(([label, value, tag]) => (
           <div key={label} className="plh-stat">
             <span className="plh-stat-label">{label}</span>
             <span className="plh-stat-value">{value}</span>
+            {/* Bottom RIGHT, which is where the real card puts it - it
+                reads as a footnote on the figure, not a second label. */}
             <span className="plh-stat-tag">{tag}</span>
           </div>
         ))}
@@ -517,28 +533,58 @@ function DashboardPage() {
       <div className="plh-cards">
         <div className="plh-card">
           <span className="plh-card-title">Recent Activity</span>
-          {[
-            ["Mia Nelson", "booked spot 419"],
-            ["Lucas Garcia", "shared spot 330"],
-            ["Isabella Turner", "booked spot 108"],
-            ["James Owens", "shared spot 251"],
-          ].map(([who, what]) => (
-            <div key={who} className="plh-actrow">
-              <span className="plh-actdot" />
-              <span className="plh-actname">{who}</span>
-              <span className="plh-actwhat">{what}</span>
-            </div>
-          ))}
+          <div className="plh-seg">
+            <span className="is-on">Week</span>
+            <span>Month</span>
+            <span className="plh-seg-custom">
+              <svg width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden>
+                <rect x="4.75" y="5.75" width="14.5" height="14.5" rx="1.25" stroke="currentColor" strokeWidth={1.5} />
+                <path d="M8 3v4M16 3v4M5 11h14" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" />
+              </svg>
+              Custom
+            </span>
+          </div>
+          {/* The bar chart is the thing that makes this card recognisable
+              at a glance, and a list of names was never going to stand in
+              for it. Heights are a week's shape, not data. */}
+          <div className="plh-chart">
+            {[
+              ["Sat", 26],
+              ["Sun", 62],
+              ["Mon", 24],
+              ["Tue", 22],
+              ["Wed", 58],
+              ["Thu", 0],
+              ["Fri", 100],
+            ].map(([day, h]) => (
+              <span key={day as string} className="plh-bar">
+                <i style={{ height: `${h}%` }} />
+                <b>{day}</b>
+              </span>
+            ))}
+          </div>
         </div>
+
         <div className="plh-card">
           <span className="plh-card-title">Recent Bookings</span>
-          {ROWS.current.map((r) => (
-            <div key={r.id} className="plh-actrow">
-              <span className="plh-actname">{r.guest}</span>
-              <span className="plh-actwhat">spot {r.spot}</span>
-              <StatusPill status={r.status} />
+          {[
+            ["7A", "419", "Oct 19, 2026, 08:00 AM to Oct 19, 2026, 09:00 PM"],
+            ["6F", "330", "Oct 18, 2026, 11:30 PM to Oct 19, 2026, 11:30 AM"],
+            ["5E", "108", "Oct 18, 2026, 02:00 PM to Oct 19, 2026, 01:00 AM"],
+            ["4D", "519", "Oct 18, 2026, 05:30 AM to Oct 18, 2026, 03:30 PM"],
+          ].map(([unit, spot, when]) => (
+            <div key={unit} className="plh-bkrow">
+              <span className="plh-bktext">
+                <b>
+                  {unit} <i>booked spot</i> #{spot}
+                </b>
+                <span>{when}</span>
+              </span>
+              <StatusPill status="Upcoming" />
+              <span className="plh-bklink">View details</span>
             </div>
           ))}
+          <span className="plh-seeall">See all activity</span>
         </div>
       </div>
     </>
@@ -550,12 +596,32 @@ function Dashboard({
   tab,
   flash,
   active,
+  panRight,
 }: {
   view: "dashboard" | "bookings";
   tab: OpenTabId;
   flash: boolean;
   active: boolean;
+  panRight: boolean;
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  /**
+   * Once the reader scrolls it themselves, stop driving it.
+   *
+   * The pan exists to teach that the table moves. The moment somebody
+   * has done it by hand that lesson has landed, and continuing to yank
+   * the viewport back on a timer is the film fighting its own reader.
+   */
+  const taken = useRef(false);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || taken.current) return;
+    const max = el.scrollWidth - el.clientWidth;
+    if (max <= 0) return;
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollTo({ left: panRight ? max : 0, behavior: still ? "auto" : "smooth" });
+  }, [panRight, tab, view]);
   /**
    * The featured booking lives in whichever tab its status puts it in.
    *
@@ -595,19 +661,12 @@ function Dashboard({
             );
           })}
         </nav>
-        {/* The real sidebar is anchored by these, and their absence was part
-            of why the panel read as empty below the nav. */}
-        <div className="plh-side-foot">
-          <span>Terms of Service</span>
-          <span>Privacy Policy</span>
-          <span>© 2026 Parqlet</span>
-        </div>
       </aside>
 
       {/* ── Main ── */}
       <div className="plh-main">
         <header className="plh-head">
-          <span className="plh-head-title">The Condominium Complex</span>
+          <span className="plh-head-title">Your Building</span>
           <div className="plh-head-right">
             {/* HeaderThemeToggle's moon, 18x18 in a 36x36 hit box. */}
             <span className="plh-iconbtn">
@@ -688,7 +747,7 @@ function Dashboard({
                 cannot reach the right-hand end of is just a cropped
                 picture of a table. Head and body are inside the SAME
                 scroller, so they cannot drift apart. */}
-            <div className="plh-tscroll">
+            <div className="plh-tscroll" ref={scrollRef} onPointerDown={() => { taken.current = true; }} onWheel={() => { taken.current = true; }}>
             <div className="plh-thead">
               {COLS.map((c) => (
                 <span key={c.key} className={`plh-c-${c.key} ${c.cls}`}>
@@ -897,7 +956,6 @@ const TAB_SVG: Record<string, string> = {
 </defs>
 </svg>`,
 };
-
 
 /** Figma `ic_sandwatch` (956:2423), copied from the booking card. */
 function Hourglass() {
@@ -1235,7 +1293,13 @@ export default function LandingHero() {
             dimensions - 256px sidebar, 64px header, 14px body text - rather
             than a shrunken approximation of them. */}
         <div className="plh-frame plh-frame-dash" ref={dashRef}>
-          <Dashboard view={scene.view} tab={scene.tab} flash={!!scene.flash} active={!!scene.active} />
+          <Dashboard
+            view={scene.view}
+            tab={scene.tab}
+            flash={!!scene.flash}
+            active={!!scene.active}
+            panRight={!!scene.panRight}
+          />
 
           {/* The cursor lives INSIDE the dashboard frame and is positioned in
               pixels, not stage percentages. The tabs it clicks are at fixed
@@ -1578,10 +1642,7 @@ const CSS = `
   transition:background .3s ease,color .3s ease;
 }
 .plh-nav-item.is-active{background:${C.sidebarItemActive};color:${C.accent};}
-.plh-side-foot{
-  display:flex;flex-direction:column;gap:6px;padding:0 16px 20px;
-  text-align:center;font-size:13px;color:#6E6E6E;
-}
+
 .plh-main{flex:1 1 0;min-width:0;display:flex;flex-direction:column;background:${C.fillWeak};}
 .plh-head{
   height:64px;flex:0 0 64px;display:flex;align-items:center;justify-content:space-between;
@@ -1614,18 +1675,19 @@ const CSS = `
 .plh-sub{margin:4px 0 0;font-size:16px;line-height:20px;color:${C.textWeak};}
 .plh-body .plh-h2+.plh-sub{margin-bottom:0;}
 
-/* ── Dashboard page ───────────────────────────────────────────────
-   StatCard: white, 12 radius, 16 padding, 12 gap; an uppercase 12/16
-   label over a 24/28 figure at REGULAR weight - 400 and not 500,
-   because the size already carries it and medium made a value that is
-   a phrase read heavier than its own row. */
+/* Dashboard page ───────────────────────────────────────────────
+   StatCard: white, 12 radius, 16 padding; an uppercase 12/16 label
+   over a 24/28 figure at REGULAR weight - 400 and not 500, because
+   the size already carries it - and the period pill pushed to the
+   BOTTOM RIGHT, where it reads as a footnote on the number rather
+   than a second label. */
 .plh-stats{
   display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:24px;
   flex:0 0 auto;min-width:0;
 }
 .plh-stat{
   min-width:0;background:${C.white};border:1px solid ${C.strokeMedium};
-  border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;
+  border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;
   overflow:hidden;
 }
 .plh-stat-label{
@@ -1634,10 +1696,11 @@ const CSS = `
 }
 .plh-stat-value{font-size:24px;line-height:28px;font-weight:400;color:${C.textStrong};white-space:nowrap;}
 .plh-stat-tag{
-  align-self:flex-start;padding:4px 8px;border-radius:48px;
+  align-self:flex-end;margin-top:4px;padding:4px 8px;border-radius:48px;
   background:${C.fillWeak};color:${C.textStrong};
   font-size:12px;line-height:16px;white-space:nowrap;
 }
+
 .plh-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;flex:1 1 0;min-height:0;}
 .plh-card{
   min-width:0;background:${C.white};border:1px solid ${C.strokeMedium};
@@ -1648,16 +1711,43 @@ const CSS = `
   font-size:12px;line-height:16px;font-weight:500;color:${C.textWeak};
   text-transform:uppercase;
 }
-.plh-actrow{
-  display:flex;align-items:center;gap:8px;min-width:0;
+
+/* Week / Month / Custom, as one rounded track with the selected
+   option as a dark pill inside it. */
+.plh-seg{
+  align-self:flex-start;display:flex;align-items:center;gap:4px;
+  padding:4px;border-radius:999px;border:1px solid ${C.strokeMedium};
   font-size:14px;line-height:16px;color:${C.textStrong};
 }
-.plh-actdot{width:8px;height:8px;border-radius:999px;background:${C.accent};flex:0 0 auto;}
-.plh-actname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.plh-actwhat{margin-left:auto;color:${C.textWeak};white-space:nowrap;}
+.plh-seg span{padding:7px 14px;border-radius:999px;white-space:nowrap;}
+.plh-seg .is-on{background:${C.textStrong};color:${C.white};font-weight:500;}
+.plh-seg-custom{display:inline-flex;align-items:center;gap:6px;color:${C.textStrong};}
+
+/* The bar chart. Bars grow from a baseline with the day under them;
+   Thursday is deliberately empty, because a week with no gap in it
+   looks like decoration rather than data. */
+.plh-chart{
+  flex:1 1 0;min-height:0;display:flex;align-items:flex-end;gap:8px;
+  padding-top:8px;border-bottom:1px solid ${C.strokeMedium};
+}
+.plh-bar{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;}
+.plh-bar i{display:block;width:34px;max-width:100%;background:${C.accent};border-radius:3px 3px 0 0;}
+.plh-bar b{font-size:12px;line-height:16px;font-weight:400;color:${C.textWeak};transform:translateY(20px);}
+
+/* Recent bookings rows: the unit and spot in one line, the window
+   under it, then the status and the link. */
+.plh-bkrow{
+  display:flex;align-items:center;gap:12px;min-width:0;
+  padding-bottom:10px;border-bottom:1px solid ${C.strokeWeak};
+}
+.plh-bktext{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 auto;}
+.plh-bktext b{font-size:14px;line-height:18px;font-weight:500;color:${C.textStrong};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.plh-bktext b i{font-style:normal;font-weight:400;}
+.plh-bktext>span{font-size:12px;line-height:16px;color:${C.textWeak};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.plh-bklink{font-size:14px;line-height:16px;color:${C.textStrong};white-space:nowrap;flex:0 0 auto;}
+.plh-seeall{align-self:flex-end;margin-top:auto;font-size:14px;line-height:16px;color:${C.textStrong};}
 .plh-card .plh-pill{flex:0 0 auto;}
-/* Two cards side by side need the width; below that they stack and the
-   page simply scrolls out of the frame's bottom, like the table does. */
+
 @media(max-width:1100px){ .plh-stats{grid-template-columns:repeat(2,1fr);} }
 
 /* Underlined text tabs - the real ones are not pills. */
