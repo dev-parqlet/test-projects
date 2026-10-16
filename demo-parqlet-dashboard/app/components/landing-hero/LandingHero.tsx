@@ -316,13 +316,19 @@ const SCENES: Scene[] = [
   { hold: 650,  view: "bookings", tab: "current", phone: "confirmed", target: "tab:future", pressCursor: true, pressTouch: true },
   { hold: 3600, view: "bookings", tab: "future", phone: "home", target: "tab:future", flash: true },
 
-  // ── ACT 4. The booking starts. Nobody pressed anything; it is the
-  //    clock. Both screens turn over together. ──
-  { hold: 3200, view: "bookings", tab: "future", phone: "home", target: null, active: true },
+  // ── ACT 4. The booking starts, and in doing so changes which list
+  //    it belongs to. The cursor reaches for Current bookings... ──
+  { hold: 1000, view: "bookings", tab: "future", phone: "home", target: "tab:current" },
+  // ...and THE SECOND BEAT: the click lands at the same instant the
+  // booking goes live on the phone.
+  { hold: 650,  view: "bookings", tab: "future", phone: "home", target: "tab:current", pressCursor: true },
+  // It is gone from Upcoming and sitting at the top of Current, Active
+  // and highlighted, while the phone card says Active too.
+  { hold: 3600, view: "bookings", tab: "current", phone: "home", target: "tab:current", active: true, flash: true },
 
   // Back to the Dashboard page, and round again.
-  { hold: 900,  view: "bookings", tab: "future", phone: "home", target: "nav:dashboard", active: true },
-  { hold: 600,  view: "bookings", tab: "future", phone: "home", target: "nav:dashboard", active: true, pressCursor: true },
+  { hold: 900,  view: "bookings", tab: "current", phone: "home", target: "nav:dashboard", active: true },
+  { hold: 600,  view: "bookings", tab: "current", phone: "home", target: "nav:dashboard", active: true, pressCursor: true },
   { hold: 1600, view: "dashboard", tab: "current", phone: "home", target: null },
 ];
 
@@ -550,7 +556,25 @@ function Dashboard({
   flash: boolean;
   active: boolean;
 }) {
-  const rows = ROWS[tab];
+  /**
+   * The featured booking lives in whichever tab its status puts it in.
+   *
+   * Upcoming while it is still ahead, and the moment it starts it is a
+   * CURRENT booking - so it leaves the Upcoming list and appears at the
+   * top of Current. That is the whole reason the film switches tabs on
+   * that beat rather than just recolouring a pill: a booking that had
+   * started but was still filed under "Upcoming" would be the dashboard
+   * telling the truth in one column and not the other.
+   */
+  const rows = !active
+    ? ROWS[tab]
+    : tab === "current"
+      // Top of Current, Active - where a booking that has started goes.
+      ? [{ ...FEATURED_ROW, status: "Active" as const }, ...ROWS.current]
+      // ...and gone from Upcoming, because it is not upcoming any more.
+      // The film never shows this list while active, but the data should
+      // not depend on the film's running order to be true.
+      : ROWS.future.filter((r) => r.id !== FEATURED.id);
   return (
     <div className="plh-dash">
       {/* ── Sidebar ── */}
@@ -695,9 +719,7 @@ function Dashboard({
                           {hasPhone ? (
                             <span className="plh-celltxt">{r[c.key]}</span>
                           ) : c.key === "status" ? (
-                            <StatusPill
-                              status={active && r.id === FEATURED.id ? "Active" : r.status}
-                            />
+                            <StatusPill status={r.status} />
                           ) : (
                             r[c.key]
                           )}
