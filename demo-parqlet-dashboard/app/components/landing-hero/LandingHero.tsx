@@ -76,7 +76,7 @@ const C = {
   tagNeutralText: "#3D3D3D",
   tagWarn: "#E5D9AB",
   tagWarnText: "#69644F",
-  heroBg: "#1A1A1A",
+  heroBg: "#222222",
   heroCard: "#222222",
 } as const;
 
@@ -1151,6 +1151,30 @@ export default function LandingHero() {
 
       {/* ── Backdrop: the landing hero's grid + lime bloom ── */}
       <div className="plh-grid" aria-hidden />
+      {/* Design's 83x83 spark, sitting on a grid intersection out at the
+          left. Verbatim from the file: soft-light at 40%, a radial from
+          the brand lime at its centre out to transparent. The id is
+          prefixed because this component can be dropped onto a page
+          that already has gradients of its own. */}
+      <svg className="plh-spark" width="83" height="83" viewBox="0 0 83 83" fill="none" aria-hidden>
+        <g opacity="0.4" style={{ mixBlendMode: "soft-light" }}>
+          <path
+            d="M42.252 40.6416H82.8936V42.2529H42.252V82.8936H40.6416V42.2529H0V40.6416H40.6416V0H42.252V40.6416Z"
+            fill="url(#plh-spark-grad)"
+          />
+        </g>
+        <defs>
+          <radialGradient
+            id="plh-spark-grad"
+            cx="0" cy="0" r="1"
+            gradientUnits="userSpaceOnUse"
+            gradientTransform="translate(41.4467 41.4467) rotate(-180) scale(41.4467)"
+          >
+            <stop stopColor="#C7E51F" />
+            <stop offset="1" stopColor="white" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+      </svg>
       <div className="plh-glow" aria-hidden />
 
       <div className="plh-copy">
@@ -1258,6 +1282,20 @@ const CSS = `
   animation:plh-fade 1.6s ease-out both;
 }
 @media(max-width:1024px){ .plh-grid{background-size:68px 68px;} }
+/* Parked on a grid line rather than at a round percentage: the grid is
+   136px square from the top-left, so 3 cells down and half a cell in
+   puts the spark's centre ON an intersection, which is what it is
+   drawing attention to. It fades in with the grid it belongs to. */
+.plh-spark{
+  position:absolute;z-index:0;pointer-events:none;
+  left:calc(136px - 41.5px);top:calc(408px - 41.5px);
+  animation:plh-fade 1.6s ease-out both;
+}
+@media(max-width:1024px){
+  .plh-spark{left:calc(68px - 41.5px);top:calc(204px - 41.5px);transform:scale(.72);}
+}
+/* Below the copy it would sit behind the text rather than beside it. */
+@media(max-width:760px){ .plh-spark{display:none;} }
 .plh-glow{
   position:absolute;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(ellipse at 50% 42%,rgba(199,229,31,.17) 0%,rgba(59,109,17,.09) 38%,transparent 66%);
