@@ -1722,16 +1722,31 @@ const CSS = `
 .plh-seg .is-on{background:${C.textStrong};color:${C.white};font-weight:500;}
 .plh-seg-custom{display:inline-flex;align-items:center;gap:6px;color:${C.textStrong};}
 
-/* The bar chart. Bars grow from a baseline with the day under them;
-   Thursday is deliberately empty, because a week with no gap in it
-   looks like decoration rather than data. */
+/* The bar chart. Bars grow FROM the baseline; Thursday is deliberately
+   empty, because a week with no gap in it looks like decoration rather
+   than data.
+
+   The day label is positioned out of the flow, which is the whole
+   trick. It used to be a sibling in the same column, so its 16px line
+   plus a 6px gap held every bar 22px clear of the rule underneath -
+   the bars looked short and the chart looked like it had a margin
+   nobody asked for. Nudging the label down with a transform hid where
+   the space went without giving it back. Now the bar owns the full
+   height of the column and the label hangs below the rule. */
 .plh-chart{
   flex:1 1 0;min-height:0;display:flex;align-items:flex-end;gap:8px;
-  padding-top:8px;border-bottom:1px solid ${C.strokeMedium};
+  padding-top:8px;margin-bottom:24px;
+  border-bottom:1px solid ${C.strokeMedium};
 }
-.plh-bar{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;}
+.plh-bar{
+  position:relative;flex:1 1 0;min-width:0;height:100%;
+  display:flex;align-items:flex-end;justify-content:center;
+}
 .plh-bar i{display:block;width:34px;max-width:100%;background:${C.accent};border-radius:3px 3px 0 0;}
-.plh-bar b{font-size:12px;line-height:16px;font-weight:400;color:${C.textWeak};transform:translateY(20px);}
+.plh-bar b{
+  position:absolute;top:calc(100% + 8px);left:0;right:0;
+  text-align:center;font-size:12px;line-height:16px;font-weight:400;color:${C.textWeak};
+}
 
 /* Recent bookings rows: the unit and spot in one line, the window
    under it, then the status and the link. */
