@@ -1717,33 +1717,37 @@ const CSS = `
   from{opacity:0;transform:translateY(8px)}
   to{opacity:1;transform:none}
 }
-/* The row arriving. One animation rather than two stacked, because the
-   entrance and the highlight both want transform, and the second would
-   simply win. Scale is nudged from the left edge so the row grows into
-   the table instead of drifting sideways. */
+/**
+ * The row arriving: a highlight, and nothing else.
+ *
+ * It used to grow from its left edge (scale 0.985 -> 1.018 -> 1, with
+ * transform-origin:left) and carry a 4px lime rule down that edge plus
+ * an outer glow. Client's call: the row should light up, not move.
+ * Scaling from the left is read as the row sliding sideways, which is
+ * exactly the thing a reader's eye follows instead of the content, and
+ * a left rule that then shrinks looks like a rendering fault.
+ *
+ * So the row arrives the way EVERY other row arrives - plh-row-in, the
+ * same drop and fade - and the only thing distinguishing it is a wash
+ * that clears. Two animations rather than one now that nothing fights
+ * over transform: the entrance owns opacity and transform, the wash
+ * owns background. (They could not be stacked before, which is why
+ * this was one keyframe doing both jobs.)
+ *
+ * The real table's own highlight is gray-5 at a 0.6s transition. Lime
+ * here because the film has to make the arrival legible in one pass
+ * at a glance, where the product can afford to be quiet about it.
+ */
 .plh-row.is-flash{
-  position:relative;z-index:1;transform-origin:left center;
-  animation:plh-land 2.6s cubic-bezier(.16,1,.3,1) both;
+  position:relative;z-index:1;
+  animation:
+    plh-row-in .55s cubic-bezier(.16,1,.3,1) both,
+    plh-highlight 2.6s ease-out both;
 }
-@keyframes plh-land{
-  0%{
-    opacity:0;transform:translateY(10px) scale(.985);
-    background:rgba(199,229,31,.55);
-    box-shadow:inset 4px 0 0 ${C.accent},0 6px 18px rgba(199,229,31,.30);
-  }
-  18%{
-    opacity:1;transform:translateY(0) scale(1.018);
-    background:rgba(199,229,31,.5);
-    box-shadow:inset 4px 0 0 ${C.accent},0 10px 24px rgba(199,229,31,.38);
-  }
-  55%{
-    transform:scale(1.012);background:rgba(199,229,31,.2);
-    box-shadow:inset 4px 0 0 ${C.accent},0 6px 16px rgba(199,229,31,.18);
-  }
-  100%{
-    transform:scale(1);background:transparent;
-    box-shadow:inset 4px 0 0 transparent,0 0 0 rgba(199,229,31,0);
-  }
+@keyframes plh-highlight{
+  0%{background:rgba(199,229,31,.48)}
+  40%{background:rgba(199,229,31,.34)}
+  100%{background:transparent}
 }
 .plh-trunc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .plh-mono{font-variant-numeric:tabular-nums;letter-spacing:-.01em;}
