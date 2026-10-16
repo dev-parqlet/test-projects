@@ -1100,7 +1100,7 @@ function PhoneHome({ active }: { active: boolean }) {
 
       <div className="plh-avail">
         <div className="plh-avail-txt">
-          <b>Add availability for your\u00a0parking\u00a0spot</b>
+          <b>Add availability for your&nbsp;parking&nbsp;spot</b>
           <span>Earn credits while sharing your spot</span>
         </div>
         <span className="plh-avail-cta">Add +</span>
