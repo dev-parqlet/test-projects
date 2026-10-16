@@ -143,6 +143,7 @@ const FEATURED = {
   end: "11pm, Feb 22",
   whenApp: "Feb 20 7pm - Feb 22 11pm",
   startsIn: "Starts in 2h",
+  activeNote: "Ends in 2d 4h",
   credits: 5,
 };
 
@@ -172,7 +173,7 @@ const FEATURED_ROW: Row = {
   status: "Upcoming",
 };
 
-const ROWS: Record<"current" | "future" | "past", Row[]> = {
+const ROWS: Record<"current" | "future", Row[]> = {
   current: [
     { id: "CB3284", unit: "7A", resident: "Mia Nelson",      spot: "419", owner: "Isabella Irwin", guest: "Liam Kelly",       plate: "QWC-7870", start: "1pm, Feb 19",    end: "2am, Feb 20",    status: "Active" },
     { id: "94944C", unit: "6F", resident: "Lucas Garcia",    spot: "330", owner: "Mason Harris",   guest: "Evelyn Jenkins",   plate: "PTX-7733", start: "4:30am, Feb 19", end: "4:30pm, Feb 19", status: "Active" },
@@ -182,11 +183,6 @@ const ROWS: Record<"current" | "future" | "past", Row[]> = {
     FEATURED_ROW,
     { id: "700D2A", unit: "1D", resident: "James Owens",     spot: "330", owner: "Mason Harris",   guest: "Mia Nelson",       plate: "TFR-8281", start: "4:30pm, Feb 21", end: "2:30am, Feb 22", status: "Awaiting conf." },
     { id: "2657DE", unit: "4D", resident: "Mason Murphy",    spot: "519", owner: "Mia Kim",        guest: "Charlotte Hughes", plate: "NNN-7459", start: "10:30am, Feb 22",end: "8:30pm, Feb 22", status: "Upcoming" },
-  ],
-  past: [
-    { id: "396EF3", unit: "9C", resident: "Charlotte Hughes",spot: "108", owner: "Emma Anderson",  guest: "Mason Murphy",     plate: "SCM-8144", start: "2am, Feb 8",     end: "12pm, Feb 8",    status: "Awaiting conf." },
-    { id: "EFB9A6", unit: "3C", resident: "Sophia Foster",   spot: "222", owner: "Liam Baker",     guest: "Lucas Garcia",     plate: "MKI-7322", start: "1am, Feb 8",     end: "10am, Feb 8",    status: "Completed" },
-    { id: "B81B6F", unit: "2B", resident: "Ethan Simmons",   spot: "251", owner: "Ava Evans",      guest: "Sophia Foster",    plate: "LHD-7185", start: "4:30pm, Feb 7",  end: "12:30am, Feb 8", status: "Completed" },
   ],
 };
 
@@ -206,7 +202,6 @@ const NAV = [
 const TABS = [
   { id: "current", label: "Current bookings" },
   { id: "future", label: "Upcoming bookings" },
-  { id: "past", label: "Past bookings" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -244,10 +239,22 @@ const COLS = [
    ══════════════════════════════════════════════════════════════════ */
 type Scene = {
   hold: number;
+  /** Which dashboard PAGE is open. Bookings is no longer the only one. */
+  view: "dashboard" | "bookings";
   tab: TabId;
   phone: "confirmed" | "home";
-  /** Pixels inside the dashboard frame, not stage percentages. */
-  cursor: { x: number; y: number } | null;
+  /**
+   * What the cursor is pointing at, named rather than measured by hand.
+   *
+   * It used to be literal pixels inside the frame, derived in a comment
+   * from "SIDEBAR(256) + BODY_PAD(24) ... half a 34px pill". That
+   * arithmetic was already stale - the tabs stopped being pills - and
+   * every type change since moved the targets under it without anything
+   * failing. Now the element carries `data-hit` and the cursor is placed
+   * from its real box, so a padding change cannot leave the pointer
+   * clicking empty space.
+   */
+  target: string | null;
   /** Two separate presses, because the point of the film is that one beat
       carries both: the thumb on the phone and the click on the dashboard
       happen together, not one after the other. */
@@ -255,42 +262,55 @@ type Scene = {
   pressTouch?: boolean;
   /** The row lands with the green line and a nudge of scale. */
   flash?: boolean;
+  /** The booking has started: both screens say Active, together. */
+  active?: boolean;
 };
 
 
-/**
- * Where each tab pill sits inside the dashboard box.
- *
- * SIDEBAR(256) + BODY_PAD(24) puts the first pill's left edge at 280, and
- * the pills run 72 / 80 / 56 wide with an 8px gap. Y is HEADER(64) +
- * BODY_PAD(24) + half a 34px pill. Keep in step with the CSS below.
- */
-const TAB_HIT = {
-  current: { x: 338, y: 172 },
-  future: { x: 492, y: 172 },
-  past: { x: 632, y: 172 },
-} as const;
+/** Where the cursor rests before it has anywhere to be. */
+const HIT_NAV_BOOKINGS = "nav:bookings";
 
+/**
+ * THE LOOP, in four acts.
+ *
+ *   dashboard frame          phone frame
+ *   1 Dashboard page         confirmation splash
+ *   2 Bookings / Current     confirmation splash
+ *   3 Bookings / Upcoming  <- the booking lands here AND on the phone's
+ *                             home tab, on the same beat
+ *   4 both say Active        both say Active
+ *   -> back to 1
+ *
+ * Act 3 is the whole point of the film and the reason both frames are
+ * one component: the row that flashes into the dashboard and the card
+ * that appears on the phone are the SAME booking object (FEATURED).
+ * Act 4 is new - the booking starting is the one thing that happens to
+ * it without anybody touching either screen, so neither press fires.
+ */
 const SCENES: Scene[] = [
-  // 1. Settle. Phone on the confirmation splash, dashboard on Current.
-  { hold: 1500, tab: "current", phone: "confirmed", cursor: null },
-  // 2. The cursor arrives and travels to the Upcoming tab, ready.
-  { hold: 1100, tab: "current", phone: "confirmed", cursor: TAB_HIT.future },
-  // 3. THE BEAT. The thumb presses "Go to home screen" and the cursor
-  //    clicks "Upcoming bookings" at the same instant.
-  { hold: 650,  tab: "current", phone: "confirmed", cursor: TAB_HIT.future, pressCursor: true, pressTouch: true },
-  // 4. Both land together: the phone shows the booking on its home tab
-  //    while the same booking flashes into the dashboard's Upcoming list.
-  { hold: 3400, tab: "future",  phone: "home", cursor: TAB_HIT.future, flash: true },
-  // 5. On to Past.
-  { hold: 950,  tab: "future",  phone: "home", cursor: TAB_HIT.past },
-  { hold: 600,  tab: "future",  phone: "home", cursor: TAB_HIT.past, pressCursor: true },
-  { hold: 2200, tab: "past",    phone: "home", cursor: TAB_HIT.past },
-  // 6. Back to Current, and the cursor leaves.
-  { hold: 950,  tab: "past",    phone: "home", cursor: TAB_HIT.current },
-  { hold: 600,  tab: "past",    phone: "home", cursor: TAB_HIT.current, pressCursor: true },
-  { hold: 1800, tab: "current", phone: "home", cursor: TAB_HIT.current },
-  { hold: 1400, tab: "current", phone: "confirmed", cursor: null },
+  // ── ACT 1. The Dashboard page, and the phone fresh off a booking. ──
+  { hold: 2600, view: "dashboard", tab: "current", phone: "confirmed", target: null },
+  // The cursor arrives and reaches for Bookings in the sidebar.
+  { hold: 1000, view: "dashboard", tab: "current", phone: "confirmed", target: "nav:bookings" },
+  { hold: 600,  view: "dashboard", tab: "current", phone: "confirmed", target: "nav:bookings", pressCursor: true },
+
+  // ── ACT 2. Bookings, on Current. ──
+  { hold: 2000, view: "bookings", tab: "current", phone: "confirmed", target: "nav:bookings" },
+  { hold: 1000, view: "bookings", tab: "current", phone: "confirmed", target: "tab:future" },
+
+  // ── ACT 3. THE BEAT: the thumb presses "Go to home screen" and the
+  //    cursor clicks "Upcoming bookings" at the same instant. ──
+  { hold: 650,  view: "bookings", tab: "current", phone: "confirmed", target: "tab:future", pressCursor: true, pressTouch: true },
+  { hold: 3600, view: "bookings", tab: "future", phone: "home", target: "tab:future", flash: true },
+
+  // ── ACT 4. The booking starts. Nobody pressed anything; it is the
+  //    clock. Both screens turn over together. ──
+  { hold: 3200, view: "bookings", tab: "future", phone: "home", target: null, active: true },
+
+  // Back to the Dashboard page, and round again.
+  { hold: 900,  view: "bookings", tab: "future", phone: "home", target: "nav:dashboard", active: true },
+  { hold: 600,  view: "bookings", tab: "future", phone: "home", target: "nav:dashboard", active: true, pressCursor: true },
+  { hold: 1600, view: "dashboard", tab: "current", phone: "home", target: null },
 ];
 
 /* ══════════════════════════════════════════════════════════════════
@@ -446,7 +466,77 @@ function StatusPill({ status }: { status: Row["status"] }) {
   );
 }
 
-function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
+/**
+ * The Dashboard page: title, four stat cards, two list cards.
+ *
+ * Built from the demo's own /dashboard - StatCard's uppercase 12/16
+ * label over a 24/28 REGULAR figure (400, not 500: the size already
+ * carries it), on a white card with a 12 radius and 16 padding, and
+ * the list cards share that shell with a 24 gap.
+ */
+function DashboardPage() {
+  return (
+    <>
+      <h2 className="plh-h2">Dashboard</h2>
+      <p className="plh-sub">Overview of parking activity in your building</p>
+
+      <div className="plh-stats">
+        {[
+          ["Bookings today", "14", "today"],
+          ["Bookings this month", "291", "this month"],
+          ["Bookings year to date", "3,480", "year to date"],
+          ["Gift cards redeemed", "62", "year to date"],
+        ].map(([label, value, tag]) => (
+          <div key={label} className="plh-stat">
+            <span className="plh-stat-label">{label}</span>
+            <span className="plh-stat-value">{value}</span>
+            <span className="plh-stat-tag">{tag}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="plh-cards">
+        <div className="plh-card">
+          <span className="plh-card-title">Recent Activity</span>
+          {[
+            ["Mia Nelson", "booked spot 419"],
+            ["Lucas Garcia", "shared spot 330"],
+            ["Isabella Turner", "booked spot 108"],
+            ["James Owens", "shared spot 251"],
+          ].map(([who, what]) => (
+            <div key={who} className="plh-actrow">
+              <span className="plh-actdot" />
+              <span className="plh-actname">{who}</span>
+              <span className="plh-actwhat">{what}</span>
+            </div>
+          ))}
+        </div>
+        <div className="plh-card">
+          <span className="plh-card-title">Recent Bookings</span>
+          {ROWS.current.map((r) => (
+            <div key={r.id} className="plh-actrow">
+              <span className="plh-actname">{r.guest}</span>
+              <span className="plh-actwhat">spot {r.spot}</span>
+              <StatusPill status={r.status} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function Dashboard({
+  view,
+  tab,
+  flash,
+  active,
+}: {
+  view: "dashboard" | "bookings";
+  tab: TabId;
+  flash: boolean;
+  active: boolean;
+}) {
   const rows = ROWS[tab];
   return (
     <div className="plh-dash">
@@ -455,10 +545,14 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
         <div className="plh-side-logo"><ParqletLogo /></div>
         <nav className="plh-nav">
           {NAV.map((item) => {
-            const active = item.id === "bookings";
+            const on = item.id === (view === "dashboard" ? "dashboard" : "bookings");
             return (
-              <div key={item.id} className={`plh-nav-item${active ? " is-active" : ""}`}>
-                <NavIcon name={item.id} color={active ? C.accent : C.sidebarText} />
+              <div
+                key={item.id}
+                data-hit={`nav:${item.id}`}
+                className={`plh-nav-item${on ? " is-active" : ""}`}
+              >
+                <NavIcon name={item.id} color={on ? C.accent : C.sidebarText} />
                 <span>{item.label}</span>
               </div>
             );
@@ -514,13 +608,18 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
         </header>
 
         <div className="plh-body">
+          {view === "dashboard" ? <DashboardPage /> : <>
           <h2 className="plh-h2">Bookings</h2>
           <p className="plh-sub">View current bookings and complete booking history</p>
 
           {/* Underlined text tabs, not pills. */}
           <div className="plh-tabs">
             {TABS.map((t) => (
-              <div key={t.id} className={`plh-tab${t.id === tab ? " is-active" : ""}`}>
+              <div
+                key={t.id}
+                data-hit={`tab:${t.id}`}
+                className={`plh-tab${t.id === tab ? " is-active" : ""}`}
+              >
                 {t.label}
               </div>
             ))}
@@ -547,6 +646,12 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
           </div>
 
           <div className="plh-table">
+            {/* The one thing on this stage that takes a pointer. The
+                frame is a film everywhere else; a table the reader
+                cannot reach the right-hand end of is just a cropped
+                picture of a table. Head and body are inside the SAME
+                scroller, so they cannot drift apart. */}
+            <div className="plh-tscroll">
             <div className="plh-thead">
               {COLS.map((c) => (
                 <span key={c.key} className={`plh-c-${c.key} ${c.cls}`}>
@@ -577,7 +682,9 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
                           {hasPhone ? (
                             <span className="plh-celltxt">{r[c.key]}</span>
                           ) : c.key === "status" ? (
-                            <StatusPill status={r.status} />
+                            <StatusPill
+                              status={active && r.id === FEATURED.id ? "Active" : r.status}
+                            />
                           ) : (
                             r[c.key]
                           )}
@@ -588,6 +695,7 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
                 );
               })}
             </div>
+            </div>
             <div className="plh-tfoot">
               <span>Showing 1 to {rows.length} of 28 bookings</span>
               <span className="plh-pager">
@@ -595,6 +703,7 @@ function Dashboard({ tab, flash }: { tab: TabId; flash: boolean }) {
               </span>
             </div>
           </div>
+          </>}
         </div>
       </div>
     </div>
@@ -799,7 +908,8 @@ function BookingCard({ note, status }: { note: string; status: "Upcoming" | "Act
       <div className="plh-ph-namerow">
         <span className="plh-ph-name">{FEATURED.guest}</span>
         <span
-          className="plh-pill plh-ph-statuspill"
+          key={status}
+          className="plh-pill plh-ph-statuspill plh-turnover"
           style={
             status === "Active"
               ? { background: C.tagActive, color: C.tagActiveText }
@@ -859,7 +969,7 @@ function PhoneConfirmed({ pressing }: { pressing: boolean }) {
   );
 }
 
-function PhoneHome() {
+function PhoneHome({ active }: { active: boolean }) {
   return (
     <div className="plh-screen plh-screen-home">
       <div className="plh-ph-appbar">
@@ -869,9 +979,16 @@ function PhoneHome() {
         </span>
       </div>
 
-      <span className="plh-ph-section"><i /> UPCOMING GUEST BOOKING</span>
+      {/* The section header turns over with the card: the app calls it
+          CURRENT once the booking has started, not UPCOMING. */}
+      <span className="plh-ph-section">
+        <i /> {active ? "CURRENT GUEST BOOKING" : "UPCOMING GUEST BOOKING"}
+      </span>
       <div className="plh-ph-cardwrap">
-        <BookingCard note={FEATURED.startsIn} status="Upcoming" />
+        <BookingCard
+          note={active ? FEATURED.activeNote : FEATURED.startsIn}
+          status={active ? "Active" : "Upcoming"}
+        />
       </div>
 
       <div className="plh-promo">
@@ -956,6 +1073,8 @@ export default function LandingHero() {
   const [running, setRunning] = useState(false);
   const [reduced, setReduced] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
+  /** The dashboard frame, which `data-hit` boxes are measured against. */
+  const dashRef = useRef<HTMLDivElement>(null);
 
   // Reduced motion: show the end of the story rather than animating to it.
   useEffect(() => {
@@ -984,17 +1103,47 @@ export default function LandingHero() {
 
   useEffect(() => {
     if (!running || reduced || pinned !== null) return;
-    const id = setTimeout(() => setI((n) => (n + 1) % SCENES.length), SCENES[i].hold);
+    const id = setTimeout(() => setI((n) => n + 1), SCENES[i % SCENES.length].hold);
     return () => clearTimeout(id);
   }, [i, running, reduced, pinned]);
 
   const scene = useMemo<Scene>(
     () =>
       reduced
-        ? { hold: 0, tab: "future", phone: "home", cursor: null, flash: true }
-        : SCENES[pinned ?? i],
+        ? { hold: 0, view: "bookings", tab: "future", phone: "home", target: null, flash: true }
+        : SCENES[(pinned ?? i) % SCENES.length],
     [i, reduced, pinned],
   );
+
+  /**
+   * How many full passes the film has made.
+   *
+   * Both phone screens stay mounted (they slide), so a CSS animation on
+   * the confirmation check would fire once on mount and never again.
+   * Keying the splash on the pass number remounts it each time round,
+   * which is what replays the pop.
+   */
+  const cycle = reduced || pinned !== null ? 0 : Math.floor(i / SCENES.length);
+
+  /**
+   * Put the cursor on whatever the scene names, measured.
+   *
+   * `data-hit` marks the element; this reads its box relative to the
+   * dashboard frame. Hard-coded pixels went stale every time a padding
+   * changed, silently - the pointer kept clicking, just not on
+   * anything. A missing target leaves the cursor where it was, which is
+   * what a null `target` wants anyway (it fades out in place).
+   */
+  const [hit, setHit] = useState<{ x: number; y: number } | null>(null);
+  useEffect(() => {
+    const frame = dashRef.current;
+    if (!frame || !scene.target) return;
+    const el = frame.querySelector<HTMLElement>(`[data-hit="${scene.target}"]`);
+    if (!el) return;
+    const f = frame.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    setHit({ x: r.left - f.left + r.width / 2, y: r.top - f.top + r.height / 2 });
+  }, [scene.target, scene.view, scene.tab]);
 
   return (
     <section className="plh-root" aria-label="Parqlet product demo">
@@ -1021,8 +1170,8 @@ export default function LandingHero() {
         {/* Full container width, so the dashboard can be drawn at its REAL
             dimensions - 256px sidebar, 64px header, 14px body text - rather
             than a shrunken approximation of them. */}
-        <div className="plh-frame plh-frame-dash">
-          <Dashboard tab={scene.tab} flash={!!scene.flash} />
+        <div className="plh-frame plh-frame-dash" ref={dashRef}>
+          <Dashboard view={scene.view} tab={scene.tab} flash={!!scene.flash} active={!!scene.active} />
 
           {/* The cursor lives INSIDE the dashboard frame and is positioned in
               pixels, not stage percentages. The tabs it clicks are at fixed
@@ -1030,11 +1179,11 @@ export default function LandingHero() {
               at any viewport; percentages of a stage that changes height with
               the phone's overhang did not. */}
           <div
-            className={`plh-cursor${scene.cursor ? " is-on" : ""}${scene.pressCursor ? " is-click" : ""}`}
+            className={`plh-cursor${scene.target && hit ? " is-on" : ""}${scene.pressCursor ? " is-click" : ""}`}
             style={
               {
-                "--plh-x": `${(scene.cursor ?? TAB_HIT.current).x}px`,
-                "--plh-y": `${(scene.cursor ?? TAB_HIT.current).y}px`,
+                "--plh-x": `${hit?.x ?? 128}px`,
+                "--plh-y": `${hit?.y ?? 200}px`,
               } as React.CSSProperties
             }
           >
@@ -1058,11 +1207,15 @@ export default function LandingHero() {
               <span className="plh-sb-icons">▮▮▮ ⌁</span>
             </span>
             <div className={`plh-screenwrap${scene.phone === "home" ? " is-home" : ""}`}>
-              <div className="plh-slide plh-slide-a">
+              {/* Keyed on the pass number so the check's pop replays
+                  each time round. Both slides stay mounted, so without
+                  this the animation would fire once, on first mount,
+                  and the loop would be silent from then on. */}
+              <div className="plh-slide plh-slide-a" key={`c${cycle}`}>
                 <PhoneConfirmed pressing={!!scene.pressTouch} />
               </div>
               <div className="plh-slide plh-slide-b">
-                <PhoneHome />
+                <PhoneHome active={!!scene.active} />
               </div>
             </div>
             <span className="plh-homebar" />
@@ -1349,7 +1502,54 @@ const CSS = `
 .plh-body{flex:1 1 0;min-height:0;padding:16px 24px 0;display:flex;flex-direction:column;}
 @media(max-width:900px){ .plh-body{padding:12px 14px 0;} }
 .plh-h2{margin:0;font-size:24px;line-height:28px;font-weight:400;}
-.plh-sub{margin:4px 0 0;font-size:14px;line-height:16px;color:${C.textWeak};}
+.plh-sub{margin:4px 0 0;font-size:16px;line-height:20px;color:${C.textWeak};}
+.plh-body .plh-h2+.plh-sub{margin-bottom:0;}
+
+/* ── Dashboard page ───────────────────────────────────────────────
+   StatCard: white, 12 radius, 16 padding, 12 gap; an uppercase 12/16
+   label over a 24/28 figure at REGULAR weight - 400 and not 500,
+   because the size already carries it and medium made a value that is
+   a phrase read heavier than its own row. */
+.plh-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:24px;
+  flex:0 0 auto;min-width:0;
+}
+.plh-stat{
+  min-width:0;background:${C.white};border:1px solid ${C.strokeMedium};
+  border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;
+  overflow:hidden;
+}
+.plh-stat-label{
+  font-size:12px;line-height:16px;font-weight:500;color:${C.textWeak};
+  text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.plh-stat-value{font-size:24px;line-height:28px;font-weight:400;color:${C.textStrong};white-space:nowrap;}
+.plh-stat-tag{
+  align-self:flex-start;padding:4px 8px;border-radius:48px;
+  background:${C.fillWeak};color:${C.textStrong};
+  font-size:12px;line-height:16px;white-space:nowrap;
+}
+.plh-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;flex:1 1 0;min-height:0;}
+.plh-card{
+  min-width:0;background:${C.white};border:1px solid ${C.strokeMedium};
+  border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;
+  overflow:hidden;
+}
+.plh-card-title{
+  font-size:12px;line-height:16px;font-weight:500;color:${C.textWeak};
+  text-transform:uppercase;
+}
+.plh-actrow{
+  display:flex;align-items:center;gap:8px;min-width:0;
+  font-size:14px;line-height:16px;color:${C.textStrong};
+}
+.plh-actdot{width:8px;height:8px;border-radius:999px;background:${C.accent};flex:0 0 auto;}
+.plh-actname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.plh-actwhat{margin-left:auto;color:${C.textWeak};white-space:nowrap;}
+.plh-card .plh-pill{flex:0 0 auto;}
+/* Two cards side by side need the width; below that they stack and the
+   page simply scrolls out of the frame's bottom, like the table does. */
+@media(max-width:1100px){ .plh-stats{grid-template-columns:repeat(2,1fr);} }
 
 /* Underlined text tabs - the real ones are not pills. */
 .plh-tabs{display:flex;gap:28px;margin-top:12px;border-bottom:1px solid ${C.strokeMedium};}
@@ -1387,45 +1587,70 @@ const CSS = `
   border:1px solid ${C.strokeMedium};border-radius:12px 12px 0 0;overflow:hidden;
   display:flex;flex-direction:column;
 }
+/**
+ * The one interactive thing on the stage.
+ *
+ * .plh-stage is pointer-events:none because the frames are a film.
+ * A table whose right-hand half is simply cut off is not a film of a
+ * table though, it is a cropped screenshot - so this one element takes
+ * the pointer back and scrolls. Head and rows are both inside it, so
+ * they move together.
+ *
+ * MIN-WIDTH, NOT SHRINKING COLUMNS. The columns used to be squeezed by
+ * media query until the headers ellipsed ("BOOKED S..."). Now the
+ * content keeps a width at which every header fits on one line and the
+ * reader pans to the rest, which is what the real table does.
+ */
+.plh-tscroll{
+  flex:1 1 0;min-height:0;display:flex;flex-direction:column;
+  overflow-x:auto;overflow-y:hidden;
+  pointer-events:auto;
+  scrollbar-width:thin;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.plh-tscroll::-webkit-scrollbar{height:8px;}
+.plh-tscroll::-webkit-scrollbar-thumb{background:${C.strokeMedium};border-radius:999px;}
+.plh-tscroll::-webkit-scrollbar-track{background:transparent;}
+.plh-tscroll>*{min-width:1310px;}
 .plh-thead{
   display:flex;align-items:center;gap:8px;padding:0 24px;height:48px;flex:0 0 auto;
+  position:sticky;top:0;z-index:1;
   border-bottom:1px solid ${C.strokeMedium};background:${C.white};
   font-size:12px;line-height:16px;font-weight:500;text-transform:uppercase;color:${C.textWeak};
 }
-.plh-thead span,.plh-row span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.plh-row span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* Real TableHeadLabel WRAPS rather than truncating - a header reading
+   "BOOKED S..." cannot be recovered without a hover, and there is no
+   hover here at all. */
+.plh-thead span{min-width:0;white-space:normal;overflow:visible;text-overflow:clip;}
 .plh-thead .plh-phglyph{display:none;}
 
-/* Column widths live here, not in the JSX. As inline styles they beat any
-   media query, so the narrow layout could not drop or shrink a column and
-   the table forced the whole page wider than the viewport.
-
-   Columns leave in order of how little they carry. What survives at 430px
-   is the booking, the spot, when it starts and its status. */
-.plh-c-id{flex:0 0 72px}
-.plh-c-unit{flex:0 0 48px}
-.plh-c-resident{flex:1 1 104px}
-.plh-c-spot{flex:0 0 76px}
-.plh-c-owner{flex:1 1 104px}
-.plh-c-guest{flex:1 1 104px}
-.plh-c-plate{flex:0 0 90px}
-.plh-c-start{flex:0 0 100px}
-.plh-c-end{flex:0 0 100px}
-.plh-c-status{flex:0 0 86px}
-@media(max-width:1440px){ .plh-c-owner{display:none} }
-@media(max-width:1260px){ .plh-c-end{display:none} }
-@media(max-width:1100px){ .plh-c-plate{display:none} }
-@media(max-width:900px){ .plh-c-guest{display:none} }
-@media(max-width:700px){
-  .plh-c-resident{display:none}
-  .plh-c-unit{flex:0 0 38px}
-  .plh-c-id{flex:0 0 64px}
-  .plh-c-spot{flex:0 0 52px}
-  .plh-c-start{flex:1 1 78px}
-  .plh-c-status{flex:0 0 84px}
-  .plh-pill{font-size:11px;padding:3px 7px;}
-}
-@media(max-width:520px){ .plh-c-unit{display:none} }
+/* Column widths live here, not in the JSX.
+   
+   EVERY COLUMN IS ALWAYS PRESENT NOW. They used to drop out one by one
+   by media query - owner at 1440, end at 1260, plate at 1100 - until a
+   phone saw four of ten, and the survivors were squeezed until their
+   headers ellipsed. With the scroller above there is nothing to hide
+   from: the reader pans, exactly as they do on the real table.
+   
+   Each width is sized for its own HEADER at 12px on one line, which is
+   what gets rid of the "BOOKED S..." - the widest of the pair is
+   usually the heading, not the value. They sum (with 9 gaps of 8 and
+   48 of padding) to the min-width set on .plh-tscroll > *. */
+.plh-c-id{flex:0 0 96px}
+.plh-c-unit{flex:0 0 64px}
+.plh-c-resident{flex:1 1 150px}
+.plh-c-spot{flex:0 0 110px}
+.plh-c-owner{flex:1 1 150px}
+.plh-c-guest{flex:1 1 150px}
+.plh-c-plate{flex:0 0 120px}
+.plh-c-start{flex:0 0 120px}
+.plh-c-end{flex:0 0 120px}
+.plh-c-status{flex:0 0 110px}
 .plh-rows{flex:1 1 0;min-height:0;overflow:hidden;}
+/* Scroll lives on the wrapper; the body must not clip it horizontally. */
+.plh-tscroll .plh-rows{overflow-x:visible;}
 .plh-row{
   display:flex;gap:8px;align-items:center;padding:0 24px;height:57px;
   border-bottom:1px solid ${C.strokeMedium};font-size:14px;line-height:16px;color:${C.textStrong};
@@ -1598,7 +1823,28 @@ const CSS = `
 .plh-tabglyph svg{display:block;width:24px;height:24px;}
 /* Credits value sits beside its glyph, Spacing.xs apart as in the app. */
 .plh-credrow{display:inline-flex;align-items:center;gap:4px;}
-.plh-checkart{display:block;width:88px;height:88px;object-fit:contain;}
+.plh-checkart{
+  display:block;width:88px;height:88px;object-fit:contain;
+  animation:plh-checkpop .72s cubic-bezier(.16,1,.3,1) .4s both;
+}
+/* The app's useSuccessPop: a 400ms wait, 180ms up to 1.18, then a
+   spring back (damping 8, stiffness 200). A keyframe cannot BE a
+   spring, so the settle is written out as its first two bounces -
+   which is all of it that the eye reads at this duration. */
+@keyframes plh-checkpop{
+  0%{transform:scale(1)}
+  25%{transform:scale(1.18)}
+  52%{transform:scale(.972)}
+  74%{transform:scale(1.014)}
+  90%{transform:scale(.996)}
+  100%{transform:scale(1)}
+}
+/* Upcoming -> Active, as a turn rather than a cut. */
+.plh-turnover{animation:plh-turnover .5s cubic-bezier(.16,1,.3,1) both;}
+@keyframes plh-turnover{
+  from{opacity:0;transform:translateY(-4px) scale(.94)}
+  to{opacity:1;transform:none}
+}
 .plh-ph-name{font-size:18px;line-height:24px;font-weight:500;color:${C.textStrong};white-space:nowrap;}
 .plh-ph-statuspill{align-self:center;}
 .plh-ph-row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:16px;line-height:20px;color:${C.textWeak};white-space:nowrap;}
@@ -1671,7 +1917,10 @@ const CSS = `
   position:relative;overflow:hidden;margin-top:12px;padding:16px;border-radius:16px;
   background:${C.textStrong};display:flex;flex-direction:column;
 }
-.plh-promo b{font-size:18px;line-height:24px;font-weight:500;color:${C.white};max-width:200px;position:relative;z-index:1;}
+.plh-promo b{
+  font-size:16px;line-height:20px;font-weight:500;color:${C.white};
+  max-width:240px;white-space:nowrap;position:relative;z-index:1;
+}
 .plh-promo>span:not(.plh-promo-cta):not(.plh-promo-cal):not(.plh-promo-car){
   margin-top:8px;font-size:16px;line-height:20px;color:rgba(255,255,255,.72);
 }
@@ -1687,8 +1936,11 @@ const CSS = `
   margin-top:12px;padding:16px;border-radius:16px;background:${C.fillWeak};
   display:flex;align-items:center;justify-content:space-between;gap:16px;
 }
-.plh-avail-txt b{display:block;font-size:18px;line-height:24px;font-weight:500;color:${C.textStrong};}
-.plh-avail-txt span{display:block;margin-top:4px;font-size:16px;line-height:20px;color:${C.textWeak};}
+/* The text column must be allowed to shrink or nowrap pushes the
+   Add button off the card instead of fitting beside it. */
+.plh-avail-txt{min-width:0;}
+.plh-avail-txt b{display:block;font-size:16px;line-height:20px;font-weight:500;color:${C.textStrong};white-space:nowrap;}
+.plh-avail-txt span{display:block;margin-top:4px;font-size:14px;line-height:16px;color:${C.textWeak};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .plh-avail-cta{
   flex:0 0 auto;height:42px;display:inline-flex;align-items:center;padding:0 16px;
   border-radius:8px;background:${C.accent};color:${C.textStrong};font-size:14px;line-height:16px;font-weight:500;
