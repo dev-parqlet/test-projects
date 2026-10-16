@@ -581,7 +581,6 @@ function DashboardPage() {
                 <span>{when}</span>
               </span>
               <StatusPill status="Upcoming" />
-              <span className="plh-bklink">View details</span>
             </div>
           ))}
           <span className="plh-seeall">See all activity</span>
@@ -1744,7 +1743,6 @@ const CSS = `
 .plh-bktext b{font-size:14px;line-height:18px;font-weight:500;color:${C.textStrong};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .plh-bktext b i{font-style:normal;font-weight:400;}
 .plh-bktext>span{font-size:12px;line-height:16px;color:${C.textWeak};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.plh-bklink{font-size:14px;line-height:16px;color:${C.textStrong};white-space:nowrap;flex:0 0 auto;}
 .plh-seeall{align-self:flex-end;margin-top:auto;font-size:14px;line-height:16px;color:${C.textStrong};}
 .plh-card .plh-pill{flex:0 0 auto;}
 
