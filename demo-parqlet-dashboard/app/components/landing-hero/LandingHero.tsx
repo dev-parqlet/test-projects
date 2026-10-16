@@ -173,7 +173,7 @@ const FEATURED_ROW: Row = {
   status: "Upcoming",
 };
 
-const ROWS: Record<"current" | "future", Row[]> = {
+const ROWS: Record<OpenTabId, Row[]> = {
   current: [
     { id: "CB3284", unit: "7A", resident: "Mia Nelson",      spot: "419", owner: "Isabella Irwin", guest: "Liam Kelly",       plate: "QWC-7870", start: "1pm, Feb 19",    end: "2am, Feb 20",    status: "Active" },
     { id: "94944C", unit: "6F", resident: "Lucas Garcia",    spot: "330", owner: "Mason Harris",   guest: "Evelyn Jenkins",   plate: "PTX-7733", start: "4:30am, Feb 19", end: "4:30pm, Feb 19", status: "Active" },
@@ -199,11 +199,24 @@ const NAV = [
   { id: "notifications", label: "Notifications" },
 ] as const;
 
+/**
+ * All three tabs are DRAWN. The real page has three, and a dashboard
+ * missing one is a dashboard a reader has to wonder about.
+ *
+ * Only two are ever OPENED - see OpenTabId and SCENES. Past bookings
+ * is a third list of the same table, and the loop's first act (the
+ * Dashboard page) is a better use of those seconds. So it sits there
+ * as a heading, unvisited, exactly as it would if you were watching
+ * somebody work in the other two.
+ */
 const TABS = [
   { id: "current", label: "Current bookings" },
   { id: "future", label: "Upcoming bookings" },
+  { id: "past", label: "Past bookings" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
+/** The tabs the film opens, and the only keys ROWS holds. */
+type OpenTabId = Exclude<TabId, "past">;
 
 /**
  * ONE column spec, read by the header and the rows alike.
@@ -241,7 +254,7 @@ type Scene = {
   hold: number;
   /** Which dashboard PAGE is open. Bookings is no longer the only one. */
   view: "dashboard" | "bookings";
-  tab: TabId;
+  tab: OpenTabId;
   phone: "confirmed" | "home";
   /**
    * What the cursor is pointing at, named rather than measured by hand.
@@ -533,7 +546,7 @@ function Dashboard({
   active,
 }: {
   view: "dashboard" | "bookings";
-  tab: TabId;
+  tab: OpenTabId;
   flash: boolean;
   active: boolean;
 }) {
