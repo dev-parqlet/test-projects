@@ -343,7 +343,7 @@ const SCENES: Scene[] = [
   // Back to the Dashboard page, and round again.
   { hold: 900,  view: "bookings", tab: "current", phone: "home", target: "nav:dashboard", active: true },
   { hold: 600,  view: "bookings", tab: "current", phone: "home", target: "nav:dashboard", active: true, pressCursor: true },
-  { hold: 1600, view: "dashboard", tab: "current", phone: "home", target: null },
+  { hold: 1600, view: "dashboard", tab: "current", phone: "confirmed", target: null, active: true },
 ];
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1215,7 +1215,7 @@ export default function LandingHero() {
    * Keying the splash on the pass number remounts it each time round,
    * which is what replays the pop.
    */
-  const cycle = reduced || pinned !== null ? 0 : Math.floor(i / SCENES.length);
+  const cycle = reduced || pinned !== null ? 0 : Math.floor((i + 1) / SCENES.length);
 
   /**
    * Put the cursor on whatever the scene names, measured.
