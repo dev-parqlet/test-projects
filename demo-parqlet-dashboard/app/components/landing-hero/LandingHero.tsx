@@ -152,6 +152,7 @@ const FEATURED = {
    * silently moved the other - and they are not the same fact at all.
    */
   creditsPaid: 3,
+  /** The balance BEFORE this booking. After it, wallet - creditsPaid. */
   wallet: 5,
 };
 
@@ -1122,7 +1123,19 @@ function PhoneHome({ active, booking }: { active: boolean; booking: boolean }) {
       <div className="plh-ph-appbar">
         <span className="plh-wordmark"><ParqletWordmark /></span>
         <span className="plh-credits">
-          <i className="plh-star">★</i> {FEATURED.wallet} Credits
+          {/*
+            THE BALANCE FOLLOWS THE BOOKING.
+
+            5 before it exists, 2 after - because the card below says
+            the booking cost 3, and a wallet that still read 5 beside
+            it would be the film contradicting itself on one screen.
+
+            `booking` is the same flag that draws the card, so the two
+            cannot drift: there is no state where the card is on screen
+            and the balance has not been debited.
+          */}
+          <i className="plh-star">★</i>{" "}
+          {booking ? FEATURED.wallet - FEATURED.creditsPaid : FEATURED.wallet} Credits
         </span>
       </div>
 
