@@ -289,35 +289,50 @@ type Scene = {
   panRight?: boolean;
 };
 
-/** Where the cursor rests before it has anywhere to be. */
-const HIT_NAV_BOOKINGS = "nav:bookings";
-
 /**
- * THE LOOP, in four acts.
+ * THE LOOP, in five acts.
  *
  *   dashboard frame          phone frame
- *   1 Dashboard page         confirmation splash
- *   2 Bookings / Current     confirmation splash
+ *   1 Dashboard page         the app's home screen
+ *   2 Bookings / Current     the confirmation splash arrives
  *   3 Bookings / Upcoming  <- the booking lands here AND on the phone's
- *                             home tab, on the same beat
+ *                             home screen, on the same beat
  *   4 both say Active        both say Active
- *   -> back to 1
+ *   5 back to the Dashboard  back to the home screen
  *
  * Act 3 is the whole point of the film and the reason both frames are
  * one component: the row that flashes into the dashboard and the card
  * that appears on the phone are the SAME booking object (FEATURED).
- * Act 4 is new - the booking starting is the one thing that happens to
- * it without anybody touching either screen, so neither press fires.
+ *
+ * ─── WHY THE PAIRING IS THIS WAY ROUND ──────────────────────────────
+ *
+ * It used to open on the confirmation splash, and the Dashboard page
+ * was paired with it. Reversed on the client's instruction (2026-10-19,
+ * reversing their own earlier one): the film now OPENS on the phone's
+ * home screen, and whenever the web dashboard is showing its Dashboard
+ * page the phone shows the app's home - the two "dashboards" of the
+ * product, side by side, which is what the first frame of a hero should
+ * be saying.
+ *
+ * That moved the confirmation splash from act 1 into act 2, where it
+ * reads better anyway: a booking ARRIVES while the admin is looking at
+ * their bookings list, rather than being the state of the world before
+ * anything has happened.
+ *
+ * The transition is a cross-fade with a few percent of travel, not a
+ * directional slide, so home -> confirmed reads as a navigation in
+ * either direction and nothing had to change for the new order.
  */
 const SCENES: Scene[] = [
-  // ── ACT 1. The Dashboard page, and the phone fresh off a booking. ──
-  { hold: 2600, view: "dashboard", tab: "current", phone: "confirmed", target: null },
+  // ── ACT 1. The Dashboard page, and the app's home screen: the two
+  //    halves of the product, both showing what they are for. ──
+  { hold: 2600, view: "dashboard", tab: "current", phone: "home", target: null },
   // The cursor arrives and reaches for Bookings in the sidebar.
-  { hold: 1000, view: "dashboard", tab: "current", phone: "confirmed", target: "nav:bookings" },
-  { hold: 600,  view: "dashboard", tab: "current", phone: "confirmed", target: "nav:bookings", pressCursor: true },
+  { hold: 1000, view: "dashboard", tab: "current", phone: "home", target: "nav:bookings" },
+  { hold: 600,  view: "dashboard", tab: "current", phone: "home", target: "nav:bookings", pressCursor: true },
 
-  // ── ACT 2. Bookings, on Current. ──
-  { hold: 2000, view: "bookings", tab: "current", phone: "confirmed", target: "nav:bookings" },
+  // ── ACT 2. Bookings, on Current - and a booking lands on the phone. ──
+  { hold: 1800, view: "bookings", tab: "current", phone: "confirmed", target: "nav:bookings" },
   { hold: 1000, view: "bookings", tab: "current", phone: "confirmed", target: "tab:future" },
 
   // ── ACT 3. THE BEAT: the thumb presses "Go to home screen" and the
@@ -340,11 +355,22 @@ const SCENES: Scene[] = [
   // ...and the table pans again, to the pill that now reads Active.
   { hold: 2600, view: "bookings", tab: "current", phone: "home", target: null, active: true, panRight: true },
 
-  // Back to the Dashboard page, and round again.
+  // ── ACT 5. Back to the Dashboard page, where the loop began, with
+  //    the phone on home beside it. ──
   { hold: 900,  view: "bookings", tab: "current", phone: "home", target: "nav:dashboard", active: true },
   { hold: 600,  view: "bookings", tab: "current", phone: "home", target: "nav:dashboard", active: true, pressCursor: true },
-  { hold: 1600, view: "dashboard", tab: "current", phone: "confirmed", target: null, active: true },
+  { hold: 1600, view: "dashboard", tab: "current", phone: "home", target: null, active: true },
 ];
+
+/**
+ * Where the confirmation splash first appears in the loop.
+ *
+ * Derived, not written down: the splash replays its check-mark pop by
+ * being remounted, and it has to be remounted as it ARRIVES rather than
+ * at the loop boundary. It used to be the first scene, so the loop
+ * boundary was the arrival; now it is not.
+ */
+const CONFIRM_SCENE = SCENES.findIndex((s) => s.phone === "confirmed");
 
 /* ══════════════════════════════════════════════════════════════════
    ICONS — inline, so the component carries no asset dependencies.
@@ -1167,6 +1193,65 @@ export default function LandingHero() {
   const stageRef = useRef<HTMLDivElement>(null);
   /** The dashboard frame, which `data-hit` boxes are measured against. */
   const dashRef = useRef<HTMLDivElement>(null);
+  /** The window the dashboard is scaled inside on a narrow screen. */
+  const scalerRef = useRef<HTMLDivElement>(null);
+
+  const [dashFit, setDashFit] = useState<
+    { scale: number; width: number; height: number } | null
+  >(null);
+
+  /**
+   * Fit the dashboard to the width it has, on narrow screens.
+   *
+   * Below 900px the frame used to be hidden outright - a phone visitor
+   * saw the phone and nothing else, which is half the product and the
+   * half a building manager does not buy. It is drawn at its real
+   * dimensions and scaled instead, the same thing the phone does to its
+   * own 390px design width.
+   *
+   * MEASURED, not a constant. "Fits the width" is a different number on
+   * a 320px phone and a 760px tablet, so a fixed 0.5 would overflow one
+   * and waste the other. The frame is read at its natural width with the
+   * transform cancelled, so the measurement cannot feed on its own
+   * output and converge somewhere arbitrary.
+   *
+   * A transform does not change layout size, so the wrapper is given an
+   * explicit height too - otherwise the stage's gap would sit under the
+   * empty space the un-scaled frame still occupies.
+   *
+   * setState lives in the observer callback, not in the effect body:
+   * this is a subscription to an external system (the element's box),
+   * which is exactly what effects are for.
+   */
+  useEffect(() => {
+    const scaler = scalerRef.current;
+    const frame = dashRef.current;
+    if (!scaler || !frame || typeof ResizeObserver === "undefined") return;
+
+    const measure = () => {
+      // display:contents above the breakpoint, so the wrapper has no box
+      // of its own and there is nothing to fit the frame into.
+      const avail = scaler.clientWidth;
+      if (avail === 0) {
+        setDashFit(null);
+        return;
+      }
+      const prev = frame.style.transform;
+      frame.style.transform = "none";
+      const naturalW = frame.offsetWidth;
+      const naturalH = frame.offsetHeight;
+      frame.style.transform = prev;
+      if (naturalW === 0) return;
+      const scale = Math.min(1, avail / naturalW);
+      setDashFit({ scale, width: naturalW, height: Math.ceil(naturalH * scale) });
+    };
+
+    const ro = new ResizeObserver(measure);
+    ro.observe(scaler);
+    ro.observe(frame);
+    measure();
+    return () => ro.disconnect();
+  }, []);
 
   // Reduced motion: show the end of the story rather than animating to it.
   useEffect(() => {
@@ -1208,14 +1293,22 @@ export default function LandingHero() {
   );
 
   /**
-   * How many full passes the film has made.
+   * How many times the confirmation splash has arrived.
    *
-   * Both phone screens stay mounted (they slide), so a CSS animation on
-   * the confirmation check would fire once on mount and never again.
-   * Keying the splash on the pass number remounts it each time round,
-   * which is what replays the pop.
+   * Both phone screens stay mounted (they cross-fade), so a CSS
+   * animation on the confirmation check would fire once on mount and
+   * never again. Keying the splash on this number remounts it, which is
+   * what replays the pop.
+   *
+   * Counted to the moment it ARRIVES, not to the loop boundary. While
+   * the splash was scene 0 those were the same instant; it is act 2 now,
+   * so a loop-boundary key would remount it while it was still hidden
+   * and the pop would be over before anybody saw it.
    */
-  const cycle = reduced || pinned !== null ? 0 : Math.floor((i + 1) / SCENES.length);
+  const confirmPass =
+    reduced || pinned !== null
+      ? 0
+      : Math.floor(i / SCENES.length) + (i % SCENES.length >= CONFIRM_SCENE ? 1 : 0);
 
   /**
    * Put the cursor on whatever the scene names, measured.
@@ -1291,6 +1384,19 @@ export default function LandingHero() {
         {/* Full container width, so the dashboard can be drawn at its REAL
             dimensions - 256px sidebar, 64px header, 14px body text - rather
             than a shrunken approximation of them. */}
+        <div
+          className="plh-dashscaler"
+          ref={scalerRef}
+          style={
+            dashFit
+              ? ({
+                  "--plh-dash-scale": dashFit.scale,
+                  "--plh-dash-w": `${dashFit.width}px`,
+                  "--plh-dash-h": `${dashFit.height}px`,
+                } as React.CSSProperties)
+              : undefined
+          }
+        >
         <div className="plh-frame plh-frame-dash" ref={dashRef}>
           <Dashboard
             view={scene.view}
@@ -1320,9 +1426,10 @@ export default function LandingHero() {
             <span className="plh-ripple" />
           </div>
         </div>
+        </div>
 
-        {/* Floats over the dashboard on desktop; drops below it on a phone,
-            where there is no room to overlap anything. */}
+        {/* Floats over the dashboard on desktop; sits UNDER it on a
+            phone, where the two are stacked and the phone leads. */}
         <div className="plh-frame plh-frame-phone">
           <div className="plh-phone">
             {/* Everything inside is laid out at 390px, the app's real design
@@ -1338,7 +1445,7 @@ export default function LandingHero() {
                   each time round. Both slides stay mounted, so without
                   this the animation would fire once, on first mount,
                   and the loop would be silent from then on. */}
-              <div className="plh-slide plh-slide-a" key={`c${cycle}`}>
+              <div className="plh-slide plh-slide-a" key={`c${confirmPass}`}>
                 <PhoneConfirmed pressing={!!scene.pressTouch} />
               </div>
               <div className="plh-slide plh-slide-b">
@@ -1579,13 +1686,36 @@ const CSS = `
 .plh-root:has(.plh-copy:hover) .plh-frame-phone{right:15%;}
 .plh-root:has(.plh-copy:hover) .plh-frame-dash{transform:none;}
 
-/* ── Narrow: nothing overlaps anything. Dashboard first, phone under it,
-      both in normal flow and centred. An absolutely-positioned phone on a
-      390px screen would sit on top of the only thing worth reading. ── */
+/* ── Narrow: BOTH frames, stacked, phone first. ──
+   
+   The dashboard used to be hidden outright below 900px, because at that
+   width its 256px sidebar and 14px table left no room for anything else.
+   Hiding it meant a phone visitor saw half the product - and the half
+   that is not what a building manager buys.
+   
+   So it is drawn at its REAL dimensions and scaled down to fit, the same
+   trick the phone itself uses (.plh-scale). Scaling rather than
+   reflowing for the reason in the hover note above: narrowing the table
+   by width eats the three flexible name columns until they vanish, where
+   a transform keeps every column, every proportion and the type ramp
+   intact - just smaller. It is a product SHOT at this width, not
+   something anybody reads.
+   
+   The phone goes ON TOP rather than underneath, which is where it sits
+   in the desktop composition: the phone is the thing a resident holds
+   and the first frame should be it.
+   
+   The scale itself is measured in JS (see dashFit) rather than being a
+   fixed 0.5, because "fits the width" is a different number on a 320px
+   phone and a 760px tablet, and a constant would either overflow one or
+   waste the other. */
 @media(max-width:900px){
   .plh-stage{margin-top:44px;display:flex;flex-direction:column;align-items:center;gap:26px;}
-  /* Phone only. See the note above the desktop stage rules. */
-  .plh-frame-dash{display:none;}
+  /* The phone leads. CSS order rather than reordering the markup,
+     because the DOM order is the desktop stacking order and the cursor
+     lives inside the dashboard frame. */
+  .plh-frame-phone{order:0;}
+  .plh-dashscaler{order:1;}
   /* width:max-content, matching the desktop rule. A fixed 300px here was
      a border-box width, so the frame's content box came to 274px around a
      290px phone and the device hung out of its own glass by 16px on the
@@ -1601,6 +1731,31 @@ const CSS = `
   .plh-frame{border-radius:.75em;padding-bottom:.75em;}
   .plh-dash{border-radius:9px;}
   .plh-phone{border-radius:38px;}
+
+  /* The scaler is a window: it takes the full column width and is only
+     as tall as the scaled frame, so the stage's gap lands under the
+     dashboard rather than under the empty space a transform leaves
+     behind (a transform does not change layout size - that is the whole
+     catch with scaling, and the one thing that has to be compensated by
+     hand). Both numbers come from the measurement in JS. */
+  .plh-dashscaler{
+    width:100%;max-width:100%;overflow:hidden;
+    height:var(--plh-dash-h,auto);
+  }
+  .plh-dashscaler .plh-frame-dash{
+    width:var(--plh-dash-w,1240px);
+    transform:scale(var(--plh-dash-scale,1));
+    transform-origin:top left;
+  }
+}
+
+/* Above the breakpoint the scaler is not a box at all: the frame is
+   absolutely positioned against the stage and must not be given a new
+   containing block or a height. display:contents makes the wrapper
+   disappear from layout entirely, so the desktop composition is exactly
+   what it was before this element existed. */
+@media(min-width:901px){
+  .plh-dashscaler{display:contents;}
 }
 
 /* Dashboard ────────────────────────────────────────────── */
@@ -2206,4 +2361,32 @@ const CSS = `
     animation:none!important;transition:none!important;
   }
 }
+/* ── Inside the scaler, the dashboard is DESKTOP again. ──
+   
+   Every narrow override on this file keys off the VIEWPORT, which was
+   right while the frame was the viewport's width. It no longer is: below
+   900px the frame is drawn at a fixed design width and shrunk by a
+   transform, so those overrides would shrink it a second time - and one
+   of them hides the sidebar, which is where the cursor clicks. The film
+   would have been pointing at an element that was not there.
+   
+   So the desktop values are restored here, scoped to the scaler and
+   placed last in the sheet so source order settles it. It is the real
+   dashboard, at real proportions, made small - which is the whole point
+   of scaling rather than reflowing.
+   
+   Keep this in step with the rules it mirrors. A new narrow override on
+   anything inside .plh-frame-dash needs its desktop value adding here,
+   or it will quietly apply twice. */
+@media(max-width:900px){
+  .plh-dashscaler .plh-dash{height:460px;font-size:14px;}
+  .plh-dashscaler .plh-side{display:flex;width:256px;flex:0 0 256px;}
+  .plh-dashscaler .plh-head{height:64px;flex:0 0 64px;padding:0 24px;}
+  .plh-dashscaler .plh-whoami{display:flex;}
+  .plh-dashscaler .plh-body{padding:16px 24px 0;}
+  .plh-dashscaler .plh-stats{grid-template-columns:repeat(4,1fr);}
+  .plh-dashscaler .plh-tabs{gap:28px;}
+  .plh-dashscaler .plh-tab{font-size:14px;padding-bottom:12px;}
+}
+
 `;
