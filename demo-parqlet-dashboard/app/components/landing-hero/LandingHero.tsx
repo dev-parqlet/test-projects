@@ -1315,10 +1315,17 @@ export default function LandingHero({ onBookDemo }: { onBookDemo?: () => void } 
         setStageFit(null);
         return;
       }
-      // The PARENT's content box, not the wrapper's own: the wrapper is
-      // what we are about to size, so measuring it would be measuring
-      // our own last answer.
-      const avail = scaler.parentElement?.clientWidth ?? scaler.clientWidth;
+      /**
+       * The wrapper's OWN content box.
+       *
+       * Safe to read back even though this function sizes it, because
+       * what it sets is the HEIGHT: the width is width:100% of the
+       * root's content box and does not depend on the answer. The
+       * parent was used here briefly and was wrong by exactly the
+       * root's 48px of horizontal padding, which it includes and the
+       * wrapper does not.
+       */
+      const avail = scaler.clientWidth || scaler.parentElement?.clientWidth || 0;
       if (avail === 0) return;
 
       const prev = stage.style.transform;
@@ -1543,10 +1550,22 @@ export default function LandingHero({ onBookDemo }: { onBookDemo?: () => void } 
             <span className="plh-ripple" />
           </div>
         </div>
-        </div>
 
-        {/* Floats over the dashboard on desktop; sits UNDER it on a
-            phone, where the two are stacked and the phone leads. */}
+        {/*
+          INSIDE the stage, and that is load-bearing.
+
+          It was briefly a sibling of it, which looked like a harmless
+          bit of tag shuffling and was not: a transform on an ancestor
+          becomes the containing block for its absolutely-positioned
+          descendants, so a phone outside the stage is neither scaled
+          BY the narrow fit nor positioned AGAINST the dashboard. It
+          rendered at full desktop size, pinned to top:-100px of
+          whatever box it did land in - over the headline on desktop,
+          and above everything on a phone.
+
+          The phone hangs over the dashboard's top-right corner. That
+          relationship only exists while the two share a parent.
+        */}
         <div className="plh-frame plh-frame-phone">
           <div className="plh-phone">
             {/* Everything inside is laid out at 390px, the app's real design
@@ -1572,6 +1591,7 @@ export default function LandingHero({ onBookDemo }: { onBookDemo?: () => void } 
             <span className="plh-homebar" />
             </div>
           </div>
+        </div>
         </div>
       </div>
     </section>
