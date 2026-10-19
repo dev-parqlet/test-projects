@@ -139,6 +139,11 @@ export const DEMO_CUTS: readonly DemoCut[] = [
     label: 'Condo + Long-term parking + Storage',
     blurb: 'No savings. Both the Long-term bookings tab and the Storage pages.',
   },
+  {
+    path: '/condo+savings+long-term-parking+storage',
+    label: 'Condo + Savings + Long-term parking + Storage',
+    blurb: 'Everything switched on: savings, long-term bookings and storage.',
+  },
 ];
 
 /** The absolute link for a cut, built from the browser's own origin. */
