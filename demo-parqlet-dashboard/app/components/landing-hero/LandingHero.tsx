@@ -144,7 +144,15 @@ const FEATURED = {
   whenApp: "Feb 20 7pm - Feb 22 11pm",
   startsIn: "Starts in 2h",
   activeNote: "Ends in 2d 4h",
-  credits: 5,
+  /**
+   * TWO DIFFERENT NUMBERS, which one constant used to serve.
+   *
+   * `creditsPaid` is what THIS booking cost; `wallet` is the balance in
+   * the app bar. They were the same field, so correcting one would have
+   * silently moved the other - and they are not the same fact at all.
+   */
+  creditsPaid: 3,
+  wallet: 5,
 };
 
 type Row = {
@@ -364,11 +372,23 @@ const SCENES: Scene[] = [
   // ...and the table pans again, to the pill that now reads Active.
   { hold: 2600, view: "bookings", tab: "current", phone: "home", target: null, booking: true, active: true, panRight: true },
 
-  // ── ACT 5. Back to the Dashboard page, where the loop began, with
-  //    the phone on home beside it. ──
+  // ── ACT 5. Back to the Dashboard page, where the loop began - and
+  //    BOTH screens reset together.
+  //
+  //    The click that returns the web dashboard to its Dashboard page
+  //    also clears the phone back to its default home screen. It used
+  //    to keep the Active card for one more beat and drop it at the
+  //    loop seam instead, which put the reset in the one moment nobody
+  //    is looking at: the film appeared to end on a booking and then
+  //    silently not have one.
+  //
+  //    Every other change in this film happens on both screens at once.
+  //    This is the last one that did not. ──
   { hold: 900,  view: "bookings", tab: "current", phone: "home", target: "nav:dashboard", booking: true, active: true },
   { hold: 600,  view: "bookings", tab: "current", phone: "home", target: "nav:dashboard", booking: true, active: true, pressCursor: true },
-  { hold: 1600, view: "dashboard", tab: "current", phone: "home", target: null, booking: true, active: true },
+  // No `booking`, no `active`: the same state scene 0 opens on, so the
+  // loop closes on itself and the seam has nothing left to give away.
+  { hold: 1600, view: "dashboard", tab: "current", phone: "home", target: null },
 ];
 
 /**
@@ -1055,7 +1075,7 @@ function BookingCard({ note, status }: { note: string; status: "Upcoming" | "Act
         <b className="plh-credrow">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={ASSET.credit} alt="" width={16} height={16} />
-          {FEATURED.credits}
+          {FEATURED.creditsPaid}
         </b>
       </div>
       <span className="plh-manage">Manage booking</span>
@@ -1102,7 +1122,7 @@ function PhoneHome({ active, booking }: { active: boolean; booking: boolean }) {
       <div className="plh-ph-appbar">
         <span className="plh-wordmark"><ParqletWordmark /></span>
         <span className="plh-credits">
-          <i className="plh-star">★</i> {FEATURED.credits} Credits
+          <i className="plh-star">★</i> {FEATURED.wallet} Credits
         </span>
       </div>
 
@@ -1523,7 +1543,7 @@ export default function LandingHero({ onBookDemo }: { onBookDemo?: () => void } 
           // render that dropped it would not be the same picture.
           aria-disabled={onBookDemo ? undefined : true}
         >
-          Book a demo <span aria-hidden>→</span>
+          Book a demo
         </button>
       </div>
 
@@ -1744,7 +1764,11 @@ const CSS = `
 .plh-cta{
   display:inline-flex;align-items:center;gap:8px;margin-top:28px;
   padding:13px 26px;border-radius:10px;background:${C.accent};color:${C.textStrong};
-  font-size:15px;font-weight:500;
+  /* Regular, not medium, and no trailing arrow: the button is the one
+     piece of real interface in a hero full of pictures of interface,
+     and the lighter weight is what keeps it from competing with the
+     headline above it. */
+  font-size:15px;font-weight:400;
   /* Button resets: it is a real <button> so the host page can wire it
      to a modal, and a button inherits none of this by default. */
   border:0;font-family:inherit;cursor:pointer;
