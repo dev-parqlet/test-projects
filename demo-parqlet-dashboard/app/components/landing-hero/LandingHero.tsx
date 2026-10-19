@@ -1217,6 +1217,18 @@ const PHONE_OVERHANG = 100;
  */
 const DESIGN_WIDTH = 1240;
 
+/**
+ * How much lower the phone sits once the composition is scaled, in
+ * DISPLAY px.
+ *
+ * At full size the 100px overhang reads as the handset breaking the
+ * dashboard's frame line. Shrunk, the same proportion reads as it
+ * hovering detached above the section - reported exactly that way.
+ * Display pixels rather than design pixels, so the correction is the
+ * same 15px on a phone and on a tablet.
+ */
+const PHONE_NUDGE = 15;
+
 /* ══════════════════════════════════════════════════════════════════
    THE FILM
    ══════════════════════════════════════════════════════════════════ */
@@ -1255,7 +1267,7 @@ export default function LandingHero({ onBookDemo }: { onBookDemo?: () => void } 
   const scalerRef = useRef<HTMLDivElement>(null);
 
   const [stageFit, setStageFit] = useState<
-    { scale: number; width: number; height: number; top: number } | null
+    { scale: number; width: number; height: number; top: number; nudge: number } | null
   >(null);
 
   /**
@@ -1306,9 +1318,12 @@ export default function LandingHero({ onBookDemo }: { onBookDemo?: () => void } 
      * nothing ever told it otherwise. The stage then sat unscaled at
      * its design width inside a phone-width column.
      *
-     * Keep this query in step with the @media rule it mirrors.
+     * Derived from DESIGN_WIDTH rather than written out, so it cannot
+     * drift from the @media rule it mirrors - and the band runs to the
+     * design width because below it the composition has to BE the
+     * desktop one, scaled, or the phone wanders into the copy.
      */
-    const narrow = window.matchMedia("(max-width: 900px)");
+    const narrow = window.matchMedia(`(max-width: ${DESIGN_WIDTH - 1}px)`);
 
     const measure = () => {
       if (!narrow.matches) {
@@ -1342,12 +1357,24 @@ export default function LandingHero({ onBookDemo }: { onBookDemo?: () => void } 
       if (naturalW === 0) return;
 
       const scale = Math.min(1, avail / naturalW);
-      const top = Math.round(PHONE_OVERHANG * scale);
+      /**
+       * The phone, 15 DISPLAY pixels lower than the desktop
+       * composition puts it.
+       *
+       * At full size the overhang reads as the handset breaking the
+       * dashboard's frame line; shrunk, the same proportion reads as
+       * it hovering detached above the section. Divided by the scale
+       * because it is applied inside the transform, so a flat value
+       * would arrive as 4px on a phone and 13px on a tablet.
+       */
+      const nudge = Math.round(PHONE_NUDGE / scale);
+      const top = Math.round(PHONE_OVERHANG * scale) - PHONE_NUDGE;
       setStageFit({
         scale,
         width: naturalW,
-        height: Math.ceil(naturalH * scale) + top,
-        top,
+        height: Math.ceil(naturalH * scale) + Math.max(top, 0),
+        top: Math.max(top, 0),
+        nudge,
       });
     };
 
@@ -1512,6 +1539,7 @@ export default function LandingHero({ onBookDemo }: { onBookDemo?: () => void } 
                 "--plh-fit-w": `${stageFit.width}px`,
                 "--plh-fit-h": `${stageFit.height}px`,
                 "--plh-fit-top": `${stageFit.top}px`,
+                "--plh-phone-nudge": `${stageFit.nudge}px`,
               } as React.CSSProperties)
             : undefined
         }
@@ -1876,7 +1904,21 @@ const CSS = `
    - The phone hangs 100px ABOVE the stage's top edge. Scaled, that
      overhang is 100*s, and the stage is pushed down by exactly that so
      the phone lands at the top of the wrapper instead of outside it. */
-@media(max-width:900px){
+/* The band runs to the DESIGN WIDTH, not to 900.
+   
+   It stopped at 900, and the gap between there and 1240 was the worst
+   of both: no scaling, so the dashboard reflowed instead, and a stage
+   narrower than the design meant right:15% pulled the phone leftward
+   into the centred copy. From 901 to 1239 it sat on top of the Book a
+   demo button - measured, 110px of overlap at 901 falling to 13px at
+   1180.
+   
+   Scaling the whole way to the design width fixes that by
+   construction: below it the composition IS the desktop one, so the
+   phone cannot land anywhere it does not land on a desktop. It also
+   removes the jump at 900, where the phone used to snap from 217px to
+   its full 326px as the media query let go. */
+@media(max-width:1239px){
   /* The stage keeps its desktop geometry: position:relative, the phone
      absolute over it. The only override is the width, which is pinned
      to the design width so the scale has a fixed thing to divide. */
@@ -1899,11 +1941,22 @@ const CSS = `
    height, so the desktop composition is exactly what it was before this
    element existed. */
 .plh-stagefit{display:contents;}
-@media(max-width:900px){
+@media(max-width:1239px){
   .plh-stagefit{
     display:block;position:relative;
     width:100%;max-width:100%;
     height:var(--plh-fit-h,auto);
+    /* The gap between the copy and the frames, which the narrow layout
+       had lost entirely: the stage's own 72px margin is cancelled here
+       (it would sit inside the scaled box and shrink with it), and
+       nothing had replaced it - so the phone's top edge landed exactly
+       on the CTA's bottom, measured at 0px.
+       
+       UNSCALED, deliberately. The copy above it is not scaled either,
+       so a gap that shrank with the frames would read as too tight
+       next to type that stayed put - which is the whole complaint. Two
+       CTA margins (28px) is a clear section break at any width. */
+    margin-top:56px;
     /* Not hidden: the phone's glass sits outside the stage box on
        purpose, and clipping is what the push-down below exists to make
        unnecessary. */
@@ -1925,6 +1978,18 @@ const CSS = `
        starts and is width * scale across - which is the column width
        by construction, because that is how the scale was chosen. */
     transform-origin:top left;
+  }
+
+  /* The phone 15px further down than the desktop composition puts it.
+     
+     At full size the overhang reads as the phone breaking the
+     dashboard's frame line; shrunk, the same proportion reads as the
+     handset hovering detached above the section. 15 DISPLAY pixels,
+     which is why the nudge is divided by the scale in JS before it
+     gets here - a fixed design-space value would land as 4px on a
+     phone and 13px on a tablet, which is no correction at all. */
+  .plh-stagefit .plh-frame-phone{
+    top:calc(-100px + var(--plh-phone-nudge,0px));
   }
 }
 
@@ -2570,7 +2635,7 @@ const CSS = `
    Keep this in step with the rules it mirrors. A new narrow override on
    anything inside the stage needs its desktop value adding here, or it
    will quietly apply twice. */
-@media(max-width:900px){
+@media(max-width:1239px){
   .plh-stagefit .plh-dash{height:460px;font-size:14px;}
   .plh-stagefit .plh-side{display:flex;width:256px;flex:0 0 256px;}
   .plh-stagefit .plh-head{height:64px;flex:0 0 64px;padding:0 24px;}
@@ -2579,6 +2644,17 @@ const CSS = `
   .plh-stagefit .plh-stats{grid-template-columns:repeat(4,1fr);}
   .plh-stagefit .plh-tabs{gap:28px;}
   .plh-stagefit .plh-tab{font-size:14px;padding-bottom:12px;}
+  /* Exposed by widening the band: these key off 1040, 1100, 1180 and
+     1280, all of which now fall inside it. */
+  .plh-stagefit .plh-row{height:57px;padding:0 24px;font-size:14px;}
+  .plh-stagefit .plh-thead{height:48px;padding:0 24px;}
+  .plh-stagefit .plh-filters{display:flex;}
+  /* The phone shrinks itself below 900 - a second scale inside an
+     already-scaled stage, which would make the handset a different
+     size relative to the dashboard than it is on a desktop. The
+     composition has to be the SAME picture, only smaller. */
+  .plh-stagefit .plh-phone{width:300px;height:560px;}
+  .plh-stagefit .plh-scale{transform:scale(.7692);}
 }
 
 `;
