@@ -1195,6 +1195,18 @@ function readPinnedScene(): number | null {
   return Number.isInteger(n) && n >= 0 && n < SCENES.length ? n : null;
 }
 
+/**
+ * How far the phone hangs above the stage's top edge, in px.
+ *
+ * Matches `.plh-frame-phone{top:-100px}` in the sheet below. Named
+ * rather than repeated as a literal because the narrow fit has to push
+ * the stage down by exactly this much, scaled - and a phone that moved
+ * without this following it would be clipped off the top of the hero on
+ * every small screen, which is not a thing anybody would notice while
+ * testing on a laptop.
+ */
+const PHONE_OVERHANG = 100;
+
 /* ══════════════════════════════════════════════════════════════════
    THE FILM
    ══════════════════════════════════════════════════════════════════ */
@@ -1220,62 +1232,78 @@ export default function LandingHero() {
   const stageRef = useRef<HTMLDivElement>(null);
   /** The dashboard frame, which `data-hit` boxes are measured against. */
   const dashRef = useRef<HTMLDivElement>(null);
-  /** The window the dashboard is scaled inside on a narrow screen. */
+  /** The window the whole stage is fitted inside on a narrow screen. */
   const scalerRef = useRef<HTMLDivElement>(null);
 
-  const [dashFit, setDashFit] = useState<
-    { scale: number; width: number; height: number } | null
+  const [stageFit, setStageFit] = useState<
+    { scale: number; width: number; height: number; top: number } | null
   >(null);
 
   /**
-   * Fit the dashboard to the width it has, on narrow screens.
+   * Fit the WHOLE composition to the column, on a narrow screen.
    *
-   * Below 900px the frame used to be hidden outright - a phone visitor
-   * saw the phone and nothing else, which is half the product and the
-   * half a building manager does not buy. It is drawn at its real
-   * dimensions and scaled instead, the same thing the phone does to its
-   * own 390px design width.
+   * Below 900px the dashboard was hidden outright; then it was stacked
+   * under the phone and scaled on its own. Both showed something,
+   * neither showed the PICTURE - the phone hanging over the dashboard's
+   * top-right corner IS the composition, and a version that takes it
+   * apart is a different image that happens to contain the same parts.
    *
-   * MEASURED, not a constant. "Fits the width" is a different number on
-   * a 320px phone and a 760px tablet, so a fixed 0.5 would overflow one
-   * and waste the other. The frame is read at its natural width with the
-   * transform cancelled, so the measurement cannot feed on its own
-   * output and converge somewhere arbitrary.
+   * So nothing is re-laid-out here. The stage keeps its desktop
+   * geometry and the whole thing is scaled as one, which is what "like
+   * desktop, but smaller" has to mean: every proportion and every
+   * overlap survives because none of them is recalculated.
    *
-   * A transform does not change layout size, so the wrapper is given an
-   * explicit height too - otherwise the stage's gap would sit under the
-   * empty space the un-scaled frame still occupies.
+   * MEASURED, not a constant - "fits the width" is a different number
+   * on a 320px phone and a 760px tablet - and measured with the
+   * transform CANCELLED, so the reading cannot feed on its own output
+   * and converge somewhere arbitrary.
    *
-   * setState lives in the observer callback, not in the effect body:
-   * this is a subscription to an external system (the element's box),
-   * which is exactly what effects are for.
+   * Two things a transform does not do, both compensated here:
+   *
+   *   - it does not change layout size, so the wrapper gets an explicit
+   *     height or whatever follows sits under the full-size stage's
+   *     empty space;
+   *   - the phone hangs PHONE_OVERHANG above the stage's top edge, so
+   *     the stage is pushed down by that much SCALED, and the phone
+   *     lands at the top of the wrapper rather than above it.
+   *
+   * setState is in the observer callback rather than the effect body:
+   * this is a subscription to an element's box, which is what effects
+   * are for.
    */
   useEffect(() => {
     const scaler = scalerRef.current;
-    const frame = dashRef.current;
-    if (!scaler || !frame || typeof ResizeObserver === "undefined") return;
+    const stage = stageRef.current;
+    if (!scaler || !stage || typeof ResizeObserver === "undefined") return;
 
     const measure = () => {
       // display:contents above the breakpoint, so the wrapper has no box
-      // of its own and there is nothing to fit the frame into.
+      // of its own and there is nothing to fit the stage into.
       const avail = scaler.clientWidth;
       if (avail === 0) {
-        setDashFit(null);
+        setStageFit(null);
         return;
       }
-      const prev = frame.style.transform;
-      frame.style.transform = "none";
-      const naturalW = frame.offsetWidth;
-      const naturalH = frame.offsetHeight;
-      frame.style.transform = prev;
+      const prev = stage.style.transform;
+      stage.style.transform = "none";
+      const naturalW = stage.offsetWidth;
+      const naturalH = stage.offsetHeight;
+      stage.style.transform = prev;
       if (naturalW === 0) return;
+
       const scale = Math.min(1, avail / naturalW);
-      setDashFit({ scale, width: naturalW, height: Math.ceil(naturalH * scale) });
+      const top = Math.round(PHONE_OVERHANG * scale);
+      setStageFit({
+        scale,
+        width: naturalW,
+        height: Math.ceil(naturalH * scale) + top,
+        top,
+      });
     };
 
     const ro = new ResizeObserver(measure);
     ro.observe(scaler);
-    ro.observe(frame);
+    ro.observe(stage);
     measure();
     return () => ro.disconnect();
   }, []);
@@ -1406,24 +1434,27 @@ export default function LandingHero() {
         <div className="plh-cta">Book a demo <span aria-hidden>→</span></div>
       </div>
 
+      {/* Fits the WHOLE composition to the column on a narrow screen,
+          and is invisible to layout everywhere else. */}
+      <div
+        className="plh-stagefit"
+        ref={scalerRef}
+        style={
+          stageFit
+            ? ({
+                "--plh-fit-scale": stageFit.scale,
+                "--plh-fit-w": `${stageFit.width}px`,
+                "--plh-fit-h": `${stageFit.height}px`,
+                "--plh-fit-top": `${stageFit.top}px`,
+              } as React.CSSProperties)
+            : undefined
+        }
+      >
       {/* The stage is inert: a film, not a control surface. */}
       <div className="plh-stage" ref={stageRef} aria-hidden>
         {/* Full container width, so the dashboard can be drawn at its REAL
             dimensions - 256px sidebar, 64px header, 14px body text - rather
             than a shrunken approximation of them. */}
-        <div
-          className="plh-dashscaler"
-          ref={scalerRef}
-          style={
-            dashFit
-              ? ({
-                  "--plh-dash-scale": dashFit.scale,
-                  "--plh-dash-w": `${dashFit.width}px`,
-                  "--plh-dash-h": `${dashFit.height}px`,
-                } as React.CSSProperties)
-              : undefined
-          }
-        >
         <div className="plh-frame plh-frame-dash" ref={dashRef}>
           <Dashboard
             view={scene.view}
@@ -1713,76 +1744,70 @@ const CSS = `
 .plh-root:has(.plh-copy:hover) .plh-frame-phone{right:15%;}
 .plh-root:has(.plh-copy:hover) .plh-frame-dash{transform:none;}
 
-/* ── Narrow: BOTH frames, stacked, phone first. ──
+/* ── Narrow: THE SAME COMPOSITION, SMALLER. ──
    
    The dashboard used to be hidden outright below 900px, because at that
    width its 256px sidebar and 14px table left no room for anything else.
    Hiding it meant a phone visitor saw half the product - and the half
    that is not what a building manager buys.
    
-   So it is drawn at its REAL dimensions and scaled down to fit, the same
-   trick the phone itself uses (.plh-scale). Scaling rather than
-   reflowing for the reason in the hover note above: narrowing the table
-   by width eats the three flexible name columns until they vanish, where
-   a transform keeps every column, every proportion and the type ramp
-   intact - just smaller. It is a product SHOT at this width, not
-   something anybody reads.
+   It was then stacked: dashboard scaled, phone above it in normal flow.
+   That showed both, but it was a different picture from the one the
+   hero is composed as. So nothing is re-laid-out here any more. The
+   WHOLE STAGE - dashboard, phone hanging over its top-right corner,
+   cursor and all - is drawn at its desktop dimensions and scaled down
+   as one. Every proportion and every overlap survives, because none of
+   them is recalculated.
    
-   The phone goes ON TOP rather than underneath, which is where it sits
-   in the desktop composition: the phone is the thing a resident holds
-   and the first frame should be it.
+   Scaling rather than reflowing, for the reason in the hover note
+   above: narrowing the table by width eats the three flexible name
+   columns until they vanish, where a transform keeps every column and
+   the whole type ramp intact, just smaller. It is a product SHOT at
+   this width, not something anybody reads.
    
-   The scale itself is measured in JS (see dashFit) rather than being a
-   fixed 0.5, because "fits the width" is a different number on a 320px
-   phone and a 760px tablet, and a constant would either overflow one or
-   waste the other. */
+   The scale is measured in JS (see stageFit) rather than being a fixed
+   number, because "fits the width" is different on a 320px phone and a
+   760px tablet, and a constant would overflow one or waste the other.
+   
+   TWO THINGS A TRANSFORM DOES NOT DO, both compensated from the
+   measurement:
+   
+   - It does not change layout size, so the wrapper is given an explicit
+     height or the section below would sit under the full-size stage's
+     empty space.
+   - The phone hangs 100px ABOVE the stage's top edge. Scaled, that
+     overhang is 100*s, and the stage is pushed down by exactly that so
+     the phone lands at the top of the wrapper instead of outside it. */
 @media(max-width:900px){
-  .plh-stage{margin-top:44px;display:flex;flex-direction:column;align-items:center;gap:26px;}
-  /* The phone leads. CSS order rather than reordering the markup,
-     because the DOM order is the desktop stacking order and the cursor
-     lives inside the dashboard frame. */
-  .plh-frame-phone{order:0;}
-  .plh-dashscaler{order:1;}
-  /* width:max-content, matching the desktop rule. A fixed 300px here was
-     a border-box width, so the frame's content box came to 274px around a
-     290px phone and the device hung out of its own glass by 16px on the
-     narrow layout - the same bug that was fixed for desktop, reintroduced
-     by this override. Let it size to the phone. */
-  .plh-frame-phone{position:static;right:auto;top:auto;width:max-content;}
-
-  /* Rounded on all four corners here, and padded on the bottom to match.
-     The square bottom is for the desktop composition, where the frames
-     are deliberately cut off by the edge of the hero. Stacked in normal
-     flow they are not cut off by anything, so a flat bottom just reads as
-     an unfinished card. */
-  .plh-frame{border-radius:.75em;padding-bottom:.75em;}
-  .plh-dash{border-radius:9px;}
-  .plh-phone{border-radius:38px;}
-
-  /* The scaler is a window: it takes the full column width and is only
-     as tall as the scaled frame, so the stage's gap lands under the
-     dashboard rather than under the empty space a transform leaves
-     behind (a transform does not change layout size - that is the whole
-     catch with scaling, and the one thing that has to be compensated by
-     hand). Both numbers come from the measurement in JS. */
-  .plh-dashscaler{
-    width:100%;max-width:100%;overflow:hidden;
-    height:var(--plh-dash-h,auto);
-  }
-  .plh-dashscaler .plh-frame-dash{
-    width:var(--plh-dash-w,1240px);
-    transform:scale(var(--plh-dash-scale,1));
-    transform-origin:top left;
-  }
+  /* The stage keeps its desktop geometry: position:relative, the phone
+     absolute over it. The only override is the width, which is pinned
+     to the design width so the scale has a fixed thing to divide. */
+  .plh-stage{margin-top:0;width:var(--plh-fit-w,1240px);max-width:none;}
+  .plh-frame-dash{width:100%;}
 }
 
-/* Above the breakpoint the scaler is not a box at all: the frame is
-   absolutely positioned against the stage and must not be given a new
-   containing block or a height. display:contents makes the wrapper
-   disappear from layout entirely, so the desktop composition is exactly
-   what it was before this element existed. */
-@media(min-width:901px){
-  .plh-dashscaler{display:contents;}
+/* The wrapper that does the fitting. Outside the media query because
+   its only job above the breakpoint is to be invisible to layout, and
+   display:contents says that in one line - no containing block, no
+   height, so the desktop composition is exactly what it was before this
+   element existed. */
+.plh-stagefit{display:contents;}
+@media(max-width:900px){
+  .plh-stagefit{
+    display:block;position:relative;
+    width:100%;max-width:100%;
+    height:var(--plh-fit-h,auto);
+    /* Not hidden: the phone's glass sits outside the stage box on
+       purpose, and clipping is what the push-down below exists to make
+       unnecessary. */
+    overflow:visible;
+  }
+  .plh-stagefit .plh-stage{
+    transform:translateY(var(--plh-fit-top,0px)) scale(var(--plh-fit-scale,1));
+    /* top center, so the composition stays centred in the column as it
+       shrinks rather than drifting toward one edge. */
+    transform-origin:top center;
+  }
 }
 
 /* Dashboard ────────────────────────────────────────────── */
@@ -2404,14 +2429,14 @@ const CSS = `
     animation:none!important;transition:none!important;
   }
 }
-/* ── Inside the scaler, the dashboard is DESKTOP again. ──
+/* ── Inside the scaler, everything is DESKTOP again. ──
    
-   Every narrow override on this file keys off the VIEWPORT, which was
-   right while the frame was the viewport's width. It no longer is: below
-   900px the frame is drawn at a fixed design width and shrunk by a
-   transform, so those overrides would shrink it a second time - and one
-   of them hides the sidebar, which is where the cursor clicks. The film
-   would have been pointing at an element that was not there.
+   Every narrow override in this file keys off the VIEWPORT, which was
+   right while the stage was the viewport's width. It no longer is:
+   below 900px the stage is drawn at a fixed design width and shrunk by
+   a transform, so those overrides would shrink it a second time - and
+   one of them hides the sidebar, which is where the cursor clicks. The
+   film would have been pointing at an element that was not there.
    
    So the desktop values are restored here, scoped to the scaler and
    placed last in the sheet so source order settles it. It is the real
@@ -2419,17 +2444,17 @@ const CSS = `
    of scaling rather than reflowing.
    
    Keep this in step with the rules it mirrors. A new narrow override on
-   anything inside .plh-frame-dash needs its desktop value adding here,
-   or it will quietly apply twice. */
+   anything inside the stage needs its desktop value adding here, or it
+   will quietly apply twice. */
 @media(max-width:900px){
-  .plh-dashscaler .plh-dash{height:460px;font-size:14px;}
-  .plh-dashscaler .plh-side{display:flex;width:256px;flex:0 0 256px;}
-  .plh-dashscaler .plh-head{height:64px;flex:0 0 64px;padding:0 24px;}
-  .plh-dashscaler .plh-whoami{display:flex;}
-  .plh-dashscaler .plh-body{padding:16px 24px 0;}
-  .plh-dashscaler .plh-stats{grid-template-columns:repeat(4,1fr);}
-  .plh-dashscaler .plh-tabs{gap:28px;}
-  .plh-dashscaler .plh-tab{font-size:14px;padding-bottom:12px;}
+  .plh-stagefit .plh-dash{height:460px;font-size:14px;}
+  .plh-stagefit .plh-side{display:flex;width:256px;flex:0 0 256px;}
+  .plh-stagefit .plh-head{height:64px;flex:0 0 64px;padding:0 24px;}
+  .plh-stagefit .plh-whoami{display:flex;}
+  .plh-stagefit .plh-body{padding:16px 24px 0;}
+  .plh-stagefit .plh-stats{grid-template-columns:repeat(4,1fr);}
+  .plh-stagefit .plh-tabs{gap:28px;}
+  .plh-stagefit .plh-tab{font-size:14px;padding-bottom:12px;}
 }
 
 `;
