@@ -269,7 +269,7 @@ export default function StorageBookingsPage() {
   const debounced = useDebounce(query, 300);
   const queryClient = useQueryClient();
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading: fetching, error, refetch } = useQuery({
     queryKey: ["storage-bookings", { buildingId, tab, search: debounced, statusFilter, notesFilter }],
     queryFn: async (): Promise<{ data: StorageBooking[]; total: number }> => {
       const sp = new URLSearchParams();
@@ -284,6 +284,23 @@ export default function StorageBookingsPage() {
     },
     enabled: !!buildingId,
   });
+
+  /**
+   * "No storage bookings found" was showing for a moment on the FIRST
+   * visit, before the data arrived, and correcting itself on reload.
+   *
+   * A DISABLED query is not a loading one. React Query reports
+   * `isLoading: false` while `enabled` is false, so during the tick
+   * before the session resolves - when `buildingId` is still "" - the
+   * table fell straight through to its empty state. On a reload the
+   * identity is already in hand, the query is enabled from the first
+   * render, and the empty state never appears; which is exactly the
+   * "reload and the data is there" that was reported.
+   *
+   * So "waiting" is the absence of an answer, not the presence of a
+   * request.
+   */
+  const isLoading = fetching || !buildingId;
 
   /**
    * The demo has no backend, so a note is written straight into the
