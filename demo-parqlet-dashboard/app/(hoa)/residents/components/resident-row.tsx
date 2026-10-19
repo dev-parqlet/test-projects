@@ -199,10 +199,10 @@ export function ResidentRow({
       {cell(5,  txt(resident.unitNumber))}
       {cell(NAME_COLUMN_WIDTH,
         <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)", minWidth: 0 }}>
+          <PhoneWithTooltip phone={resident.phone} />
           <CopyableCell value={resident.name} style={nameTextStyle}>
             <span style={nameTextStyle}>{resident.name}</span>
           </CopyableCell>
-          <PhoneWithTooltip phone={resident.phone} />
         </div>
       )}
       {cell(PARKING_COLUMN_WIDTH,  wrapTxt(resident.parkingSpotNumbers || "N/A"))}

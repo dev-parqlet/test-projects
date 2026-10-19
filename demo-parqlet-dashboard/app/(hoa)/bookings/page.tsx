@@ -471,20 +471,20 @@ function BookingRow({ booking, isLast, onOpenNote, highlighted, rowRef, isCurren
       {cell(UNIT_WIDTH,  <CopyableCell value={booking.unitNumber}><span style={cellTxt}>{booking.unitNumber}</span></CopyableCell>)}
       {cell(NAME_COLUMN_WIDTH,
         <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)", minWidth: 0 }}>
+          <PhoneWithTooltip phone={booking.residentPhone} />
           <CopyableCell value={booking.residentName} style={nameTextStyle}>
             <span style={nameTextStyle}>{booking.residentName}</span>
           </CopyableCell>
-          <PhoneWithTooltip phone={booking.residentPhone} />
         </div>
       )}
       {cell(BOOKED_SPOT_WIDTH,  <CopyableCell value={booking.spotNumber}><span style={cellTxt}>{booking.spotNumber}</span></CopyableCell>)}
       {cell(NAME_COLUMN_WIDTH,
         booking.spotOwnerName ? (
           <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)", minWidth: 0 }}>
+            <PhoneWithTooltip phone={booking.spotOwnerPhone ?? ""} />
             <CopyableCell value={booking.spotOwnerName} style={nameTextStyle}>
               <span style={nameTextStyle}>{booking.spotOwnerName}</span>
             </CopyableCell>
-            <PhoneWithTooltip phone={booking.spotOwnerPhone ?? ""} />
           </div>
         ) : (
           <span style={cellTxt}>—</span>
@@ -492,13 +492,13 @@ function BookingRow({ booking, isLast, onOpenNote, highlighted, rowRef, isCurren
       )}
       {cell(NAME_COLUMN_WIDTH,
         <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)", minWidth: 0 }}>
+          <PhoneWithTooltip phone={booking.guestPhone} />
           {/* A long-term row has no guest - the arrangement is between
               two residents, with nobody visiting - so the cell says so
               rather than sitting empty, which reads as missing data. */}
           <CopyableCell value={booking.guestName ?? undefined} style={nameTextStyle}>
             <span style={nameTextStyle}>{booking.guestName || "—"}</span>
           </CopyableCell>
-          <PhoneWithTooltip phone={booking.guestPhone} />
         </div>
       )}
       {cell(LICENSE_PLATE_WIDTH, <CopyableCell value={booking.licensePlate}><span style={cellTxt}>{booking.licensePlate}</span></CopyableCell>)}
