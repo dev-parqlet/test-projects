@@ -90,6 +90,7 @@ function IcNotes() {
 
 export function ResidentRow({
   resident, isLast, bulkInvited, bulkInvitedDate, checked, onToggle, onOpenNote, onSendInvite, onRevokeAccess, isRevoked = false,
+  showStorage = false,
 }: {
   resident: Resident;
   isLast: boolean;
@@ -105,6 +106,10 @@ export function ResidentRow({
   // surface the revoked state (e.g. the HOA resident directory, whose
   // backend list filters out excluded rows).
   isRevoked?: boolean;
+  /** Adds the Storage # cell after Parking #. Only on a cut whose URL
+   *  carries the storage token - everywhere else it would be a column
+   *  of dashes. */
+  showStorage?: boolean;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
@@ -201,6 +206,9 @@ export function ResidentRow({
         </div>
       )}
       {cell(PARKING_COLUMN_WIDTH,  wrapTxt(resident.parkingSpotNumbers || "N/A"))}
+      {/* "N/A", not a dash: about half a building has a locker, and an
+          empty cell in a half-empty column reads as missing data. */}
+      {showStorage && cell(PARKING_COLUMN_WIDTH, wrapTxt(resident.storageNumbers || "N/A"))}
       {cell(16, emailCell(resident.email))}
       {cell(7,  txt(resident.residencyType))}
       {cell(10, (() => {

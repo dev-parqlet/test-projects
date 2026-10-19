@@ -10,6 +10,8 @@ export interface Resident {
   phone:            string;
   unitNumber:       string | null;
   parkingSpotNumbers: string | null;
+  /** Lockers this resident has. Only read on a cut with storage on. */
+  storageNumbers?: string | null;
   email:            string;
   buildingId:       string;
   residencyType:    ResidencyType;

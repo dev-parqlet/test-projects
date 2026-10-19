@@ -84,6 +84,69 @@ export const DEMO_IDENTITIES: Record<DemoVariant, DemoIdentity> = {
   },
 };
 
+
+/**
+ * The cuts the front door lists.
+ *
+ * One entry per link we hand out. They are not separate products or
+ * separate data - every Condo row below opens The Meridian with the same
+ * mock corpus - the prefix only decides which optional features its
+ * screens draw. See lib/demo/product-path.ts.
+ *
+ * Written out rather than generated from the flag combinations, even
+ * though the parser would accept all eight: this list is what somebody
+ * is given to send, and the three combinations nobody asked for would be
+ * three more links to explain on a call.
+ */
+export type DemoCut = {
+  path: string;
+  label: string;
+  blurb: string;
+};
+
+export const DEMO_CUTS: readonly DemoCut[] = [
+  {
+    path: '/condo',
+    label: 'Condo',
+    blurb:
+      'Residents own and share their own spots. No savings story, no long-term, no storage.',
+  },
+  {
+    path: '/apartment',
+    label: 'Apartments',
+    blurb:
+      'The building owns spots, prices them itself and is paid in dollars.',
+  },
+  {
+    path: '/condo+savings',
+    label: 'Condo + Savings',
+    blurb: 'The Condo dashboard with the savings card and the Savings page.',
+  },
+  {
+    path: '/condo+savings+storage',
+    label: 'Condo + Savings + Storage',
+    blurb:
+      'Savings, plus the Storage bookings page and the Storage # column in the directory.',
+  },
+  {
+    path: '/condo+long-term-parking',
+    label: 'Condo + Long-term parking',
+    blurb:
+      'No savings. Adds the Long-term bookings tab to the Bookings table.',
+  },
+  {
+    path: '/condo+long-term-parking+storage',
+    label: 'Condo + Long-term parking + Storage',
+    blurb: 'No savings. Both the Long-term bookings tab and the Storage pages.',
+  },
+];
+
+/** The absolute link for a cut, built from the browser's own origin. */
+export function cutUrl(path: string): string {
+  const origin = typeof window === 'undefined' ? '' : window.location.origin;
+  return `${origin}${path}`;
+}
+
 export const DEFAULT_VARIANT: DemoVariant = 'condo';
 
 /** localStorage key holding the visitor's choice. */

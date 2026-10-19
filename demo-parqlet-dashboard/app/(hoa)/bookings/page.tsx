@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { listBookings, updateBookingNote, bookingKeys, Booking, BookingListParams } from "../../lib/api/bookings";
 import { useBuildingFilter } from "../../components/context/building-filter-context";
 import { useAuth } from "../../components/auth/auth-provider";
+import { showsLongTermParking } from "../../lib/demo/product-path";
 
 import { TextButton } from "../../components/text-button";
 import { Button } from "../../components/ui/Button";
@@ -23,7 +24,14 @@ import "../../tokens.css";
 // ─── Types ────────────────────────────────────────────────────────────────────
 // NOTE: Booking type is now imported from ../lib/api/bookings
 // BookingTab is a local type for UI state (not from API)
-type BookingTab = "current" | "future" | "past";
+/**
+ * "long-term" sits between future and past because a long-term
+ * arrangement is a live thing rather than history - that is where the
+ * design puts it too. It is shown only on a cut whose URL carries the
+ * long-term-parking token; everywhere else it would be a tab that can
+ * never hold a row, which reads as broken rather than as "not for you".
+ */
+type BookingTab = "current" | "future" | "long-term" | "past";
 
 // ─── Debounce hook ───────────────────────────────────────────────────────────
 function useDebounce<T>(value: T, delay: number): T {
@@ -362,6 +370,29 @@ function NoteModal({
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+
+/**
+ * Where a long-term rental sits in time.
+ *
+ * Read off the raw instants rather than the display strings: those are
+ * formatted for reading and carry no time at all, and the windows run
+ * for months, so a build a fortnight old would badge a rental that has
+ * started as still upcoming.
+ */
+function longTermRunning(b: Booking): boolean {
+  const now = Date.now();
+  const start = b.bookingStartIso ? Date.parse(b.bookingStartIso) : NaN;
+  const end = b.bookingEndIso ? Date.parse(b.bookingEndIso) : NaN;
+  if (!Number.isNaN(start) && start > now) return false;
+  if (!Number.isNaN(end) && end <= now) return false;
+  return true;
+}
+
+function longTermEnded(b: Booking): boolean {
+  const end = b.bookingEndIso ? Date.parse(b.bookingEndIso) : NaN;
+  return !Number.isNaN(end) && end <= Date.now();
+}
+
 function BookingRow({ booking, isLast, onOpenNote, highlighted, rowRef, isCurrentTab, isPastTab }: { booking: Booking; isLast: boolean; onOpenNote: () => void; highlighted?: boolean; rowRef?: React.RefObject<HTMLDivElement | null>; isCurrentTab: boolean; isPastTab: boolean }) {
   const cell = (flex: number | string, content: React.ReactNode, extraStyle?: React.CSSProperties) => (
     <div style={{ flex: typeof flex === "number" ? `${flex} 1 0` : flex, minWidth: 0, ...extraStyle }}>
@@ -461,8 +492,11 @@ function BookingRow({ booking, isLast, onOpenNote, highlighted, rowRef, isCurren
       )}
       {cell(NAME_COLUMN_WIDTH,
         <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)", minWidth: 0 }}>
-          <CopyableCell value={booking.guestName} style={nameTextStyle}>
-            <span style={nameTextStyle}>{booking.guestName}</span>
+          {/* A long-term row has no guest - the arrangement is between
+              two residents, with nobody visiting - so the cell says so
+              rather than sitting empty, which reads as missing data. */}
+          <CopyableCell value={booking.guestName ?? undefined} style={nameTextStyle}>
+            <span style={nameTextStyle}>{booking.guestName || "—"}</span>
           </CopyableCell>
           <PhoneWithTooltip phone={booking.guestPhone} />
         </div>
@@ -579,6 +613,14 @@ function BookingsContent() {
   const isSuperAdmin = user?.role === "super_admin";
   const { selectedIds } = useBuildingFilter();
   const [tab,             setTab]             = useState<BookingTab>("current");
+  /**
+   * Which tabs this cut gets. The URL is the demo's source of truth for
+   * which features a building has - see lib/demo/product-path.ts.
+   */
+  const pathname = usePathname();
+  const tabsShown: BookingTab[] = showsLongTermParking(pathname)
+    ? ["current", "future", "long-term", "past"]
+    : ["current", "future", "past"];
   const [query,           setQuery]           = useState("");
   const [page,            setPage]            = useState(1);
   const [rowsPerPage,     setRowsPerPage]     = useState(10);
@@ -704,8 +746,8 @@ function BookingsContent() {
   if (sortFilter === "Name Z→A")  pipeline = [...pipeline].sort((a, b) => compareNamesIgnoringLeadingSymbols(b.residentName, a.residentName));
   if (sortFilter === "Unit A→Z")  pipeline = [...pipeline].sort((a, b) => compareNamesIgnoringLeadingSymbols(a.unitNumber ?? "", b.unitNumber ?? ""));
   if (sortFilter === "Unit Z→A")  pipeline = [...pipeline].sort((a, b) => compareNamesIgnoringLeadingSymbols(b.unitNumber ?? "", a.unitNumber ?? ""));
-  if (sortFilter === "Guest A→Z") pipeline = [...pipeline].sort((a, b) => compareNamesIgnoringLeadingSymbols(a.guestName, b.guestName));
-  if (sortFilter === "Guest Z→A") pipeline = [...pipeline].sort((a, b) => compareNamesIgnoringLeadingSymbols(b.guestName, a.guestName));
+  if (sortFilter === "Guest A→Z") pipeline = [...pipeline].sort((a, b) => compareNamesIgnoringLeadingSymbols(a.guestName ?? "", b.guestName ?? ""));
+  if (sortFilter === "Guest Z→A") pipeline = [...pipeline].sort((a, b) => compareNamesIgnoringLeadingSymbols(b.guestName ?? "", a.guestName ?? ""));
 
   const displayed = pipeline;
   const total = apiData?.total ?? 0;
@@ -767,9 +809,13 @@ function BookingsContent() {
             marginTop: "var(--spacing-24)",
             borderBottom: "1px solid var(--color-stroke-medium)",
           }}>
-            {(["current", "future", "past"] as BookingTab[]).map((t) => {
+            {tabsShown.map((t) => {
               const isActive = tab === t;
-              const label    = t === "current" ? "Current bookings" : t === "future" ? "Upcoming bookings" : "Past bookings";
+              const label =
+                t === "current" ? "Current bookings"
+                : t === "future" ? "Upcoming bookings"
+                : t === "long-term" ? "Long-term bookings"
+                : "Past bookings";
               return (
                 <button
                   key={t}
@@ -960,8 +1006,12 @@ function BookingsContent() {
                     onOpenNote={() => setActiveNoteId(booking.id)}
                     highlighted={booking.id === highlightId}
                     rowRef={booking.id === highlightId ? highlightRef : undefined}
-                    isCurrentTab={tab === "current"}
-                    isPastTab={tab === "past"}
+                    // On the Long-term tab the bucket is per ROW, not
+                    // per tab: one list holds upcoming, running and
+                    // finished rentals, so passing false for both would
+                    // badge one that started last year as "Upcoming".
+                    isCurrentTab={tab === "current" || (tab === "long-term" && longTermRunning(booking))}
+                    isPastTab={tab === "past" || (tab === "long-term" && longTermEnded(booking))}
                   />
                 ))
               ) : (

@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 import { useAuth } from "../../components/auth/auth-provider";
+import { showsStorage } from "../../lib/demo/product-path";
 import { useAutoInvite } from "../../components/auto-invite-context";
 import { useBuildingFilter } from "../../components/context/building-filter-context";
 import { FilterDropdown } from "../../components/ui/FilterDropdown";
@@ -39,6 +41,10 @@ function useDebounce<T>(value: T, delay: number): T {
 // Column header flex widths MUST mirror the cell widths rendered by
 // ResidentRow (see app/(hoa)/residents/components/resident-row.tsx).
 // Keep in sync with app/(superadmin)/super-admin/residents/page.tsx#COLUMNS.
+/** Inserted after Parking # only on a cut whose URL carries the storage
+ *  token - everywhere else it would be a column of dashes. */
+const STORAGE_COLUMN = { label: "Storage #", flex: PARKING_COLUMN_WIDTH };
+
 const COLUMNS: { label: string; flex: number | string }[] = [
   { label: "Unit #",           flex: 5  },
   { label: "Resident Name",    flex: NAME_COLUMN_WIDTH },
@@ -130,6 +136,13 @@ export default function ParkingLotsPage() {
   // Building ID: use first selected filter, or the user's own buildingId as fallback.
   // "default" is a last-resort that never matches real buildings — signals a misconfiguration.
   const buildingId = selectedIds[0] ?? user?.buildingIds?.[0] ?? "default";
+  // The URL is the demo's source of truth for which features a building
+  // has - see lib/demo/product-path.ts.
+  const pathname = usePathname();
+  const showStorage = showsStorage(pathname);
+  const columns = showStorage
+    ? [...COLUMNS.slice(0, 3), STORAGE_COLUMN, ...COLUMNS.slice(3)]
+    : COLUMNS;
 
   // Debounce search query to avoid excessive API calls
   const debouncedQuery = useDebounce(query, 300);
@@ -478,7 +491,7 @@ return (
                     }}
                   />
                 </div>
-                {COLUMNS.map((col) => (
+                {columns.map((col) => (
                   <div key={col.label} style={{ flex: typeof col.flex === "number" ? `${col.flex} 1 0` : col.flex, minWidth: 0, display: "flex", justifyContent: col.label === "Actions" ? "flex-end" : "flex-start" }}>
                     <button
                       onClick={() => handleSort(col.label)}
@@ -560,6 +573,7 @@ return (
                   <ResidentRow
                     key={resident.id}
                     resident={resident}
+                    showStorage={showStorage}
                     isLast={i === displayed.length - 1}
                     bulkInvited={bulkInvited}
                     bulkInvitedDate={bulkInvitedDate}

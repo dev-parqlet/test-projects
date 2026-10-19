@@ -15,6 +15,7 @@ function pathnameToNavId(raw: string): NavId {
   const pathname = stripProductPrefix(raw);
   if (pathname === "/")                                            return "dashboard";
   if (pathname === "/bookings")                                    return "bookings";
+  if (pathname === "/storage-bookings")                            return "storage-bookings";
   if (pathname === "/residents")                                   return "residents";
   if (pathname === "/tickets" || pathname.startsWith("/tickets/")) return "tickets";
   if (pathname === "/subscription")                                return "subscription";

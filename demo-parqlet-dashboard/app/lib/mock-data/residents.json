@@ -30,7 +30,8 @@
       ],
       "excludedAt": "2026-09-11T10:30:00.000Z",
       "excludedBy": "1f6e10dc-77f0-4d4d-8e51-1c5fbb4f8e9a",
-      "parkingSpotNumbers": "108"
+      "parkingSpotNumbers": "108",
+      "storageNumbers": "1"
     },
     {
       "id": "33f8f2e8-63e2-4eb6-82ee-7098245ec61e",
@@ -57,7 +58,8 @@
       "notes": [],
       "excludedAt": "2026-09-11T10:30:00.000Z",
       "excludedBy": "1f6e10dc-77f0-4d4d-8e51-1c5fbb4f8e9a",
-      "parkingSpotNumbers": "222"
+      "parkingSpotNumbers": "222",
+      "storageNumbers": null
     },
     {
       "id": "e42e7e22-465f-4817-9c01-aadfa969eb77",
@@ -138,7 +140,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "251"
+      "parkingSpotNumbers": "251",
+      "storageNumbers": "5"
     },
     {
       "id": "dd910da1-9ac8-4039-9575-a161c9459086",
@@ -224,7 +227,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "330"
+      "parkingSpotNumbers": "330",
+      "storageNumbers": null
     },
     {
       "id": "f1102690-4db1-4704-ab1a-f4ec12c26454",
@@ -251,7 +255,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "419"
+      "parkingSpotNumbers": "419",
+      "storageNumbers": "9"
     },
     {
       "id": "5f00b553-b8af-4c2e-8e64-c2e33aba344d",
@@ -310,7 +315,8 @@
       ],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "519"
+      "parkingSpotNumbers": "519",
+      "storageNumbers": "11"
     },
     {
       "id": "a9f00c7b-ca92-4d6d-9add-4904e5fa742d",
@@ -391,7 +397,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "101"
+      "parkingSpotNumbers": "101",
+      "storageNumbers": null
     },
     {
       "id": "e545341f-68d3-4416-b5de-74b39f8d2c44",
@@ -418,7 +425,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": null
+      "parkingSpotNumbers": null,
+      "storageNumbers": "15"
     },
     {
       "id": "9bd2c4d6-9c60-48a3-8c48-78800e75fdad",
@@ -504,7 +512,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "102"
+      "parkingSpotNumbers": "102",
+      "storageNumbers": null
     },
     {
       "id": "5ddc19d2-909e-43f8-81f4-f8babdff561c",
@@ -558,7 +567,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "103"
+      "parkingSpotNumbers": "103",
+      "storageNumbers": null
     },
     {
       "id": "7345ef24-0240-42f8-81f7-a0b9f177b753",
@@ -590,7 +600,8 @@
       ],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": null
+      "parkingSpotNumbers": null,
+      "storageNumbers": "21"
     },
     {
       "id": "e7b92990-850f-43e7-9a4a-0ce63deca77f",
@@ -617,7 +628,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "104"
+      "parkingSpotNumbers": "104",
+      "storageNumbers": null
     },
     {
       "id": "08c615d5-1056-43b1-924f-2733401eda17",
@@ -730,7 +742,8 @@
       ],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "105"
+      "parkingSpotNumbers": "105",
+      "storageNumbers": null
     },
     {
       "id": "3624c389-3fc3-42a8-a9dc-162b26e98177",
@@ -757,7 +770,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": null
+      "parkingSpotNumbers": null,
+      "storageNumbers": "27"
     },
     {
       "id": "6d15cf52-b5d0-468b-bb9b-4e37f7f9cce7",
@@ -838,7 +852,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "106"
+      "parkingSpotNumbers": "106",
+      "storageNumbers": null
     },
     {
       "id": "7214ffbe-e5d6-4d8c-a849-ae0bdc9f0de1",
@@ -870,7 +885,8 @@
       ],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "107"
+      "parkingSpotNumbers": "107",
+      "storageNumbers": "31"
     },
     {
       "id": "83e331c9-ab53-4ea5-afbc-f33ead6501d6",
@@ -897,7 +913,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": null
+      "parkingSpotNumbers": null,
+      "storageNumbers": null
     },
     {
       "id": "f151bbad-7992-4e91-86d6-db82116d438e",
@@ -951,7 +968,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "109"
+      "parkingSpotNumbers": "109",
+      "storageNumbers": null
     },
     {
       "id": "e1269b70-47ee-4b3a-a8b3-06c7682d0f83",
@@ -1037,7 +1055,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "110"
+      "parkingSpotNumbers": "110",
+      "storageNumbers": "37"
     },
     {
       "id": "bc9f7a9a-b72c-4171-8089-33de4d82e6ef",
@@ -1091,7 +1110,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": null
+      "parkingSpotNumbers": null,
+      "storageNumbers": "39"
     },
     {
       "id": "4d0d1084-0d6f-432b-b312-bf2cee4acc77",
@@ -1118,7 +1138,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "111"
+      "parkingSpotNumbers": "111",
+      "storageNumbers": null
     },
     {
       "id": "24ad7201-0944-4b92-9622-6d76a6aeee50",
@@ -1231,7 +1252,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "112"
+      "parkingSpotNumbers": "112",
+      "storageNumbers": null
     },
     {
       "id": "59f175d7-e83e-4364-aecd-3369eb7a6825",
@@ -1258,7 +1280,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": null
+      "parkingSpotNumbers": null,
+      "storageNumbers": "45"
     },
     {
       "id": "dbf4e767-ab57-4433-8d3d-edb234110154",
@@ -1317,7 +1340,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "113"
+      "parkingSpotNumbers": "113",
+      "storageNumbers": "47"
     },
     {
       "id": "0f0ad6d5-69fc-4046-8ffa-1c5d9269034c",
@@ -1371,7 +1395,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "114"
+      "parkingSpotNumbers": "114",
+      "storageNumbers": "49"
     },
     {
       "id": "117177a8-3f56-4e0e-b23f-7377fb2da52e",
@@ -1398,7 +1423,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": null
+      "parkingSpotNumbers": null,
+      "storageNumbers": null
     },
     {
       "id": "23b06cbe-931e-451a-b507-c1d55402915d",
@@ -1457,7 +1483,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "115"
+      "parkingSpotNumbers": "115",
+      "storageNumbers": null
     },
     {
       "id": "3354cec7-b671-45ce-8411-7b208a1c1982",
@@ -1570,7 +1597,8 @@
       ],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "116"
+      "parkingSpotNumbers": "116",
+      "storageNumbers": null
     },
     {
       "id": "e0fd728f-0949-4dc4-a202-f05c64d4919e",
@@ -1597,7 +1625,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": null
+      "parkingSpotNumbers": null,
+      "storageNumbers": "57"
     },
     {
       "id": "d7489367-6444-44ba-93a3-b62cb564f504",
@@ -1624,7 +1653,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "117"
+      "parkingSpotNumbers": "117",
+      "storageNumbers": null
     },
     {
       "id": "4c9a050e-8d4e-4e0a-a960-b95daafc8fb2",
@@ -1737,7 +1767,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "118"
+      "parkingSpotNumbers": "118",
+      "storageNumbers": null
     },
     {
       "id": "6ba812dd-7aed-43a6-8fc1-b188a1b183d4",
@@ -1764,7 +1795,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": null
+      "parkingSpotNumbers": null,
+      "storageNumbers": "3"
     },
     {
       "id": "dc57bb22-0642-4de1-9c03-197c77255a33",
@@ -1850,7 +1882,8 @@
       ],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "119"
+      "parkingSpotNumbers": "119",
+      "storageNumbers": null
     },
     {
       "id": "8080f876-da8f-403f-8ad4-712b188926fd",
@@ -1877,7 +1910,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "120"
+      "parkingSpotNumbers": "120",
+      "storageNumbers": "7"
     },
     {
       "id": "be172962-0543-41c6-b165-ffe66e2a76ae",
@@ -1931,7 +1965,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": null
+      "parkingSpotNumbers": null,
+      "storageNumbers": "9"
     },
     {
       "id": "3112d218-242c-48c9-99a7-9bb6d3744b2b",
@@ -1958,7 +1993,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "121"
+      "parkingSpotNumbers": "121",
+      "storageNumbers": null
     },
     {
       "id": "37a1f8e4-7d2b-4fae-894a-c3f2bbc55088",
@@ -2071,7 +2107,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": "122"
+      "parkingSpotNumbers": "122",
+      "storageNumbers": null
     },
     {
       "id": "ad549844-ba23-4f21-973c-38cb7d0e6b98",
@@ -2098,7 +2135,8 @@
       "notes": [],
       "excludedAt": null,
       "excludedBy": null,
-      "parkingSpotNumbers": null
+      "parkingSpotNumbers": null,
+      "storageNumbers": "15"
     }
   ],
   "total": 75,

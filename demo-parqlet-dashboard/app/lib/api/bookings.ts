@@ -16,7 +16,8 @@ export interface Booking {
   unitNumber: string;
   residentName: string;
   residentPhone: string;
-  guestName: string;
+  /** Null on a long-term row: nobody is visiting. */
+  guestName: string | null;
   guestPhone: string;
   licensePlate: string;
   spotNumber: string;

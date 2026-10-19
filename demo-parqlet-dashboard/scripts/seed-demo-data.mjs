@@ -75,6 +75,27 @@ const APARTMENTS = "80f9ac2e-b884-4634-ac02-0682a9a12662"; // Oakline Park
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
+/**
+ * A long-term window, with the YEAR.
+ *
+ * `fmt` below drops it, which is right for a guest booking - none of
+ * them span a year, and "6:20am, Aug 21" is what the backend sends. A
+ * twelve-month arrangement and a twenty-four-month one starting the
+ * same day would otherwise both read "Sep 1 -> Sep 1".
+ *
+ * Date only, no time: the hour a monthly rental starts is noise. This
+ * is also exactly what the real route formats for these rows (see
+ * `day()` in api-backend's bookings.ts), so the demo and the product
+ * print the same string.
+ *
+ * Deliberately NOT parseable by lib/parse-booking-date.ts. Nothing
+ * parses a long-term row: the mock filter puts them in their own tab on
+ * the `longTerm` flag and returns before it would look at the date.
+ */
+function fmtDay(d) {
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
 /** The exact shape lib/parse-booking-date.ts expects: "6:20am, Aug 21". */
 function fmt(d) {
   let h = d.getHours();
@@ -288,10 +309,95 @@ const COMMISSION_PCT = 20;
 const BASE_CENTS = 600;
 const HOA_SPOTS = ["419", "251", "222", "519", "108", "330"];
 
+
+/**
+ * The Long-term bookings tab's rows.
+ *
+ * A long-term arrangement is NOT a guest booking that happens to be
+ * long: no guest, no credits, and a window measured in months. In the
+ * real backend they are not `bookings` rows at all - they live in
+ * spot_details and the route reads a different table - so the `longTerm`
+ * flag is this fixture's stand-in for that, and the mock filter uses it
+ * to put them in their own tab and keep them out of the other three.
+ *
+ * Kept out of the chronological tabs deliberately: a window that runs
+ * for a year overlaps "current" and would swamp "past" the moment it
+ * ended, so the date alone cannot place one.
+ *
+ * Spots come from the same pool as the guest bookings, and the owner is
+ * read off the spot through `spotOwner` for the same reason everything
+ * else here does - one fact, one place it comes from, so the Bookings
+ * table and the Resident Directory cannot disagree about who owns 519.
+ */
+function makeLongTermBookings(buildingId, spots) {
+  const now = new Date();
+  // Months in, and months long. A spread so the tab shows one that
+  // started last year, a few mid-term, and one that has not begun.
+  const PLAN = [
+    [-13, 24], [-6, 12], [-2, 12], [-1, 6], [1, 12],
+  ];
+
+  return PLAN.map(([startMonths, lengthMonths], n) => {
+    const i = 900 + n;
+    const start = new Date(now);
+    start.setMonth(start.getMonth() + startMonths, 1);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + lengthMonths);
+
+    const spotNumber = pick(spots, n);
+    const owner = spotOwner(buildingId, spotNumber);
+
+    return {
+      id: uuid(i),
+      buildingId,
+      residentId: null,
+      // The RENTER. The neighbour letting the space is `spotOwnerName`.
+      residentName: name(i),
+      residentPhone: phone("2", i),
+      residentEmail: `${pick(FIRST, i).toLowerCase()}.${pick(LAST, i * 7 + 3).toLowerCase()}@email.com`,
+      // Nobody is visiting: a long-term arrangement is between two
+      // residents, so the Guest column has nothing to put in it.
+      guestName: null,
+      guestPhone: null,
+      licensePlate: plate(i),
+      vehicleType: pick(VEHICLES, i),
+      bookingStart: fmtDay(start),
+      bookingEnd: fmtDay(end),
+      // Raw instants beside the display strings, so the table can work
+      // out whether a rental is running NOW when somebody opens the
+      // demo rather than when it was built. The windows run for months,
+      // so a build that is a fortnight old would otherwise badge one
+      // that has started as still upcoming.
+      bookingStartIso: start.toISOString(),
+      bookingEndIso: end.toISOString(),
+      status: "Assigned",
+      hasNote: n < 2,
+      // No credits and no card. The two residents settle up between
+      // themselves - Parqlet is the introduction, not the transaction.
+      creditsSpent: 0,
+      amountCents: null,
+      commissionPct: null,
+      createdAt: new Date(start.getTime() - 86_400_000).toISOString(),
+      updatedAt: new Date(start.getTime() - 86_400_000).toISOString(),
+      idShort: uuid(i).slice(-6),
+      notes: [],
+      unitNumber: `${1 + (n % 9)}${"ABCDEF"[n % 6]}`,
+      spotNumber,
+      spotOwnerName: owner?.name ?? null,
+      spotOwnerPhone: owner?.phone ?? null,
+      longTerm: true,
+    };
+  });
+}
+
 const data = [
   // Oakline Park is the one being pitched, so it is the busy building.
   ...makeBookings(APARTMENTS, { current: 6, upcoming: 14, pending: 0, past: 22 }, APARTMENT_SPOTS, true, 1, APARTMENT_SHARED_SPOTS),
   ...makeBookings(HOA, { current: 3, upcoming: 8, pending: 3, past: 14 }, HOA_SPOTS, false, 500),
+  // The Long-term bookings tab, which only the cuts whose URL carries
+  // the long-term-parking token ever show.
+  ...makeLongTermBookings(HOA, HOA_SPOTS),
 ];
 
 fs.writeFileSync(

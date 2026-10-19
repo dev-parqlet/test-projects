@@ -28,11 +28,14 @@ interface MockBooking {
   spotNumber: string;
   residentName: string;
   spotOwnerName: string | null;
-  guestName: string;
+  /** Null on a long-term row: nobody is visiting. */
+  guestName: string | null;
   licensePlate: string;
   status: string;
   bookingStart: string;
   bookingEnd: string;
+  /** A long-term arrangement, which gets its own tab. See the filter. */
+  longTerm?: boolean;
   [key: string]: unknown;
 }
 
@@ -63,6 +66,20 @@ export function buildMockBookingsResponse(params: URLSearchParams) {
 
     const start = parseBookingDate(b.bookingStart);
     const end = parseBookingDate(b.bookingEnd);
+
+    /**
+     * Long-term rows are their own tab, and are excluded from the other
+     * three rather than placed by date.
+     *
+     * A month-long window overlaps "current" and would swamp "past" the
+     * moment it ended, so the date cannot decide this. In the real
+     * backend they are not `bookings` rows at all - they live in
+     * spot_details and the route reads a different table - and the flag
+     * is this fixture's stand-in for that.
+     */
+    const isLongTerm = b.longTerm === true;
+    if (tab === "long-term") return isLongTerm;
+    if (isLongTerm) return false;
 
     // Tabs are a chronological, mutually-exclusive partition — mirrors the
     // real backend (see api-backend routes/bookings.ts): an "Upcoming"

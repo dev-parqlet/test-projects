@@ -1,35 +1,21 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "./components/auth/auth-provider";
-import { pathForVariant, readVariant } from "./lib/demo/variants";
+/**
+ * demo.parqlet.com — the front door.
+ *
+ * Lists every link we hand out. It used to forward straight into
+ * whichever product was last opened, which was right while there were
+ * two of them and a remembered choice was the whole decision. There are
+ * six cuts now, and forwarding meant the one page that could show them
+ * all was the one page nobody ever saw.
+ *
+ * Nothing here is gated: this IS the chooser, so wrapping it in one
+ * would ask a visitor to pick a product before showing them the list of
+ * products.
+ */
+
+import { DemoCutsIndex } from "./components/demo/DemoCutsIndex";
 
 export default function RootPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (loading) return;
-    if (!user) {
-      router.push("/sign-in");
-      return;
-    }
-    // Straight to the product's own URL. `/` only ever exists to forward:
-    // every real page in the demo lives under /condo or /apartment.
-    router.push(pathForVariant(readVariant()));
-  }, [user, loading, router]);
-
-  return (
-    <div style={{
-      minHeight: "100vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontFamily: "var(--font-family-body, sans-serif)",
-      color: "var(--color-text-weak, #666)",
-    }}>
-      Loading…
-    </div>
-  );
+  return <DemoCutsIndex />;
 }

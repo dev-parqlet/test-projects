@@ -10,6 +10,7 @@ import { IcNotification } from "../icons/IcNotification";
 import { IcGiftCard } from "../icons/IcGiftCard";
 import { IcCredit } from "../icons/IcCredit";
 import { IcParking } from "../icons/IcParking";
+import { IcStorage } from "../icons/IcStorage";
 
 export type NavId =
   | "dashboard"
@@ -26,6 +27,7 @@ export type NavId =
   | "availability"
   | "earnings"
   | "savings"
+  | "storage-bookings"
   | "none";
 
 export interface NavItem {
@@ -76,11 +78,18 @@ export const APARTMENT_PREFIX = "/apartment";
 export function condoNavItems({
   prefix = CONDO_PREFIX,
   withSavings = true,
-}: { prefix?: string; withSavings?: boolean } = {}): readonly NavItem[] {
+  withStorage = false,
+}: { prefix?: string; withSavings?: boolean; withStorage?: boolean } = {}): readonly NavItem[] {
   return [
     { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard,    href: prefix },
     { id: "residents",     label: "Resident Directory", Icon: IcResidentDirectory, href: `${prefix}/residents` },
     { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: `${prefix}/bookings` },
+    // Beside Bookings rather than renaming it, the way the design puts
+    // them: a building with lockers gets a second row, and every
+    // building without one keeps the label it already knows.
+    ...(withStorage
+      ? [{ id: "storage-bookings" as const, label: "Storage", Icon: IcStorage, href: `${prefix}/storage-bookings` }]
+      : []),
     ...(withSavings
       ? [{ id: "savings" as const, label: "Savings", Icon: IcCredit, href: `${prefix}/savings` }]
       : []),

@@ -18,7 +18,7 @@ import React, { useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 
 import { ShareLinkList } from "./ShareLinks";
-import { isUnscopedPath } from "../../lib/demo/product-path";
+import { isFrontDoor, isUnscopedPath } from "../../lib/demo/product-path";
 import {
   DEMO_IDENTITIES,
   hasChosenVariant,
@@ -47,7 +47,10 @@ export function DemoGate({ children }: { children: React.ReactNode }) {
   // A page belonging to neither product has nothing to gate: asking a
   // visitor to choose Condo or Apartments before showing it would be a
   // question about something the page does not use.
-  if (isUnscopedPath(pathname)) return <>{children}</>;
+  //
+  // "/" is the front door and lists every cut itself, so gating it would
+  // put a chooser in front of the chooser.
+  if (isUnscopedPath(pathname) || isFrontDoor(pathname)) return <>{children}</>;
 
   if (decided === null) return null;
   if (decided) return <>{children}</>;

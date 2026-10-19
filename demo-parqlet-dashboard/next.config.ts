@@ -39,6 +39,54 @@ const APARTMENT_SHARED = [
   "reward-redemption",
 ];
 
+
+/**
+ * Every Condo cut, longest prefix first.
+ *
+ * The savings token has two spellings ("savings" and the older
+ * "earnings"), and the other two switches are independent, so this is
+ * the cross product: 2 savings spellings x 2 long-term x 2 storage,
+ * plus the no-savings cuts. Sorted by length descending so Next never
+ * matches "/condo" against a URL that carried more tokens.
+ */
+function condoRewrites() {
+  const SAVINGS = [null, "savings", "earnings"] as const;
+  const LONG_TERM = [null, "long-term-parking"] as const;
+  const STORAGE = [null, "storage"] as const;
+  /**
+   * Both spellings of the product, for the same reason "+earnings" is
+   * served beside "+savings": these links are typed into emails and
+   * decks as often as they are copied, and "/condos+storage" 404ing
+   * because somebody pluralised it is the kind of thing nobody notices
+   * until a prospect is already looking at an error page. The parser
+   * accepts both, so the rewrites have to as well.
+   */
+  const PRODUCTS = ["condo", "condos"] as const;
+
+  const prefixes: string[] = [];
+  for (const p of PRODUCTS) {
+    for (const s of SAVINGS) {
+      for (const l of LONG_TERM) {
+        for (const st of STORAGE) {
+          const tokens = [s, l, st].filter(Boolean) as string[];
+          prefixes.push([p, ...tokens].join("+"));
+        }
+      }
+    }
+  }
+  // De-duplicated because the plain "condo" cut is produced three times
+  // (once per savings spelling, all of which are null there).
+  const unique = [...new Set(prefixes)].sort((a, b) => b.length - a.length);
+
+  return unique.flatMap((prefix) => {
+    const escaped = prefix.replace(/\+/g, "\\+");
+    return [
+      { source: `/${escaped}`, destination: "/dashboard" },
+      { source: `/${escaped}/:path*`, destination: "/:path*" },
+    ];
+  });
+}
+
 const nextConfig: NextConfig = {
   output: "standalone",
   // The browser may resolve localhost to 127.0.0.1 for the dev HMR socket.
@@ -47,37 +95,47 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       // Pages both products share, which are not under /apartments.
-      { source: "/apartment/tickets", destination: "/tickets" },
-      { source: "/apartment/tickets/:path*", destination: "/tickets/:path*" },
-      ...APARTMENT_SHARED.map((p) => ({
-        source: `/apartment/${p}`,
-        destination: `/${p}`,
-      })),
+      ...["/apartment", "/apartments"].flatMap((prefix) => [
+        { source: `${prefix}/tickets`, destination: "/tickets" },
+        { source: `${prefix}/tickets/:path*`, destination: "/tickets/:path*" },
+        ...APARTMENT_SHARED.map((p) => ({
+          source: `${prefix}/${p}`,
+          destination: `/${p}`,
+        })),
+      ]),
 
-      // The Apartments product's own pages.
-      { source: "/apartment", destination: "/apartments" },
-      { source: "/apartment/:path*", destination: "/apartments/:path*" },
+      // The Apartments product's own pages. Both spellings, for the
+      // same reason the Condo cuts carry both: a link gets pluralised
+      // on its way into an email.
+      ...["/apartment", "/apartments"].flatMap((p) => [
+        { source: p, destination: "/apartments" },
+        { source: `${p}/:path*`, destination: "/apartments/:path*" },
+      ]),
 
-      // The Condo product, in its two cuts. Both serve the SAME pages; the
-      // prefix is what tells the screens whether this building is being
-      // shown the savings story. See lib/demo/product-path.ts.
+      // The Condo product, in all its cuts. Every one serves the SAME
+      // pages; the prefix is what tells the screens which optional
+      // features this building is being shown. See
+      // lib/demo/product-path.ts.
       //
-      // The savings cut comes first because it is the longer string, and a
-      // rewrite list is matched in order.
-      // The backslash escapes the "+" for path-to-regexp, which otherwise
-      // reads it as a "one or more" modifier and refuses the route.
+      // GENERATED from the flag combinations rather than listed, because
+      // three independent switches is eight cuts and eight more aliases
+      // for the "+earnings" spelling - a hand-written list would be
+      // twenty-odd lines kept in step with a parser that already knows
+      // the rule.
+      //
+      // Longest first. A rewrite list is matched in order, so
+      // "/condo+savings" listed after "/condo" would never be reached.
+      //
+      // The backslash escapes the "+" for path-to-regexp, which
+      // otherwise reads it as a "one or more" modifier and refuses the
+      // route.
       //
       // "+earnings" is an ALIAS, not a redirect: Next runs a redirect's
       // destination through the same parser, which will not take a "+"
       // either. Serving both spellings means a deck link pasted from
       // memory lands somewhere, and each keeps its own prefix so the nav
       // does not move the visitor to the other one mid-demo.
-      { source: "/condo\\+savings", destination: "/dashboard" },
-      { source: "/condo\\+savings/:path*", destination: "/:path*" },
-      { source: "/condo\\+earnings", destination: "/dashboard" },
-      { source: "/condo\\+earnings/:path*", destination: "/:path*" },
-      { source: "/condo", destination: "/dashboard" },
-      { source: "/condo/:path*", destination: "/:path*" },
+      ...condoRewrites(),
     ];
   },
 };

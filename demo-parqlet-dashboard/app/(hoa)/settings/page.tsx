@@ -22,13 +22,13 @@ import { TabBar } from "../../components/ui/TabBar";
 import { Button } from "../../components/ui/Button";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
 import { CREDIT_PRICE_CENTS, creditsPerGiftCard, formatMoney, netToBuilding, reservePerCreditCents } from "../../lib/demo/pricing";
-import { condoShowsSavings, productFromPath } from "../../lib/demo/product-path";
+import { condoShowsSavings, demoFeatures, pathWithFeatures, productFromPath, type DemoFeature } from "../../lib/demo/product-path";
 import { DEMO_IDENTITIES } from "../../lib/demo/variants";
 import "../../tokens.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Tab = "notifications" | "profile" | "security" | "resident-mgmt" | "sms-settings" | "credit-price";
+type Tab = "notifications" | "profile" | "security" | "resident-mgmt" | "long-term" | "sms-settings" | "credit-price";
 
 interface NotifRow {
   id:    string;
@@ -1283,11 +1283,98 @@ const cp: Record<string, React.CSSProperties> = {
 
 // ─── Tab bar ──────────────────────────────────────────────────────────────────
 
+
+// ─── Long-term spaces tab ─────────────────────────────────────────────────────
+
+/**
+ * The two feature switches, in the demo.
+ *
+ * THEY REWRITE THE URL. In the real dashboard these are per-building
+ * columns a manager flips and the page re-fetches; here the address bar
+ * is the source of truth for which cut a visitor is looking at, so a
+ * toggle that changed the screen without changing the link would mean
+ * the link somebody copies does not reproduce what they were shown -
+ * which, on a demo whose whole job is to be sent, is the one thing that
+ * must not happen.
+ *
+ * A full page load rather than a client navigation: every screen caches
+ * building-scoped data through react-query, and swapping the cut
+ * underneath them would leave one configuration's nav beside another's
+ * table for a moment. In front of a prospect that reads as a bug.
+ */
+function LongTermSpacesTab() {
+  const pathname = usePathname();
+  const features = demoFeatures(pathname);
+
+  const go = (next: Partial<Record<DemoFeature, boolean>>) => {
+    window.location.href = pathWithFeatures(pathname, next);
+  };
+
+  const row = (
+    title: string,
+    desc: string,
+    on: boolean,
+    onChange: () => void,
+  ) => (
+    <div style={{
+      display: "flex", alignItems: "flex-start", justifyContent: "space-between",
+      gap: "var(--spacing-24)", padding: "var(--spacing-16) var(--spacing-24)",
+      borderBottom: "1px solid var(--color-stroke-medium)",
+    }}>
+      <div style={{ minWidth: 0 }}>
+        <div style={{
+          fontSize: "var(--font-size-tiny)",
+          fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
+          color: "var(--color-text-strong)",
+          fontFamily: "var(--font-family-body)",
+        }}>
+          {title}
+        </div>
+        <div style={{
+          marginTop: 2, fontSize: "var(--font-size-extra-tiny)", lineHeight: 1.5,
+          color: "var(--color-text-weak)", fontFamily: "var(--font-family-body)",
+        }}>
+          {desc}
+        </div>
+      </div>
+      <Toggle on={on} onChange={onChange} />
+    </div>
+  );
+
+  return (
+    <Card>
+      {row(
+        "Long-term parking",
+        "Let residents rent parking spaces to each other by the month, and add the Long-term bookings tab.",
+        features.longTermParking,
+        () => go({ longTermParking: !features.longTermParking }),
+      )}
+      {row(
+        "Storage",
+        "Add the Storage bookings page and the Storage # column in the resident directory.",
+        features.storage,
+        () => go({ storage: !features.storage }),
+      )}
+      <div style={{
+        padding: "var(--spacing-16) var(--spacing-24)",
+        fontSize: "var(--font-size-extra-tiny)", lineHeight: 1.6,
+        color: "var(--color-text-weak)", fontFamily: "var(--font-family-body)",
+      }}>
+        Residents arrange payment between themselves; no money for a long-term
+        rental passes through the app. In this demo these switches also change
+        the address bar, so whatever you copy from it opens exactly what you
+        are looking at.
+      </div>
+    </Card>
+  );
+}
+
 const TABS: { id: Tab; label: string }[] = [
   { id: "security",       label: "Security"            },
   { id: "credit-price",   label: "Credit Price"        },
   { id: "profile",        label: "Profile Preferences" },
   { id: "resident-mgmt",  label: "Resident Management" },
+  { id: "long-term",      label: "Long-term spaces"    },
   { id: "notifications",  label: "Notifications"       },
   { id: "sms-settings",   label: "SMS Settings"        },
 ];
@@ -1302,7 +1389,10 @@ export default function SettingsPage() {
   // price in credits, so both get the control - what differs is whether
   // this number is the whole price list or only the floor under it.
   const product = productFromPath(pathname) === "apartment" ? "apartment" : "condo";
-  const tabs = TABS;
+  // Apartments does not get the Long-term spaces tab: this demo only
+  // carries the Condo cuts of it, and a tab that cannot change anything
+  // is worse than one that is not there.
+  const tabs = product === "apartment" ? TABS.filter((t) => t.id !== "long-term") : TABS;
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -1368,6 +1458,7 @@ export default function SettingsPage() {
         {!loading && activeTab === "profile" && (
           <ProfilePreferencesTab savedPreferences={preferences} onSave={savePreferences} />
         )}
+        {!loading && activeTab === "long-term" && <LongTermSpacesTab />}
         {!loading && activeTab === "resident-mgmt" && (
           <ResidentMgmtTab savedPreferences={preferences} onSave={savePreferences} product={product} />
         )}

@@ -14,7 +14,7 @@
  */
 
 import { apartmentsNavItems, condoNavItems, type NavItem } from '../../components/layout/nav-data';
-import { condoShowsSavings, productFromPath, productPrefix } from './product-path';
+import { condoShowsSavings, productFromPath, productPrefix, showsStorage } from './product-path';
 
 /**
  * Takes the RAW pathname, prefix and all.
@@ -29,5 +29,6 @@ export function navItemsForPath(pathname: string): readonly NavItem[] {
   return condoNavItems({
     prefix: productPrefix(pathname),
     withSavings: condoShowsSavings(pathname),
+    withStorage: showsStorage(pathname),
   });
 }
