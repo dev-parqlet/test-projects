@@ -1210,7 +1210,16 @@ const PHONE_OVERHANG = 100;
 /* ══════════════════════════════════════════════════════════════════
    THE FILM
    ══════════════════════════════════════════════════════════════════ */
-export default function LandingHero() {
+/**
+ * `onBookDemo` is the one hook into the host page.
+ *
+ * The film is pointer-events:none and answers nothing - but the CTA
+ * under the headline is real copy on a real landing page, and on the
+ * `landing` repo it has to open that page's demo modal. Optional, so
+ * this file still renders standalone (as it does at /landing-hero in
+ * the demo) with the button inert.
+ */
+export default function LandingHero({ onBookDemo }: { onBookDemo?: () => void } = {}) {
   /**
    * `?scene=N` freezes the film on one beat.
    *
@@ -1431,7 +1440,17 @@ export default function LandingHero() {
           Parqlet is a peer-to-peer platform where residents securely share unused
           parking with neighbors and earn credits toward rewards.
         </p>
-        <div className="plh-cta">Book a demo <span aria-hidden>→</span></div>
+        <button
+          type="button"
+          className="plh-cta"
+          onClick={onBookDemo}
+          // Inert without a handler rather than absent: the hero is
+          // composed around this button being there, and a standalone
+          // render that dropped it would not be the same picture.
+          aria-disabled={onBookDemo ? undefined : true}
+        >
+          Book a demo <span aria-hidden>→</span>
+        </button>
       </div>
 
       {/* Fits the WHOLE composition to the column on a narrow screen,
@@ -1629,8 +1648,14 @@ const CSS = `
   display:inline-flex;align-items:center;gap:8px;margin-top:28px;
   padding:13px 26px;border-radius:10px;background:${C.accent};color:${C.textStrong};
   font-size:15px;font-weight:500;
+  /* Button resets: it is a real <button> so the host page can wire it
+     to a modal, and a button inherits none of this by default. */
+  border:0;font-family:inherit;cursor:pointer;
+  transition:opacity .2s ease,transform .2s ease;
   animation:plh-in 1s cubic-bezier(.16,1,.3,1) .4s both;
 }
+.plh-cta:hover{opacity:.9;}
+.plh-cta[aria-disabled="true"]{cursor:default;}
 @keyframes plh-in{
   from{opacity:0;transform:translateY(24px);filter:blur(8px)}
   to{opacity:1;transform:none;filter:blur(0)}
