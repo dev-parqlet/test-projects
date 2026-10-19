@@ -273,6 +273,15 @@ type Scene = {
       happen together, not one after the other. */
   pressCursor?: boolean;
   pressTouch?: boolean;
+  /**
+   * Is there a booking on the phone's home screen at all?
+   *
+   * The film opens before one exists, which is both the honest state of
+   * a resident who has booked nothing and the only order the story
+   * reads in: the payoff used to be in the first frame, with the thing
+   * that produced it second.
+   */
+  booking?: boolean;
   /** The row lands with the green line and a nudge of scale. */
   flash?: boolean;
   /** The booking has started: both screens say Active, together. */
@@ -338,28 +347,28 @@ const SCENES: Scene[] = [
   // ── ACT 3. THE BEAT: the thumb presses "Go to home screen" and the
   //    cursor clicks "Upcoming bookings" at the same instant. ──
   { hold: 650,  view: "bookings", tab: "current", phone: "confirmed", target: "tab:future", pressCursor: true, pressTouch: true },
-  { hold: 2200, view: "bookings", tab: "future", phone: "home", target: "tab:future", flash: true },
+  { hold: 2200, view: "bookings", tab: "future", phone: "home", target: "tab:future", booking: true, flash: true },
   // The row has landed; now show what it SAYS. Status is past the fold
   // of a 1310px table, so the beat is only half told until this pans.
-  { hold: 2600, view: "bookings", tab: "future", phone: "home", target: null, panRight: true },
+  { hold: 2600, view: "bookings", tab: "future", phone: "home", target: null, booking: true, panRight: true },
 
   // ── ACT 4. The booking starts, and in doing so changes which list
   //    it belongs to. The cursor reaches for Current bookings... ──
-  { hold: 1100, view: "bookings", tab: "future", phone: "home", target: "tab:current" },
+  { hold: 1100, view: "bookings", tab: "future", phone: "home", target: "tab:current", booking: true },
   // ...and THE SECOND BEAT: the click lands at the same instant the
   // booking goes live on the phone.
-  { hold: 650,  view: "bookings", tab: "future", phone: "home", target: "tab:current", pressCursor: true },
+  { hold: 650,  view: "bookings", tab: "future", phone: "home", target: "tab:current", booking: true, pressCursor: true },
   // It is gone from Upcoming and sitting at the top of Current, Active
   // and highlighted, while the phone card says Active too.
-  { hold: 2000, view: "bookings", tab: "current", phone: "home", target: "tab:current", active: true, flash: true },
+  { hold: 2000, view: "bookings", tab: "current", phone: "home", target: "tab:current", booking: true, active: true, flash: true },
   // ...and the table pans again, to the pill that now reads Active.
-  { hold: 2600, view: "bookings", tab: "current", phone: "home", target: null, active: true, panRight: true },
+  { hold: 2600, view: "bookings", tab: "current", phone: "home", target: null, booking: true, active: true, panRight: true },
 
   // ── ACT 5. Back to the Dashboard page, where the loop began, with
   //    the phone on home beside it. ──
-  { hold: 900,  view: "bookings", tab: "current", phone: "home", target: "nav:dashboard", active: true },
-  { hold: 600,  view: "bookings", tab: "current", phone: "home", target: "nav:dashboard", active: true, pressCursor: true },
-  { hold: 1600, view: "dashboard", tab: "current", phone: "home", target: null, active: true },
+  { hold: 900,  view: "bookings", tab: "current", phone: "home", target: "nav:dashboard", booking: true, active: true },
+  { hold: 600,  view: "bookings", tab: "current", phone: "home", target: "nav:dashboard", booking: true, active: true, pressCursor: true },
+  { hold: 1600, view: "dashboard", tab: "current", phone: "home", target: null, booking: true, active: true },
 ];
 
 /**
@@ -1087,7 +1096,7 @@ function PhoneConfirmed({ pressing }: { pressing: boolean }) {
   );
 }
 
-function PhoneHome({ active }: { active: boolean }) {
+function PhoneHome({ active, booking }: { active: boolean; booking: boolean }) {
   return (
     <div className="plh-screen plh-screen-home">
       <div className="plh-ph-appbar">
@@ -1097,16 +1106,34 @@ function PhoneHome({ active }: { active: boolean }) {
         </span>
       </div>
 
-      {/* The section header turns over with the card: the app calls it
-          CURRENT once the booking has started, not UPCOMING. */}
-      <span className="plh-ph-section">
-        <i /> {active ? "CURRENT GUEST BOOKING" : "UPCOMING GUEST BOOKING"}
-      </span>
-      <div className="plh-ph-cardwrap">
-        <BookingCard
-          note={active ? FEATURED.activeNote : FEATURED.startsIn}
-          status={active ? "Active" : "Upcoming"}
-        />
+      {/*
+        BEFORE THE BOOKING EXISTS, THERE IS NO CARD.
+
+        The film opens here, and it used to open with the Upcoming card
+        already on screen - then showed the confirmation for that same
+        booking, then the card again. The story ran backwards: the
+        payoff was in the first frame and the thing that produced it
+        came second.
+
+        So the home screen starts empty, which is also what a resident
+        with nothing booked actually sees. The card arrives with the
+        confirmation, which is when it becomes true.
+
+        The section header and the card go together: a header over
+        nothing reads as a list that failed to load.
+      */}
+      <div className={`plh-ph-slot${booking ? " is-on" : ""}`} aria-hidden={!booking}>
+        {/* The header turns over with the card: the app calls it
+            CURRENT once the booking has started, not UPCOMING. */}
+        <span className="plh-ph-section">
+          <i /> {active ? "CURRENT GUEST BOOKING" : "UPCOMING GUEST BOOKING"}
+        </span>
+        <div className="plh-ph-cardwrap">
+          <BookingCard
+            note={active ? FEATURED.activeNote : FEATURED.startsIn}
+            status={active ? "Active" : "Upcoming"}
+          />
+        </div>
       </div>
 
       <div className="plh-promo">
@@ -1287,7 +1314,7 @@ export default function LandingHero() {
   const scene = useMemo<Scene>(
     () =>
       reduced
-        ? { hold: 0, view: "bookings", tab: "future", phone: "home", target: null, flash: true }
+        ? { hold: 0, view: "bookings", tab: "future", phone: "home", target: null, booking: true, flash: true }
         : SCENES[(pinned ?? i) % SCENES.length],
     [i, reduced, pinned],
   );
@@ -1449,7 +1476,7 @@ export default function LandingHero() {
                 <PhoneConfirmed pressing={!!scene.pressTouch} />
               </div>
               <div className="plh-slide plh-slide-b">
-                <PhoneHome active={!!scene.active} />
+                <PhoneHome active={!!scene.active} booking={!!scene.booking} />
               </div>
             </div>
             <span className="plh-homebar" />
@@ -2168,6 +2195,22 @@ const CSS = `
   width:100%;padding:16px;border-radius:16px;
   background:${C.fillWeak};display:flex;flex-direction:column;gap:12px;
 }
+/* The home screen's booking slot: there before anything is booked, and
+   empty.
+
+   Always mounted rather than conditionally rendered, so it can animate
+   OUT as well as in - the loop seam resets it, and a card that simply
+   vanishes between two otherwise identical frames reads as a glitch.
+   max-height is deliberately far larger than the content: it does not
+   set the height, so an overshoot only affects how fast the collapse
+   travels, where an undershoot would clip the card. */
+.plh-ph-slot{
+  max-height:0;opacity:0;transform:translateY(-8px);overflow:hidden;
+  transition:max-height .45s cubic-bezier(.16,1,.3,1),
+             opacity .3s ease,
+             transform .45s cubic-bezier(.16,1,.3,1);
+}
+.plh-ph-slot.is-on{max-height:400px;opacity:1;transform:none;}
 .plh-ph-cardwrap{animation:plh-card-in .7s cubic-bezier(.16,1,.3,1) .2s both;}
 @keyframes plh-card-in{
   from{opacity:0;transform:translateY(14px) scale(.97)}

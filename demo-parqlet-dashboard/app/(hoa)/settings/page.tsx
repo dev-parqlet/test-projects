@@ -20,6 +20,7 @@ import { Input } from "../../components/ui/Input";
 import { NumberStepper } from "../../components/ui/NumberStepper";
 import { TabBar } from "../../components/ui/TabBar";
 import { Button } from "../../components/ui/Button";
+import { FeatureToggle } from "../../components/ui/FeatureToggle";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
 import { CREDIT_PRICE_CENTS, creditsPerGiftCard, formatMoney, netToBuilding, reservePerCreditCents } from "../../lib/demo/pricing";
 import { condoShowsSavings, demoFeatures, pathWithFeatures, productFromPath, type DemoFeature } from "../../lib/demo/product-path";
@@ -1307,38 +1308,20 @@ function LongTermSpacesTab() {
   const features = demoFeatures(pathname);
 
   const go = (next: Partial<Record<DemoFeature, boolean>>) => {
-    window.location.href = pathWithFeatures(pathname, next);
+    // assign(), not `location.href =`. Same navigation; the assignment
+    // form reads as a mutation to the lint rules and is flagged.
+    window.location.assign(pathWithFeatures(pathname, next));
   };
 
-  const row = (
-    title: string,
-    desc: string,
-    on: boolean,
-    onChange: () => void,
-  ) => (
-    <div style={{
-      display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-      gap: "var(--spacing-24)", padding: "var(--spacing-16) var(--spacing-24)",
-      borderBottom: "1px solid var(--color-stroke-medium)",
-    }}>
-      <div style={{ minWidth: 0 }}>
-        <div style={{
-          fontSize: "var(--font-size-tiny)",
-          fontWeight: "var(--font-weight-medium)" as React.CSSProperties["fontWeight"],
-          color: "var(--color-text-strong)",
-          fontFamily: "var(--font-family-body)",
-        }}>
-          {title}
-        </div>
-        <div style={{
-          marginTop: 2, fontSize: "var(--font-size-extra-tiny)", lineHeight: 1.5,
-          color: "var(--color-text-weak)", fontFamily: "var(--font-family-body)",
-        }}>
-          {desc}
-        </div>
-      </div>
-      <Toggle on={on} onChange={onChange} />
-    </div>
+  const row = (title: string, desc: string, on: boolean, onChange: () => void, last = false) => (
+    <FeatureToggle
+      key={title}
+      title={title}
+      description={desc}
+      checked={on}
+      onChange={onChange}
+      last={last}
+    />
   );
 
   return (
