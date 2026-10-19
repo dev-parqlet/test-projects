@@ -99,7 +99,7 @@ export default function ApartmentsBookingsPage() {
   return (
     <div style={{ padding: "var(--spacing-24)", display: "flex", flexDirection: "column", gap: "var(--spacing-16)" }}>
       <div>
-        <h1 style={st.h1}>Bookings</h1>
+        <h1 style={st.h1}>Parking bookings</h1>
         <p style={st.sub}>
           What people have paid to park at your building. Parqlet keeps{" "}
           {COMMISSION_PCT}%; the rest is yours.

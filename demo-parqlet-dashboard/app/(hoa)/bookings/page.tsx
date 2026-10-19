@@ -790,7 +790,7 @@ function BookingsContent() {
             color: "var(--color-text-strong)",
             fontFamily: "var(--font-family-heading)",
           }}>
-            Bookings
+            Parking bookings
           </h1>
           <p style={{
             margin: "var(--spacing-8) 0 0",

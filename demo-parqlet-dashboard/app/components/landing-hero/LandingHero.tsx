@@ -1674,7 +1674,9 @@ const CSS = `
   font-family:var(--font-heading,Rubik),-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   -webkit-font-smoothing:antialiased;
 }
-@media(max-width:760px){ .plh-root{padding:88px 16px 0;} }
+@media(max-width:760px){
+  .plh-root{padding:88px 16px 0;}
+}
 
 /* Backdrop ─────────────────────────────────────────────── */
 .plh-grid{
@@ -1750,6 +1752,22 @@ const CSS = `
   font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
   animation:plh-in .9s cubic-bezier(.16,1,.3,1) .05s both;
 }
+/* 9px so the eyebrow holds ONE line on a phone.
+   
+   At 10px it wrapped below 390px - two lines of a pill meant to read
+   as a single stamped label. The padding comes with it because the
+   font alone was not enough: the string is 46 characters and the
+   tracking is a twelfth of an em, so the frame around it matters as
+   much as the type.
+   
+   PLACED AFTER the rule it overrides, not beside the root padding
+   where it started: same specificity, so source order is the whole
+   argument, and from up there the base 10px simply won. */
+@media(max-width:760px){ .plh-eyebrow{font-size:9px;padding:6px 14px;} }
+/* Narrower still - a 320px phone - and the tracking has to give too.
+   It goes last because letterspacing is what makes this read as a
+   label rather than a sentence. */
+@media(max-width:375px){ .plh-eyebrow{letter-spacing:.06em;padding:6px 10px;} }
 .plh-h1{
   margin:20px 0 0;color:${C.white};font-weight:400;
   font-size:52px;line-height:1.06;letter-spacing:-.02em;

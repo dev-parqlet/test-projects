@@ -83,12 +83,12 @@ export function condoNavItems({
   return [
     { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard,    href: prefix },
     { id: "residents",     label: "Resident Directory", Icon: IcResidentDirectory, href: `${prefix}/residents` },
-    { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: `${prefix}/bookings` },
+    { id: "bookings",      label: "Parking Bookings",   Icon: IcBookings,     href: `${prefix}/bookings` },
     // Beside Bookings rather than renaming it, the way the design puts
     // them: a building with lockers gets a second row, and every
     // building without one keeps the label it already knows.
     ...(withStorage
-      ? [{ id: "storage-bookings" as const, label: "Storage", Icon: IcStorage, href: `${prefix}/storage-bookings` }]
+      ? [{ id: "storage-bookings" as const, label: "Storage Bookings", Icon: IcStorage, href: `${prefix}/storage-bookings` }]
       : []),
     ...(withSavings
       ? [{ id: "savings" as const, label: "Savings", Icon: IcCredit, href: `${prefix}/savings` }]
@@ -126,7 +126,7 @@ export const navItems: readonly NavItem[] = condoNavItems();
 export const apartmentsNavItems: readonly NavItem[] = [
   { id: "dashboard",     label: "Dashboard",          Icon: IcDashboard,    href: "/apartment" },
   { id: "residents",     label: "Resident Directory", Icon: IcResidentDirectory, href: "/apartment/residents" },
-  { id: "bookings",      label: "Bookings",           Icon: IcBookings,     href: "/apartment/bookings" },
+  { id: "bookings",      label: "Parking Bookings",   Icon: IcBookings,     href: "/apartment/bookings" },
   { id: "availability",  label: "Parking Spots",     Icon: IcParking,      href: "/apartment/parking-spots" },
   { id: "earnings",      label: "Earnings",           Icon: IcCredit,       href: "/apartment/earnings" },
   { id: "reward-redemption", label: "Reward Redemption", Icon: IcGiftCard, href: "/apartment/reward-redemption" },
