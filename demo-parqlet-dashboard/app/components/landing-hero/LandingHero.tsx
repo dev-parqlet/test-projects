@@ -1207,6 +1207,16 @@ function readPinnedScene(): number | null {
  */
 const PHONE_OVERHANG = 100;
 
+/**
+ * The width the composition is designed at, in px.
+ *
+ * Matches `.plh-stage{max-width:1240px}` in the sheet below. The narrow
+ * fit measures the stage at exactly this width - not at whatever the
+ * variable it is about to set currently says - so the reading cannot
+ * feed on its own output and converge somewhere arbitrary.
+ */
+const DESIGN_WIDTH = 1240;
+
 /* ══════════════════════════════════════════════════════════════════
    THE FILM
    ══════════════════════════════════════════════════════════════════ */
@@ -1285,19 +1295,43 @@ export default function LandingHero({ onBookDemo }: { onBookDemo?: () => void } 
     const stage = stageRef.current;
     if (!scaler || !stage || typeof ResizeObserver === "undefined") return;
 
+    /**
+     * The breakpoint is asked DIRECTLY, not inferred from a zero width.
+     *
+     * The first version read `scaler.clientWidth === 0` as "we must be
+     * on desktop, where this wrapper is display:contents". That is true
+     * of desktop and also true of a narrow screen where the element has
+     * not been laid out yet - and a ResizeObserver does not observe an
+     * element with no box, so once it had guessed wrong at mount
+     * nothing ever told it otherwise. The stage then sat unscaled at
+     * its design width inside a phone-width column.
+     *
+     * Keep this query in step with the @media rule it mirrors.
+     */
+    const narrow = window.matchMedia("(max-width: 900px)");
+
     const measure = () => {
-      // display:contents above the breakpoint, so the wrapper has no box
-      // of its own and there is nothing to fit the stage into.
-      const avail = scaler.clientWidth;
-      if (avail === 0) {
+      if (!narrow.matches) {
         setStageFit(null);
         return;
       }
+      // The PARENT's content box, not the wrapper's own: the wrapper is
+      // what we are about to size, so measuring it would be measuring
+      // our own last answer.
+      const avail = scaler.parentElement?.clientWidth ?? scaler.clientWidth;
+      if (avail === 0) return;
+
       const prev = stage.style.transform;
+      const prevW = stage.style.width;
+      // Both cancelled: the width is driven by the variable this
+      // function sets, so reading it back without resetting it would
+      // feed the measurement on its own output.
       stage.style.transform = "none";
+      stage.style.width = `${DESIGN_WIDTH}px`;
       const naturalW = stage.offsetWidth;
       const naturalH = stage.offsetHeight;
       stage.style.transform = prev;
+      stage.style.width = prevW;
       if (naturalW === 0) return;
 
       const scale = Math.min(1, avail / naturalW);
@@ -1311,10 +1345,16 @@ export default function LandingHero({ onBookDemo }: { onBookDemo?: () => void } 
     };
 
     const ro = new ResizeObserver(measure);
-    ro.observe(scaler);
-    ro.observe(stage);
+    // The ROOT, which has a box at every width - unlike the wrapper,
+    // which has none above the breakpoint.
+    const host = scaler.parentElement ?? scaler;
+    ro.observe(host);
+    narrow.addEventListener("change", measure);
     measure();
-    return () => ro.disconnect();
+    return () => {
+      ro.disconnect();
+      narrow.removeEventListener("change", measure);
+    };
   }, []);
 
   // Reduced motion: show the end of the story rather than animating to it.
@@ -1554,7 +1594,13 @@ const CSS = `
   position:relative;overflow:hidden;isolation:isolate;max-width:100vw;
   background:${C.heroBg};
   padding:72px 24px 0;
-  font-family:Rubik,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  /* A host page that already loads Rubik through next/font exposes it
+     as --font-heading (the landing repo does). Preferring the
+     variable means this uses the SAME self-hosted subset the rest of
+     that page does, rather than whatever "Rubik" resolves to; the
+     literal stays behind it so the file still renders standalone,
+     where the variable does not exist. */
+  font-family:var(--font-heading,Rubik),-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   -webkit-font-smoothing:antialiased;
 }
 @media(max-width:760px){ .plh-root{padding:48px 16px 0;} }
@@ -1807,7 +1853,16 @@ const CSS = `
   /* The stage keeps its desktop geometry: position:relative, the phone
      absolute over it. The only override is the width, which is pinned
      to the design width so the scale has a fixed thing to divide. */
-  .plh-stage{margin-top:0;width:var(--plh-fit-w,1240px);max-width:none;}
+  /* The fallback is 100%, NOT the design width.
+     
+     It was 1240px, and that turned one failure into another: if the
+     measurement had not landed yet the stage was laid out 1240px wide
+     inside a 390px column, so the root overflowed, the centred headline
+     was clipped on the right and the phone - absolute at top:-100 -
+     floated up over the copy. A variable that has not arrived should
+     leave the thing CONTAINED and merely unscaled, which is plain, not
+     broken. */
+  .plh-stage{margin-top:0;width:var(--plh-fit-w,100%);max-width:none;}
   .plh-frame-dash{width:100%;}
 }
 
@@ -2115,7 +2170,13 @@ const CSS = `
 }
 .plh-pager{display:flex;align-items:center;gap:7px;}
 .plh-pager i{font-style:normal;padding:2px 6px;border-radius:5px;border:1px solid ${C.strokeMedium};}
-.plh-pager b{padding:2px 7px;border-radius:5px;background:${C.textStrong};color:${C.white};}
+/* Weight stated, not left to the UA.
+   
+   A bare <b> is 700, and a host page may load Rubik at 400/500/600
+   only - the landing repo does - so a 700 here is a synthesised bold
+   matching nothing else on the page. Every <b> in this file is a
+   semantic one in a design that tops out at 600. */
+.plh-pager b{padding:2px 7px;border-radius:5px;background:${C.textStrong};color:${C.white};font-weight:500;}
 @media(max-width:900px){
   .plh-row{height:48px;padding:0 14px;font-size:12px;}
   .plh-thead{height:40px;padding:0 14px;}

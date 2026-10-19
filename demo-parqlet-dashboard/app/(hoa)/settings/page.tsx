@@ -1395,10 +1395,22 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <div style={{
-        padding:   "var(--spacing-24)",
-        maxWidth:  900,
-      }}>
+    /**
+     * The PAGE is full width; the CONTENT is 900.
+     *
+     * The 900 used to be on this element, which capped the tab bar
+     * along with everything else - so the seventh tab ("SMS Settings")
+     * was clipped on every screen, however wide, with a whole empty
+     * half-page to its right.
+     *
+     * Moving the cap down means the forms keep their measure - 900 is a
+     * readable line length and a form stretched across a 2560px monitor
+     * is not - while the tab bar, which is navigation rather than
+     * prose, gets the room it needs. It also survives an eighth tab,
+     * where simply raising the number would not.
+     */
+    <div style={{ padding: "var(--spacing-24)" }}>
+      <div style={{ maxWidth: 900 }}>
         {/* Page heading */}
         <div style={{ marginBottom: "var(--spacing-24)" }}>
           <h1 style={{
@@ -1433,7 +1445,12 @@ export default function SettingsPage() {
             )}
         </div>
 
-        <TabBar active={activeTab} onChange={setActiveTab} tabs={tabs} />
+      </div>
+
+      {/* Full width, so every tab is reachable without a scroll. */}
+      <TabBar active={activeTab} onChange={setActiveTab} tabs={tabs} />
+
+      <div style={{ maxWidth: 900 }}>
 
         {!loading && activeTab === "security" && (
           <SecurityTab savedPreferences={preferences} onSave={savePreferences} />
@@ -1456,5 +1473,6 @@ export default function SettingsPage() {
           />
         )}
       </div>
+    </div>
   );
 }
