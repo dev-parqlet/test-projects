@@ -1911,9 +1911,20 @@ const CSS = `
   }
   .plh-stagefit .plh-stage{
     transform:translateY(var(--plh-fit-top,0px)) scale(var(--plh-fit-scale,1));
-    /* top center, so the composition stays centred in the column as it
-       shrinks rather than drifting toward one edge. */
-    transform-origin:top center;
+    /* TOP LEFT, and this is the whole trick.
+       
+       top-center reads as the safe choice and is wrong here: the
+       stage's LAYOUT box is the full design width - 1240px inside a
+       358px column - so its centre is 620px from the left edge, far
+       outside the viewport. Scaling about that point left the shrunken
+       composition sitting at x=457 on a 390px screen, where the root's
+       overflow:hidden clipped it away completely. Nothing rendered,
+       which is exactly what it looked like.
+       
+       From the top left the scaled box starts where the layout box
+       starts and is width * scale across - which is the column width
+       by construction, because that is how the scale was chosen. */
+    transform-origin:top left;
   }
 }
 
