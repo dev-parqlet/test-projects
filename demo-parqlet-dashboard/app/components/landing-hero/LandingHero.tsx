@@ -1613,7 +1613,10 @@ const CSS = `
      line. */
   position:relative;overflow:hidden;isolation:isolate;max-width:100vw;
   background:${C.heroBg};
-  padding:72px 24px 0;
+  /* 112 at the top, not 72: on the landing page the site header is
+     transparent and sits OVER this, so the eyebrow has to clear it.
+     Standalone it just reads as a slightly roomier hero. */
+  padding:112px 24px 0;
   /* A host page that already loads Rubik through next/font exposes it
      as --font-heading (the landing repo does). Preferring the
      variable means this uses the SAME self-hosted subset the rest of
@@ -1623,7 +1626,7 @@ const CSS = `
   font-family:var(--font-heading,Rubik),-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   -webkit-font-smoothing:antialiased;
 }
-@media(max-width:760px){ .plh-root{padding:48px 16px 0;} }
+@media(max-width:760px){ .plh-root{padding:88px 16px 0;} }
 
 /* Backdrop ─────────────────────────────────────────────── */
 .plh-grid{
@@ -1734,7 +1737,11 @@ const CSS = `
 /* Stage ────────────────────────────────────────────────── */
 .plh-stage{
   position:relative;z-index:2;
-  margin:120px auto 0;max-width:1240px;
+  /* 72, down from 120. The hero plus a site header above it ran past
+     a 1080p viewport, and this gap was the cheapest 48px to give back:
+     it is air between the copy and the frames, where the other
+     candidates were the copy's own rhythm or the frames themselves. */
+  margin:72px auto 0;max-width:1240px;
   pointer-events:none; /* a film, not a control surface */
 }
 
