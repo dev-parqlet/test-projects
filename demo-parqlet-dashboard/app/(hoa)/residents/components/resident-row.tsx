@@ -182,6 +182,28 @@ export function ResidentRow({
    * confirmation dialog carries the words instead, which is also what
    * makes an unlabelled red cross safe to offer.
    */
+  /**
+   * The number sits in a FIXED slot, so the icons beside it start at
+   * the same x in every row.
+   *
+   * Without it the column was ragged - "#1" is narrower than "#22", so
+   * the tick and cross stepped left and right down the page and the
+   * eye could not run straight down them. Four characters is "#" plus
+   * three digits, which is as wide as a locker number gets here; `ch`
+   * rather than px so it tracks the font rather than one zoom level.
+   *
+   * `tabularNums` keeps the digits themselves equal-width, so #11 and
+   * #22 occupy the same space inside the slot.
+   */
+  const storageNumSlot: React.CSSProperties = {
+    ...cellTxt,
+    display: "inline-block",
+    overflow: "visible",
+    minWidth: "4ch",
+    flexShrink: 0,
+    fontVariantNumeric: "tabular-nums",
+  };
+
   const storageCell = () => {
     const hash = (n: string) => (n.startsWith("#") ? n : `#${n}`);
     const pending = resident.pendingStorageNumber;
@@ -189,7 +211,7 @@ export function ResidentRow({
     if (pending) {
       return (
         <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)", minWidth: 0 }}>
-          <span style={{ ...cellTxt, display: "inline", overflow: "visible" }}>{hash(pending)}</span>
+          <span style={storageNumSlot}>{hash(pending)}</span>
           <button
             onClick={() => onApproveStorage?.(resident)}
             aria-label={`Approve storage ${hash(pending)} for ${resident.name}`}
@@ -211,13 +233,14 @@ export function ResidentRow({
     if (resident.storageNumbers) {
       return (
         <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)", minWidth: 0 }}>
-          <span style={{ ...cellTxt, display: "inline", overflow: "visible" }}>
-            {hash(resident.storageNumbers)}
-          </span>
+          <span style={storageNumSlot}>{hash(resident.storageNumbers)}</span>
           <button
             onClick={() => onEditStorage?.(resident)}
             aria-label={`Edit storage for ${resident.name}`}
-            style={{ ...iconBtn, color: "var(--color-icon-weak)" }}
+            /* The pencil is drawn smaller than the circled tick and
+               cross, so it gets the same 20px box to sit in - without
+               it the glyph is 3px off centre from the icons above. */
+            style={{ ...iconBtn, color: "var(--color-icon-weak)", width: 20, height: 20, justifyContent: "center" }}
           >
             <IcEdit />
           </button>
