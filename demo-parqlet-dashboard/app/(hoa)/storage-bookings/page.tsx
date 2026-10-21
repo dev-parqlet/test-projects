@@ -46,7 +46,7 @@ import {
   rejectedToast,
 } from "../../components/storage/StorageApprovalDialogs";
 import {
-  DEMO_STORAGE_APPROVALS,
+  buildStorageApprovals,
   type DemoStorageApproval,
 } from "../../lib/demo/storage-approvals";
 import { TableHeadLabel } from "../../components/ui/TableHeadLabel";
@@ -280,20 +280,14 @@ export default function StorageBookingsPage() {
   const { selectedIds } = useBuildingFilter();
   const [tab, setTab] = useState<StorageTab>("current");
 
-  /**
-   * The approval queue. Answering a claim removes it from the list -
-   * demo-local, because there is no backend here to hold the decision,
-   * and a row that stayed after being approved would suggest the
-   * approval had not taken.
-   */
-  const [answered, setAnswered] = useState<Set<string>>(new Set());
-  const approvalRows = DEMO_STORAGE_APPROVALS.filter((r) => !answered.has(r.id));
+  const toast = useToast();
   const [approving, setApproving] = useState<DemoStorageApproval | null>(null);
   const [rejecting, setRejecting] = useState<DemoStorageApproval | null>(null);
-  const toast = useToast();
+  /** Claims answered this session: id -> did the office say yes. */
+  const [answered, setAnswered] = useState<Map<string, boolean>>(new Map());
 
   const settle = (row: DemoStorageApproval, approved: boolean) => {
-    setAnswered((prev) => new Set(prev).add(row.id));
+    setAnswered((prev) => new Map(prev).set(row.id, approved));
     const claim = {
       storageNumber: row.storageNumber,
       residentName: row.residentName,
@@ -313,6 +307,38 @@ export default function StorageBookingsPage() {
   const buildingId = selectedIds[0] ?? user?.buildingIds?.[0] ?? "";
   const debounced = useDebounce(query, 300);
   const queryClient = useQueryClient();
+
+  /**
+   * The approval queue, built from the SAME first page of residents
+   * the directory renders, so the two screens name the same people.
+   *
+   * It used to be a hand-written list of invented residents, which is
+   * how the tab ended up showing units (1207, 1604, 2305) that are not
+   * in this building while the directory stamped different numbers
+   * onto different people. See `lib/demo/storage-approvals`.
+   */
+  const { data: claimants } = useQuery({
+    queryKey: ["storage-claimants", buildingId],
+    queryFn: async (): Promise<{ data: { id: string; name: string; unit: string; phone: string }[] }> => {
+      const sp = new URLSearchParams({ buildingId, page: "1", limit: "3" });
+      const res = await fetch(`/api/residents?${sp}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch residents");
+      return res.json();
+    },
+    enabled: !!buildingId,
+  });
+
+  /**
+   * An answered claim keeps its place: approved it becomes a confirmed
+   * row with the pencil, declined it leaves. Dropping an approval the
+   * instant it is given would read as the approval not having taken.
+   */
+  const approvalRows = buildStorageApprovals(claimants?.data ?? []).flatMap((r) => {
+    const outcome = answered.get(r.id);
+    if (outcome === undefined) return [r];
+    if (!outcome) return [];
+    return [{ ...r, state: "approved" as const }];
+  });
 
   const { data, isLoading: fetching, error, refetch } = useQuery({
     queryKey: ["storage-bookings", { buildingId, tab, search: debounced, statusFilter, notesFilter }],
@@ -476,6 +502,7 @@ export default function StorageBookingsPage() {
             rows={approvalRows}
             onApprove={(r) => setApproving(r)}
             onReject={(r) => setRejecting(r)}
+            onEdit={() => toast.show("Editing a storage unit is not part of this demo.")}
           />
         ) : (
          <>

@@ -19,6 +19,7 @@ import {
   approvedToast,
   rejectedToast,
 } from "../../components/storage/StorageApprovalDialogs";
+import { DEMO_STORAGE_CLAIMS } from "../../lib/demo/storage-approvals";
 import { listResidents, residentKeys, useInviteResident, useInviteAllResidents, useRevokeResident, useRestoreResident } from "@/lib/api/residents";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import "../../tokens.css";
@@ -296,14 +297,21 @@ export default function ParkingLotsPage() {
    * whole point is that a prospect opening this link sees all three
    * states at once.
    *
+   * The numbers and states come from `DEMO_STORAGE_CLAIMS`, which the
+   * Storage approval tab reads too - the two screens are two views of
+   * one queue, and a locker that is #22 on one and #48 on the other
+   * says the dashboard does not know who owns what.
+   *
    * The real dashboard reads `pendingStorage` off the API instead;
    * nothing here is a claim about how the product decides.
    */
   const displayed = showStorage
     ? residents.map((r, i) => {
-        if (i < 2) return { ...r, pendingStorageNumber: i === 0 ? "1" : "22" };
-        if (i === 2) return { ...r, storageNumbers: "17", pendingStorageNumber: null };
-        return { ...r, storageNumbers: null, pendingStorageNumber: null };
+        const claim = DEMO_STORAGE_CLAIMS[i];
+        if (!claim) return { ...r, storageNumbers: null, pendingStorageNumber: null };
+        return claim.state === "pending"
+          ? { ...r, storageNumbers: null, pendingStorageNumber: claim.storageNumber }
+          : { ...r, storageNumbers: claim.storageNumber, pendingStorageNumber: null };
       })
     : residents;
 

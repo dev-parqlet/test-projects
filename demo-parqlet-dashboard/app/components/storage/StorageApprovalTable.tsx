@@ -12,11 +12,18 @@
  * alone, in a column headed "Manage Storage", would ask a manager to
  * remember which of green-tick and red-cross does what on the one
  * screen where getting it backwards hands somebody else's locker away.
+ *
+ * A row the office has ALREADY confirmed keeps its place and offers
+ * the pencil instead. The column is headed "Manage Storage", not
+ * "Approve storage": a confirmed claim is still managed from here, and
+ * dropping it the moment it is answered would leave a manager with no
+ * way back to a number they had just mistyped.
  */
 
-import { IcCheck, IcReject } from "@/components/icons";
+import { IcCheck, IcEdit, IcReject } from "@/components/icons";
 import { PhoneWithTooltip } from "@/(hoa)/residents/components/phone-tooltip";
 import type { DemoStorageApproval } from "@/lib/demo/storage-approvals";
+import { hashed } from "./StorageApprovalDialogs";
 
 const UNIT = "6 1 70px";
 const NAME = "12 1 140px";
@@ -80,10 +87,12 @@ export function StorageApprovalTable({
   rows,
   onApprove,
   onReject,
+  onEdit,
 }: {
   rows: DemoStorageApproval[];
   onApprove: (row: DemoStorageApproval) => void;
   onReject: (row: DemoStorageApproval) => void;
+  onEdit: (row: DemoStorageApproval) => void;
 }) {
   return (
     <div style={{
@@ -139,24 +148,35 @@ export function StorageApprovalTable({
               <span style={cellStyle}>{r.residentName}</span>
             </div>
             <div style={{ flex: NUMBER, minWidth: 0 }}>
-              <span style={cellStyle}>{r.storageNumber}</span>
+              <span style={cellStyle}>{hashed(r.storageNumber)}</span>
             </div>
             <div style={{ flex: TYPE, minWidth: 0 }}>
               <span style={{ ...cellStyle, whiteSpace: "normal" }}>{r.storageType}</span>
             </div>
             <div style={{ flex: ACTIONS, minWidth: 0, display: "flex", alignItems: "center", gap: "var(--spacing-24)" }}>
-              <Action
-                label="Approve"
-                color="var(--color-text-success, #69BE38)"
-                icon={<IcCheck size={20} color="var(--color-text-success, #69BE38)" />}
-                onClick={() => onApprove(r)}
-              />
-              <Action
-                label="Decline"
-                color="var(--color-text-error, #C73A3A)"
-                icon={<IcReject size={20} />}
-                onClick={() => onReject(r)}
-              />
+              {r.state === "approved" ? (
+                <Action
+                  label="Edit"
+                  color="var(--color-text-weak)"
+                  icon={<IcEdit size={16} />}
+                  onClick={() => onEdit(r)}
+                />
+              ) : (
+                <>
+                  <Action
+                    label="Approve"
+                    color="var(--color-text-success, #69BE38)"
+                    icon={<IcCheck size={20} color="var(--color-text-success, #69BE38)" />}
+                    onClick={() => onApprove(r)}
+                  />
+                  <Action
+                    label="Decline"
+                    color="var(--color-text-error, #C73A3A)"
+                    icon={<IcReject size={20} />}
+                    onClick={() => onReject(r)}
+                  />
+                </>
+              )}
             </div>
           </div>
         ))
