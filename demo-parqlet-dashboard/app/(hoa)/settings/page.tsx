@@ -22,7 +22,7 @@ import { TabBar } from "../../components/ui/TabBar";
 import { Button } from "../../components/ui/Button";
 import { FeatureToggle } from "../../components/ui/FeatureToggle";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
-import { CREDIT_PRICE_CENTS, creditsPerGiftCard, formatMoney, netToBuilding, reservePerCreditCents } from "../../lib/demo/pricing";
+import { CREDIT_PRICE_CENTS, condoSavingsSplit, creditsPerGiftCard, formatMoney, netToBuilding, reservePerCreditCents } from "../../lib/demo/pricing";
 import { condoShowsSavings, demoFeatures, pathWithFeatures, productFromPath, type DemoFeature } from "../../lib/demo/product-path";
 import { DEMO_IDENTITIES } from "../../lib/demo/variants";
 import "../../tokens.css";
@@ -994,6 +994,7 @@ const MAX_CREDIT_PRICE_DOLLARS = 40;
 function CreditPriceTab({
   product,
   showsEarnings,
+  condoSavings,
 }: {
   product: "condo" | "apartment";
   /**
@@ -1006,6 +1007,8 @@ function CreditPriceTab({
    * the Condo + Earnings cut, which was sold on exactly that, sees it.
    */
   showsEarnings: boolean;
+  /** A Condo running Savings: the 2026-10-21 offer, see pricing.ts. */
+  condoSavings: boolean;
 }) {
   /**
    * A plain Condo runs the generous gift-card tier - its residents own
@@ -1014,6 +1017,22 @@ function CreditPriceTab({
    * Savings means a Condo nobody sold either story to.
    */
   const reserveTier = showsEarnings ? "standard" : "condo";
+
+  /**
+   * The Condo offer inverts who is the remainder, so the two figures
+   * below cannot both come from the old helpers: there the building
+   * was what was left after Parqlet and the card, and here it is a
+   * flat 20% and the RESIDENT is what is left.
+   */
+  const splitFor = (cents: number) => condoSavingsSplit(cents);
+  const buildingShare = (cents: number) =>
+    condoSavings ? splitFor(cents).buildingCents : netToBuilding(cents);
+  const residentShare = (cents: number) =>
+    condoSavings ? splitFor(cents).residentCents : reservePerCreditCents(cents, reserveTier);
+  const cardsAt = (cents: number) =>
+    condoSavings
+      ? Math.ceil(2500 / Math.max(1, splitFor(cents).residentCents))
+      : creditsPerGiftCard(cents, reserveTier);
   const [savedDollars, setSavedDollars] = useState(Math.round(CREDIT_PRICE_CENTS / 100));
   const [draft, setDraft] = useState(String(Math.round(CREDIT_PRICE_CENTS / 100)));
   const [confirming, setConfirming] = useState(false);
@@ -1093,16 +1112,16 @@ function CreditPriceTab({
             {showsEarnings && (
               <Figure
                 label="You receive per credit"
-                value={inRange ? formatMoney(netToBuilding(draftCents)) : "—"}
+                value={inRange ? formatMoney(buildingShare(draftCents)) : "—"}
                 note="after commission and card fees"
               />
             )}
             <Figure
               label="Resident earns toward a gift card"
-              value={inRange ? formatMoney(reservePerCreditCents(draftCents, reserveTier)) : "—"}
+              value={inRange ? formatMoney(residentShare(draftCents)) : "—"}
               note={
                 inRange
-                  ? `per credit \u00b7 ${creditsPerGiftCard(draftCents, reserveTier)} credits a card`
+                  ? `per credit \u00b7 ${cardsAt(draftCents)} credits a card`
                   : "per credit"
               }
             />
@@ -1156,8 +1175,8 @@ function CreditPriceTab({
                 <strong>Gift cards move for balances that already exist.</strong>{" "}
                 What a credit earns toward a gift card is a share of its
                 price, so it goes from{" "}
-                {formatMoney(reservePerCreditCents(savedCents, reserveTier))} to{" "}
-                {formatMoney(reservePerCreditCents(draftCents, reserveTier))} per credit.
+                {formatMoney(residentShare(savedCents))} to{" "}
+                {formatMoney(residentShare(draftCents))} per credit.
                 Residents who have been saving will see their progress change
                 without having done anything.
               </li>
@@ -1470,6 +1489,7 @@ export default function SettingsPage() {
           <CreditPriceTab
             product={product}
             showsEarnings={product === "apartment" || condoShowsSavings(pathname)}
+            condoSavings={condoShowsSavings(pathname)}
           />
         )}
       </div>

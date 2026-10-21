@@ -23,6 +23,7 @@ import {
   applyOffset,
   money,
   netToBuilding,
+  condoSavingsSplit,
 } from './pricing';
 
 const MONTHS = [
@@ -250,7 +251,16 @@ const CONTRIB_UNITS = ['6F', '7A', '5E', '3C', '2B', '4D', '1A', '8C'];
 const CONTRIB_SPOTS = ['330', '112', '108', '222', '251', '141', '309', '218'];
 
 export function condoContributions(count = 8, now = new Date()): DemoContribution[] {
-  const perCredit = netToBuilding(BASE_PRICE_CENTS);
+  /**
+   * The building's 20%, not the old remainder.
+   *
+   * This table is Condo-only and the Savings page is the Condo +
+   * Savings cut, which is exactly the offer that changed on
+   * 2026-10-21: the building takes a flat fifth and the resident gets
+   * what is left. Quoting the old netToBuilding here would show a
+   * board a bigger number than the deck they were pitched.
+   */
+  const perCredit = condoSavingsSplit(BASE_PRICE_CENTS).buildingCents;
   const out: DemoContribution[] = [];
   for (let i = 0; i < count; i++) {
     // Newest first, roughly every other day.

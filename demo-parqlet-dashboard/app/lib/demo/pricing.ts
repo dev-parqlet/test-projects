@@ -44,14 +44,21 @@ export const COMMISSION_PCT = 20;
 const STRIPE_PCT = 2.9;
 const STRIPE_FIXED_CENTS = 30;
 
-/** What one credit costs the resident, set per building. */
 /**
- * The pricing spec, the design and the Parking Spots screen all agree at
- * $6: a rooftop spot at $8 and a lower level at $15 are this base plus a
- * $2 and a $9 extra, and every worked example in the spec - $1.83, $7.41,
- * $5.28, a $2.50 reserve, ten credits for a $25 card - is quoted at it.
+ * What one credit costs the resident, set per building.
+ *
+ * $15 IN THE DEMO SINCE 2026-10-21, up from $6. The pitch deck works
+ * the Condo split through a $15 booking - $8.26 to the resident's gift
+ * card, $3.00 to the building, $3.00 to Parqlet, $0.74 to the card -
+ * and a demo quoting $6 beside a deck quoting $15 invites the question
+ * of which one is real.
+ *
+ * Nothing here hard-codes a figure derived from the price: every
+ * number on every demo screen comes back through these functions, so
+ * moving the constant moves all of them together. The real platform is
+ * unaffected - it reads each building's own `credits_price_cents`.
  */
-export const CREDIT_PRICE_CENTS = money(6);
+export const CREDIT_PRICE_CENTS = money(15);
 
 /** Every spot, in both products, costs this many credits per day. */
 export const BASE_PRICE_CREDITS = 1;
@@ -92,9 +99,62 @@ export function commission(chargeCents: number): number {
  * What reaches the building from a charge: less our commission, less
  * Stripe. A REMAINDER, so the parts always sum to the whole and any
  * rounding drift lands here rather than leaving a penny unaccounted.
+ *
+ * APARTMENTS, and a Condo on the old terms. For the Condo offer made
+ * on 2026-10-21 see `condoSavingsSplit` below, where the building
+ * takes a flat 20% and the REMAINDER is the resident's instead.
  */
 export function netToBuilding(chargeCents: number): number {
   return chargeCents - commission(chargeCents) - stripeFee(chargeCents);
+}
+
+// ─── The Condo offer (2026-10-21) ───────────────────────────────────
+
+/**
+ * How a booking splits in a CONDO THAT RUNS SAVINGS.
+ *
+ * ─── WHY IT IS SHAPED DIFFERENTLY ───────────────────────────────────
+ *
+ * Everywhere else the building is the remainder and takes most of the
+ * charge. That is right where the building owns the spots. In a Condo
+ * the RESIDENTS own them, so the offer Margo is making to Metropolitan
+ * inverts it: the building takes a flat 20%, Parqlet takes 20%, and
+ * what is left after the card fee goes to the resident who shared the
+ * space.
+ *
+ *   building = 20% of the charge
+ *   parqlet  = 20% of the charge
+ *   card     = 2.9% + 30c
+ *   resident = the REMAINDER
+ *
+ * The resident is the remainder for the same reason the building used
+ * to be: the four parts must sum to the charge exactly, and whoever
+ * absorbs the rounding should be whoever the model is generous to.
+ *
+ * Checked against the client's own table of 2026-10-21, all 35 rows
+ * from $6 to $40, to the cent - and every row sums to the charge.
+ */
+export const CONDO_SAVINGS_BUILDING_PCT = 20;
+
+export type BookingSplit = {
+  chargeCents: number;
+  residentCents: number;
+  buildingCents: number;
+  parqletCents: number;
+  cardCents: number;
+};
+
+export function condoSavingsSplit(chargeCents: number): BookingSplit {
+  const cardCents = stripeFee(chargeCents);
+  const buildingCents = Math.round((chargeCents * CONDO_SAVINGS_BUILDING_PCT) / 100);
+  const parqletCents = commission(chargeCents);
+  return {
+    chargeCents,
+    cardCents,
+    buildingCents,
+    parqletCents,
+    residentCents: chargeCents - cardCents - buildingCents - parqletCents,
+  };
 }
 
 // ─── What a spot costs ──────────────────────────────────────────────
