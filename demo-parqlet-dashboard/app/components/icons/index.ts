@@ -19,3 +19,5 @@ export { IcBookings } from './IcBookings';
 export { IcParking } from './IcParking';
 export { IcSubscription } from './IcSubscription';
 export { IcEye } from './IcEye';
+export { IcReject } from './IcReject';
+export { IcEdit } from './IcEdit';

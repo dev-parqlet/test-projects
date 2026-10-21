@@ -37,6 +37,18 @@ import { CopyableCell } from "../../components/ui/CopyableCell";
 import { FilterDropdown } from "../../components/ui/FilterDropdown";
 import { IdDisplay } from "../../components/ui/IdDisplay";
 import { Pagination } from "../../components/ui/Pagination";
+import { useToast } from "../../components/ui/use-toast";
+import { StorageApprovalTable } from "../../components/storage/StorageApprovalTable";
+import {
+  ApproveStorageDialog,
+  RejectStorageDialog,
+  approvedToast,
+  rejectedToast,
+} from "../../components/storage/StorageApprovalDialogs";
+import {
+  DEMO_STORAGE_APPROVALS,
+  type DemoStorageApproval,
+} from "../../lib/demo/storage-approvals";
 import { TableHeadLabel } from "../../components/ui/TableHeadLabel";
 import { PhoneWithTooltip } from "../residents/components/phone-tooltip";
 import { NAME_COLUMN_WIDTH, NAME_TEXT_WIDTH } from "../../lib/name-cell";
@@ -54,12 +66,18 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced;
 }
 
-type StorageTab = "current" | "future" | "past";
+type StorageTab = "current" | "future" | "past" | "approvals";
 
+/**
+ * "Storage approval" is always LAST. It is where a manager goes when
+ * something is waiting, and the three tabs before it are the ones they
+ * open every day.
+ */
 const TABS: { id: StorageTab; label: string }[] = [
   { id: "current", label: "Current bookings" },
   { id: "future", label: "Upcoming bookings" },
   { id: "past", label: "Past bookings" },
+  { id: "approvals", label: "Storage approval" },
 ];
 
 // Fixed where the header is the widest thing in the column, flexible
@@ -129,6 +147,9 @@ const STATUS_OPTIONS_FUTURE = ["All", "Upcoming"];
 const STATUS_OPTIONS_PAST = ["All", "Completed", "Cancelled"];
 
 function statusOptionsFor(tab: StorageTab): string[] {
+  // Nothing to filter on the approvals tab: every row on it is waiting,
+  // which is the definition of the tab.
+  if (tab === "approvals") return ["All"];
   return tab === "current" ? STATUS_OPTIONS_CURRENT
     : tab === "future" ? STATUS_OPTIONS_FUTURE
     : STATUS_OPTIONS_PAST;
@@ -258,6 +279,30 @@ export default function StorageBookingsPage() {
   const { user } = useAuth();
   const { selectedIds } = useBuildingFilter();
   const [tab, setTab] = useState<StorageTab>("current");
+
+  /**
+   * The approval queue. Answering a claim removes it from the list -
+   * demo-local, because there is no backend here to hold the decision,
+   * and a row that stayed after being approved would suggest the
+   * approval had not taken.
+   */
+  const [answered, setAnswered] = useState<Set<string>>(new Set());
+  const approvalRows = DEMO_STORAGE_APPROVALS.filter((r) => !answered.has(r.id));
+  const [approving, setApproving] = useState<DemoStorageApproval | null>(null);
+  const [rejecting, setRejecting] = useState<DemoStorageApproval | null>(null);
+  const toast = useToast();
+
+  const settle = (row: DemoStorageApproval, approved: boolean) => {
+    setAnswered((prev) => new Set(prev).add(row.id));
+    const claim = {
+      storageNumber: row.storageNumber,
+      residentName: row.residentName,
+      unitNumber: row.unitNumber,
+    };
+    toast.show(approved ? approvedToast(claim) : rejectedToast(claim));
+    setApproving(null);
+    setRejecting(null);
+  };
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -426,6 +471,14 @@ export default function StorageBookingsPage() {
           </div>
         </div>
 
+        {tab === "approvals" ? (
+          <StorageApprovalTable
+            rows={approvalRows}
+            onApprove={(r) => setApproving(r)}
+            onReject={(r) => setRejecting(r)}
+          />
+        ) : (
+         <>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--spacing-12)", flexWrap: "wrap" }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 10,
@@ -592,7 +645,29 @@ export default function StorageBookingsPage() {
             onPageSizeChange={(size) => { setRowsPerPage(size); setPage(1); }}
           />
         </div>
+         </>
+        )}
       </div>
+
+      <ApproveStorageDialog
+        claim={approving && {
+          storageNumber: approving.storageNumber,
+          residentName: approving.residentName,
+          unitNumber: approving.unitNumber,
+        }}
+        onCancel={() => setApproving(null)}
+        onConfirm={() => approving && settle(approving, true)}
+      />
+      <RejectStorageDialog
+        claim={rejecting && {
+          storageNumber: rejecting.storageNumber,
+          residentName: rejecting.residentName,
+          unitNumber: rejecting.unitNumber,
+        }}
+        onCancel={() => setRejecting(null)}
+        onConfirm={() => rejecting && settle(rejecting, false)}
+      />
+      {toast.node}
 
       {activeNoteId && (() => {
         const booking = allRows.find((b) => b.rowId === activeNoteId);
