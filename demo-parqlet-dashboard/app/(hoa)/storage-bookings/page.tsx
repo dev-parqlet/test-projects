@@ -320,7 +320,7 @@ export default function StorageBookingsPage() {
   const { data: claimants } = useQuery({
     queryKey: ["storage-claimants", buildingId],
     queryFn: async (): Promise<{ data: { id: string; name: string; unit: string; phone: string }[] }> => {
-      const sp = new URLSearchParams({ buildingId, page: "1", limit: "3" });
+      const sp = new URLSearchParams({ buildingId, page: "1", pageSize: "3" });
       const res = await fetch(`/api/residents?${sp}`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch residents");
       return res.json();
