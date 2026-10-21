@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { CopyableCell } from "@/components/ui/CopyableCell";
 import { FloatingMenu } from "@/components/ui/FloatingMenu";
 import { Checkbox } from "./icons";
+import { IcCheck, IcReject, IcEdit } from "@/components/icons";
 import type { Resident } from "./types";
 import { NAME_TEXT_WIDTH, NAME_COLUMN_WIDTH } from "@/lib/name-cell";
 
@@ -91,6 +92,7 @@ function IcNotes() {
 export function ResidentRow({
   resident, isLast, bulkInvited, bulkInvitedDate, checked, onToggle, onOpenNote, onSendInvite, onRevokeAccess, isRevoked = false,
   showStorage = false,
+  onApproveStorage, onRejectStorage, onEditStorage,
 }: {
   resident: Resident;
   isLast: boolean;
@@ -110,6 +112,10 @@ export function ResidentRow({
    *  carries the storage token - everywhere else it would be a column
    *  of dashes. */
   showStorage?: boolean;
+  /** Storage actions. Omitted where the caller cannot act on one. */
+  onApproveStorage?: (resident: Resident) => void;
+  onRejectStorage?: (resident: Resident) => void;
+  onEditStorage?: (resident: Resident) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
@@ -150,6 +156,77 @@ export function ResidentRow({
       </span>
     </CopyableCell>
   );
+
+  const iconBtn: React.CSSProperties = {
+    background: "none",
+    border: "none",
+    padding: 0,
+    cursor: "pointer",
+    display: "inline-flex",
+    alignItems: "center",
+    flexShrink: 0,
+  };
+
+  /**
+   * The Storage column says one of three things, and they are three
+   * different kinds of thing:
+   *
+   *   a claim waiting   two actions to take, as icons
+   *   a confirmed unit  the number, with a pencil to change it
+   *   nothing           N/A
+   *
+   * ICONS WITHOUT WORDS here, unlike the approval queue, which labels
+   * them. There the column is wide and dedicated to the decision; here
+   * it is one narrow cell in a row about a person, and two labelled
+   * buttons would crowd out the number they are about. The
+   * confirmation dialog carries the words instead, which is also what
+   * makes an unlabelled red cross safe to offer.
+   */
+  const storageCell = () => {
+    const hash = (n: string) => (n.startsWith("#") ? n : `#${n}`);
+    const pending = resident.pendingStorageNumber;
+
+    if (pending) {
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)", minWidth: 0 }}>
+          <span style={{ ...cellTxt, display: "inline", overflow: "visible" }}>{hash(pending)}</span>
+          <button
+            onClick={() => onApproveStorage?.(resident)}
+            aria-label={`Approve storage ${hash(pending)} for ${resident.name}`}
+            style={iconBtn}
+          >
+            <IcCheck size={20} color="var(--color-text-success, #69BE38)" />
+          </button>
+          <button
+            onClick={() => onRejectStorage?.(resident)}
+            aria-label={`Reject storage ${hash(pending)} for ${resident.name}`}
+            style={iconBtn}
+          >
+            <IcReject size={20} />
+          </button>
+        </div>
+      );
+    }
+
+    if (resident.storageNumbers) {
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-8)", minWidth: 0 }}>
+          <span style={{ ...cellTxt, display: "inline", overflow: "visible" }}>
+            {hash(resident.storageNumbers)}
+          </span>
+          <button
+            onClick={() => onEditStorage?.(resident)}
+            aria-label={`Edit storage for ${resident.name}`}
+            style={{ ...iconBtn, color: "var(--color-icon-weak)" }}
+          >
+            <IcEdit />
+          </button>
+        </div>
+      );
+    }
+
+    return wrapTxt("N/A");
+  };
 
   // A unit with multiple residents can carry multiple comma-joined emails
   // in one field. Previously that whole string got ellipsis-truncated with
@@ -208,7 +285,7 @@ export function ResidentRow({
       {cell(PARKING_COLUMN_WIDTH,  wrapTxt(resident.parkingSpotNumbers || "N/A"))}
       {/* "N/A", not a dash: about half a building has a locker, and an
           empty cell in a half-empty column reads as missing data. */}
-      {showStorage && cell(PARKING_COLUMN_WIDTH, wrapTxt(resident.storageNumbers || "N/A"))}
+      {showStorage && cell(PARKING_COLUMN_WIDTH, storageCell())}
       {cell(16, emailCell(resident.email))}
       {cell(7,  txt(resident.residencyType))}
       {cell(10, (() => {

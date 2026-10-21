@@ -1,42 +1,44 @@
 /**
- * A pencil, for a storage unit the office has already confirmed.
+ * The edit pencil, for a storage unit the office has already confirmed.
  *
- * The directory's Storage column shows one of three things: two action
- * icons while a claim is waiting, this pencil once it is approved, or
- * N/A when the resident has none. So the pencil's job is to say "this
- * is settled, and you can still change it" without looking like
- * another decision to make - which is why it is a single quiet glyph
- * beside the number rather than a button.
+ * ─── THE SAME GLYPH THE SUPER-ADMIN BUILDING PAGE USES ──────────────
  *
- * Drawn to sit with the set: 24x24 box, 1.5 stroke, rounded joins, and
- * `color` driving the stroke exactly like IcCheck and IcReject.
+ * Lifted from `EditableRow` in web-dashboard's
+ * `app/(superadmin)/buildings/[id]/page.tsx`, where it sits beside HOA
+ * Contact and Verification Method. Client, 2026-10-21: "we had for
+ * SAdmin for building editing, same like here."
+ *
+ * It was an inline SVG with no component around it, which is why a
+ * search for an edit icon found nothing and the first attempt here was
+ * a drawn-from-scratch plain pencil. Those are two different marks,
+ * and an app that uses both has two ways of saying "edit".
+ *
+ * `currentColor` by default, like the original - the SA page colours
+ * it by setting `color` on the button, and the directory does the
+ * same, so the icon inherits whatever the row is doing on hover.
  */
 export function IcEdit({
-  size = 24,
-  color = "var(--color-text-weak)",
+  size = 14,
+  color = "currentColor",
 }: {
   size?: number;
   color?: string;
 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* The body of the pencil, nib to eraser. */}
-      <path
-        d="M4 20h4L18.5 9.5a2.121 2.121 0 0 0-3-3L5 17v3Z"
-        stroke={color}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* The ferrule line, so the shape reads as a pencil at 16px and
-          not as a plain diagonal. */}
-      <path
-        d="M13.5 8.5l3 3"
-        stroke={color}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* The page behind it, open at the corner the pencil rests on. */}
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      {/* The pencil itself, nib to eraser. */}
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
     </svg>
   );
 }

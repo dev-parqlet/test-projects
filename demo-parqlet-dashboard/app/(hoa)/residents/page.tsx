@@ -12,6 +12,13 @@ import { FilterDropdown } from "../../components/ui/FilterDropdown";
 import { TextButton } from "../../components/text-button";
 import { IcCheck } from "../../components/icons/IcCheck";
 import { Pagination } from "../../components/ui/Pagination";
+import { useToast } from "../../components/ui/use-toast";
+import {
+  ApproveStorageDialog,
+  RejectStorageDialog,
+  approvedToast,
+  rejectedToast,
+} from "../../components/storage/StorageApprovalDialogs";
 import { listResidents, residentKeys, useInviteResident, useInviteAllResidents, useRevokeResident, useRestoreResident } from "@/lib/api/residents";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import "../../tokens.css";
@@ -278,7 +285,54 @@ export default function ParkingLotsPage() {
 
   const rowsPerPage = minRows;
 
-  const displayed = residents;
+  /**
+   * DEMO STAGING, and only that.
+   *
+   * The first two rows carry a storage claim waiting on the office,
+   * the third a unit already confirmed. Applied by position rather
+   * than seeded into residents.json because the directory is sorted
+   * and filtered - pinning it to particular people would put the
+   * icons on page three the moment somebody sorts by unit, and the
+   * whole point is that a prospect opening this link sees all three
+   * states at once.
+   *
+   * The real dashboard reads `pendingStorage` off the API instead;
+   * nothing here is a claim about how the product decides.
+   */
+  const displayed = showStorage
+    ? residents.map((r, i) => {
+        if (i < 2) return { ...r, pendingStorageNumber: i === 0 ? "1" : "22" };
+        if (i === 2) return { ...r, storageNumbers: "17", pendingStorageNumber: null };
+        return { ...r, storageNumbers: null, pendingStorageNumber: null };
+      })
+    : residents;
+
+  const [approvingStorage, setApprovingStorage] = useState<Resident | null>(null);
+  const [rejectingStorage, setRejectingStorage] = useState<Resident | null>(null);
+  /** Rows answered this session, so the icons stop offering the choice. */
+  const [settledStorage, setSettledStorage] = useState<Map<string, string | null>>(new Map());
+  const storageToast = useToast();
+
+  const claimFor = (r: Resident) => ({
+    storageNumber: r.pendingStorageNumber ?? "",
+    residentName: r.name,
+    unitNumber: r.unitNumber ?? "",
+  });
+
+  const settleStorage = (r: Resident, approved: boolean) => {
+    const claim = claimFor(r);
+    setSettledStorage((prev) => new Map(prev).set(r.id, approved ? claim.storageNumber : null));
+    storageToast.show(approved ? approvedToast(claim) : rejectedToast(claim));
+    setApprovingStorage(null);
+    setRejectingStorage(null);
+  };
+
+  /** Answered rows render as their outcome rather than as a choice. */
+  const rows = displayed.map((r) => {
+    if (!settledStorage.has(r.id)) return r;
+    const approvedNumber = settledStorage.get(r.id);
+    return { ...r, pendingStorageNumber: null, storageNumbers: approvedNumber };
+  });
 
 return (
     <>
@@ -569,11 +623,14 @@ return (
                   </button>
                 </div>
               ) : displayed.length > 0 ? (
-                displayed.map((resident, i) => (
+                rows.map((resident, i) => (
                   <ResidentRow
                     key={resident.id}
                     resident={resident}
                     showStorage={showStorage}
+                    onApproveStorage={setApprovingStorage}
+                    onRejectStorage={setRejectingStorage}
+                    onEditStorage={() => storageToast.show("Editing a storage unit is not part of this demo.")}
                     isLast={i === displayed.length - 1}
                     bulkInvited={bulkInvited}
                     bulkInvitedDate={bulkInvitedDate}
@@ -1073,6 +1130,18 @@ return (
           {inviteToast}
         </div>
       )}
+      <ApproveStorageDialog
+        claim={approvingStorage && claimFor(approvingStorage)}
+        onCancel={() => setApprovingStorage(null)}
+        onConfirm={() => approvingStorage && settleStorage(approvingStorage, true)}
+      />
+      <RejectStorageDialog
+        claim={rejectingStorage && claimFor(rejectingStorage)}
+        onCancel={() => setRejectingStorage(null)}
+        onConfirm={() => rejectingStorage && settleStorage(rejectingStorage, false)}
+      />
+      {storageToast.node}
+
     </>
   );
 }

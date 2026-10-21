@@ -33,10 +33,20 @@ const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
     color: "var(--color-text-weak)",
     border: "none",
   },
+  /**
+   * Destructive actions: red TEXT in a red border, no fill (designer,
+   * 2026-10-21).
+   *
+   * It used to be a solid red block, which competed with the primary
+   * for attention and read as the expected action. Declining a
+   * resident's claim, unsubscribing or revoking access are none of
+   * them the expected action - they are the one you take deliberately,
+   * and the outline says so while staying unmistakably red.
+   */
   danger: {
-    backgroundColor: "var(--color-fill-error)",
-    color: "var(--color-text-white)",
-    border: "none",
+    backgroundColor: "transparent",
+    color: "var(--color-text-error)",
+    border: "1px solid var(--color-text-error)",
   },
   outline: {
     backgroundColor: "transparent",

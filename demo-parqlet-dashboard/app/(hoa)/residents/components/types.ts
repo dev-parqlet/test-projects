@@ -12,6 +12,15 @@ export interface Resident {
   parkingSpotNumbers: string | null;
   /** Lockers this resident has. Only read on a cut with storage on. */
   storageNumbers?: string | null;
+  /**
+   * A storage unit this resident has CLAIMED, waiting on the office.
+   *
+   * Distinct from `storageNumbers`, which is what they already have:
+   * the directory shows the first as two actions to take and the
+   * second as a number with a pencil, and a manager has to be able to
+   * tell them apart at a glance.
+   */
+  pendingStorageNumber?: string | null;
   email:            string;
   buildingId:       string;
   residencyType:    ResidencyType;

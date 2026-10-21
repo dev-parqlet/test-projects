@@ -20,6 +20,7 @@ import { Input } from "../../components/ui/Input";
 import { NumberStepper } from "../../components/ui/NumberStepper";
 import { TabBar } from "../../components/ui/TabBar";
 import { Button } from "../../components/ui/Button";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { FeatureToggle } from "../../components/ui/FeatureToggle";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
 import { CREDIT_PRICE_CENTS, condoSavingsSplit, creditsPerGiftCard, formatMoney, netToBuilding, reservePerCreditCents } from "../../lib/demo/pricing";
@@ -1322,6 +1323,27 @@ const cp: Record<string, React.CSSProperties> = {
  * underneath them would leave one configuration's nav beside another's
  * table for a moment. In front of a prospect that reads as a bug.
  */
+/**
+ * Toggle copy, matching the real dashboard's word for word.
+ *
+ * The off-warnings are the reason the confirmation exists: turning a
+ * feature off does NOT cancel arrangements already running, and a
+ * manager deciding whether to switch it off needs to know that before
+ * they do, not after.
+ */
+const LT_COPY = {
+  longTermParking: {
+    desc: "Let residents rent parking spaces to each other by the month, and add the Long-term bookings tab.",
+    offWarning:
+      "Rentals already running stay in place and residents keep each other's contact details, but nobody will be able to browse or list a space until you turn it back on.",
+  },
+  storage: {
+    desc: "Add the Storage pages and the Storage # column in your resident directory, and let residents rent storage to each other.",
+    offWarning:
+      "Rentals already running stay in place, but the Storage pages disappear from your sidebar and residents will not be able to browse or list a unit until you turn it back on.",
+  },
+} as const;
+
 function LongTermSpacesTab() {
   const pathname = usePathname();
   const features = demoFeatures(pathname);
@@ -1331,6 +1353,24 @@ function LongTermSpacesTab() {
     // form reads as a mutation to the lint rules and is flagged.
     window.location.assign(pathWithFeatures(pathname, next));
   };
+
+  /**
+   * The same confirmation the real dashboard asks (client,
+   * 2026-10-21), even though here the switch only rewrites the URL.
+   *
+   * The demo's job is to show what the product does. A toggle that
+   * flips instantly here and asks for confirmation on the real thing
+   * teaches a prospect the wrong gesture, and the warning is the part
+   * worth seeing: turning the feature off does not cancel rentals
+   * already running.
+   */
+  const [pending, setPending] = useState<{
+    key: DemoFeature;
+    next: boolean;
+    title: string;
+    desc: string;
+    offWarning: string;
+  } | null>(null);
 
   const row = (title: string, desc: string, on: boolean, onChange: () => void, last = false) => (
     <FeatureToggle
@@ -1343,19 +1383,39 @@ function LongTermSpacesTab() {
     />
   );
 
+  const ask = (
+    key: DemoFeature,
+    title: string,
+    desc: string,
+    offWarning: string,
+    on: boolean,
+  ) => setPending({ key, next: !on, title, desc, offWarning });
+
   return (
     <Card>
       {row(
         "Long-term parking",
-        "Let residents rent parking spaces to each other by the month, and add the Long-term bookings tab.",
+        LT_COPY.longTermParking.desc,
         features.longTermParking,
-        () => go({ longTermParking: !features.longTermParking }),
+        () => ask(
+          "longTermParking",
+          "Long-term parking",
+          LT_COPY.longTermParking.desc,
+          LT_COPY.longTermParking.offWarning,
+          features.longTermParking,
+        ),
       )}
       {row(
         "Storage",
-        "Add the Storage bookings page and the Storage # column in the resident directory.",
+        LT_COPY.storage.desc,
         features.storage,
-        () => go({ storage: !features.storage }),
+        () => ask(
+          "storage",
+          "Storage",
+          LT_COPY.storage.desc,
+          LT_COPY.storage.offWarning,
+          features.storage,
+        ),
       )}
       <div style={{
         padding: "var(--spacing-16) var(--spacing-24)",
@@ -1367,6 +1427,19 @@ function LongTermSpacesTab() {
         the address bar, so whatever you copy from it opens exactly what you
         are looking at.
       </div>
+
+      <ConfirmDialog
+        open={!!pending}
+        /* Lowercased, like the real dashboard: "Turn on long-term
+           parking?" reads as the thing it is, where the capitalised
+           form reads as a proper noun being switched. */
+        title={pending ? `${pending.next ? "Turn on" : "Turn off"} ${pending.title.toLowerCase()}?` : ""}
+        body={pending ? (pending.next ? pending.desc : pending.offWarning) : null}
+        confirmLabel={pending?.next ? "Turn it on" : "Turn it off"}
+        destructive={pending ? !pending.next : false}
+        onConfirm={() => pending && go({ [pending.key]: pending.next })}
+        onCancel={() => setPending(null)}
+      />
     </Card>
   );
 }

@@ -47,19 +47,6 @@ export function rejectedToast(claim: StorageClaim): string {
   return `Storage ${hashed(claim.storageNumber)} rejected. We'll let ${firstName(claim.residentName)} know.`;
 }
 
-/**
- * Buttons, to the house rule for a destructive pair: the affirmative is
- * the filled lime, the destructive is red TEXT in a red border with no
- * fill. A solid red button competes with the primary for attention and
- * reads as the expected action, which rejecting somebody's claim is
- * not.
- */
-const dangerOutline: React.CSSProperties = {
-  background: "transparent",
-  border: "1px solid var(--color-text-error, #C73A3A)",
-  color: "var(--color-text-error, #C73A3A)",
-};
-
 export function ApproveStorageDialog({
   claim,
   busy = false,
@@ -124,9 +111,9 @@ export function RejectStorageDialog({
         </p>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--spacing-12)" }}>
           <Button variant="secondary" onClick={onCancel} disabled={busy}>Cancel</Button>
-          <Button variant="secondary" style={dangerOutline} onClick={onConfirm} disabled={busy}>
-            Reject
-          </Button>
+          {/* `danger` IS the outline now - red text, red border, no
+              fill - so this no longer needs a local override. */}
+          <Button variant="danger" onClick={onConfirm} disabled={busy}>Reject</Button>
         </div>
       </div>
     </Modal>
