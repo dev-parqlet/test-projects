@@ -16,6 +16,20 @@ import { NAME_TEXT_WIDTH, NAME_COLUMN_WIDTH } from "@/lib/name-cell";
 export { NAME_COLUMN_WIDTH };
 export const PARKING_COLUMN_WIDTH = "0 0 98px";
 
+/**
+ * Storage needs more room than Parking, because it carries ACTIONS.
+ *
+ * 98px fits "#22" and nothing else. The number slot plus two 20px
+ * icons and their gaps comes to about 84 of it, so the cross sat a few
+ * pixels from the Resident Email column and read as belonging to it.
+ * 128 leaves a clear margin after the last icon.
+ *
+ * Used by BOTH the header in residents/page.tsx and the cell here - a
+ * column whose two halves disagree is misaligned by exactly the
+ * difference, all the way down the page.
+ */
+export const STORAGE_COLUMN_WIDTH = "0 0 128px";
+
 function IcEllipsis() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -308,7 +322,7 @@ export function ResidentRow({
       {cell(PARKING_COLUMN_WIDTH,  wrapTxt(resident.parkingSpotNumbers || "N/A"))}
       {/* "N/A", not a dash: about half a building has a locker, and an
           empty cell in a half-empty column reads as missing data. */}
-      {showStorage && cell(PARKING_COLUMN_WIDTH, storageCell())}
+      {showStorage && cell(STORAGE_COLUMN_WIDTH, storageCell())}
       {cell(16, emailCell(resident.email))}
       {cell(7,  txt(resident.residencyType))}
       {cell(10, (() => {

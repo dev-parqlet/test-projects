@@ -26,7 +26,7 @@ import "../../tokens.css";
 
 import { IcSort, IcSearch, Checkbox } from "./components/icons";
 import { PhoneWithTooltip } from "./components/phone-tooltip";
-import { ResidentRow, NAME_COLUMN_WIDTH, PARKING_COLUMN_WIDTH } from "./components/resident-row";
+import { ResidentRow, NAME_COLUMN_WIDTH, PARKING_COLUMN_WIDTH, STORAGE_COLUMN_WIDTH } from "./components/resident-row";
 import { ConfirmModal } from "./components/confirm-modal";
 import { ResidentNoteModal } from "./components/resident-note-modal";
 import type { ResidencyType, ParqletStatus, InviteState, Resident } from "./components/types";
@@ -51,7 +51,7 @@ function useDebounce<T>(value: T, delay: number): T {
 // Keep in sync with app/(superadmin)/super-admin/residents/page.tsx#COLUMNS.
 /** Inserted after Parking # only on a cut whose URL carries the storage
  *  token - everywhere else it would be a column of dashes. */
-const STORAGE_COLUMN = { label: "Storage #", flex: PARKING_COLUMN_WIDTH };
+const STORAGE_COLUMN = { label: "Storage #", flex: STORAGE_COLUMN_WIDTH };
 
 const COLUMNS: { label: string; flex: number | string }[] = [
   { label: "Unit #",           flex: 5  },
