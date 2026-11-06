@@ -19,6 +19,53 @@
  */
 
 import storageData from "./mock-data/storage-bookings.json";
+import { demoDayShift } from "./demo/epoch";
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+/** `YYYY-MM-DD` moved forward `days` whole days. */
+function shiftDay(day: string, days: number): string {
+  const [y, m, d] = day.slice(0, 10).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
+/** "Sep 8, 2026", the fixture's own display shape. */
+function displayDay(day: string): string {
+  const [y, m, d] = day.slice(0, 10).split("-").map(Number);
+  return `${MONTHS[m - 1]} ${d}, ${y}`;
+}
+
+/**
+ * Every storage rental, slid forward to today.
+ *
+ * The fixture is authored against the demo epoch (2026-09-28) - at that
+ * date it has 12 rentals running, 4 upcoming and 4 finished. But it is
+ * served through a factory, and the epoch rebase in handle-request.ts
+ * only applies to files served as they are, so these dates never moved:
+ * a year on, nothing would be upcoming and most rentals would read as
+ * finished. The demo is sent to prospects and has to look the same on
+ * any day it is opened (client, 2026-11-06).
+ *
+ * Whole days, by the same `demoDayShift` every other mock file uses, so
+ * storage cannot drift from the rest of the corpus. The display text is
+ * rebuilt from the moved day.
+ */
+function liveStorage(now: Date): MockStorageBooking[] {
+  const days = demoDayShift(now);
+  const raw = storageData as unknown as { data: MockStorageBooking[] };
+  if (days === 0) return raw.data;
+  return raw.data.map((b) => {
+    const startIso = shiftDay(b.startIso, days);
+    const endIso = shiftDay(b.endIso, days);
+    return {
+      ...b,
+      startIso,
+      endIso,
+      bookingStart: displayDay(startIso),
+      bookingEnd: displayDay(endIso),
+    };
+  });
+}
 
 interface MockStorageBooking {
   id: string;
@@ -46,8 +93,6 @@ function deriveStatus(startIso: string, endIso: string, now: Date): string {
 }
 
 export function buildMockStorageBookingsResponse(params: URLSearchParams) {
-  const raw = storageData as unknown as { data: MockStorageBooking[] };
-
   const buildingId = params.get("buildingId");
   const tab = params.get("tab") ?? "current";
   const status = params.get("status");
@@ -56,7 +101,7 @@ export function buildMockStorageBookingsResponse(params: URLSearchParams) {
 
   const now = new Date();
 
-  const rows = raw.data
+  const rows = liveStorage(now)
     .map((b) => ({ ...b, status: deriveStatus(b.startIso, b.endIso, now) }))
     .filter((b) => {
       if (buildingId && b.buildingId !== buildingId) return false;

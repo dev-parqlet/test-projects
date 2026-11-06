@@ -70,6 +70,9 @@ function spotOwner(buildingId, spotNumber) {
   return SPOT_OWNERS.get(buildingId)?.get(String(spotNumber)) ?? null;
 }
 
+/** The single "now" every row is laid out from. */
+const SEEDED_AT = new Date();
+
 const HOA = "e6565d1b-1f25-4c51-bfa6-7db4932702cd";        // The Meridian
 const APARTMENTS = "80f9ac2e-b884-4634-ac02-0682a9a12662"; // Oakline Park
 
@@ -142,7 +145,7 @@ function uuid(seed) {
  *                   a resident's.
  */
 function makeBookings(buildingId, counts, spots, owned, startIndex, sharedSpots = []) {
-  const now = new Date();
+  const now = SEEDED_AT;
   const rows = [];
   let i = startIndex;
 
@@ -215,6 +218,12 @@ function makeBookings(buildingId, counts, spots, owned, startIndex, sharedSpots 
       vehicleType: pick(VEHICLES, i),
       bookingStart: fmt(start),
       bookingEnd: fmt(end),
+      // The real instants. The server slides them forward to the viewer's
+      // "now" and rebuilds the display text from them - see
+      // lib/mock-bookings-filter.ts `liveBookings`. Without them the demo
+      // was only busy on the day it was deployed.
+      bookingStartIso: start.toISOString(),
+      bookingEndIso: end.toISOString(),
       status,
       hasNote: i % 9 === 0,
       creditsSpent: paidWithCredit ? days : 0,
@@ -265,8 +274,34 @@ function makeBookings(buildingId, counts, spots, owned, startIndex, sharedSpots 
   for (let n = 0; n < counts.upcoming; n++) push(6 + n * 9, 6 + (n % 12), "Assigned");
   // Waiting on a spot owner. Only meaningful for an HOA.
   for (let n = 0; n < counts.pending; n++) push(20 + n * 14, 10, "PendingApproval");
-  // History.
-  for (let n = 0; n < counts.past; n++) push(-(30 + n * 19), 5 + (n % 9), n % 7 === 0 ? "Cancelled" : "Completed");
+  // History, day by day across the last 44 days, covering both charts
+  // the dashboard draws:
+  //
+  //   Week   the last 7 days, one bar a day
+  //   Month  five weekly bars, from SIX weeks back to one week back
+  //
+  // `counts.pastPerDay` is a weekly pattern of how many bookings a day
+  // gets, so the bars rise and fall the way a real building's do instead
+  // of sitting perfectly flat, which reads as generated. Fixed, not
+  // random: two people comparing screens in a demo must see the same
+  // chart. History used to step 19h from 30h back, which reached barely
+  // ten days for The Meridian and left both charts mostly blank
+  // (client, 2026-11-06).
+  const HISTORY_DAYS = 44;
+  // A per-week nudge on alternate days, so the Month chart's weekly bars
+  // differ too rather than repeating one week's total five times.
+  const WEEK_NUDGE = [0, 1, -1, 1, 0, -1, 1];
+  let n = 0;
+  for (let day = 0; day < HISTORY_DAYS; day++) {
+    const nudge = day % 2 === 0 ? WEEK_NUDGE[Math.floor(day / 7) % WEEK_NUDGE.length] : 0;
+    const perDay = Math.max(0, counts.pastPerDay[day % counts.pastPerDay.length] + nudge);
+    for (let k = 0; k < perDay; k++) {
+      // Spread across the day: 10h back from now, then into the day.
+      const hoursAgo = 10 + day * 24 + Math.floor((k * 13) / Math.max(1, perDay));
+      push(-hoursAgo, 5 + (n % 9), n % 7 === 0 ? "Cancelled" : "Completed");
+      n++;
+    }
+  }
 
   return rows.map(({ i: _i, ...r }) => r);
 }
@@ -330,7 +365,7 @@ const HOA_SPOTS = ["419", "251", "222", "519", "108", "330"];
  * table and the Resident Directory cannot disagree about who owns 519.
  */
 function makeLongTermBookings(buildingId, spots) {
-  const now = new Date();
+  const now = SEEDED_AT;
   // Months in, and months long. A spread so the tab shows one that
   // started last year, a few mid-term, and one that has not begun.
   const PLAN = [
@@ -393,8 +428,8 @@ function makeLongTermBookings(buildingId, spots) {
 
 const data = [
   // Oakline Park is the one being pitched, so it is the busy building.
-  ...makeBookings(APARTMENTS, { current: 6, upcoming: 14, pending: 0, past: 22 }, APARTMENT_SPOTS, true, 1, APARTMENT_SHARED_SPOTS),
-  ...makeBookings(HOA, { current: 3, upcoming: 8, pending: 3, past: 14 }, HOA_SPOTS, false, 500),
+  ...makeBookings(APARTMENTS, { current: 8, upcoming: 14, pending: 0, pastPerDay: [3, 5, 2, 4, 3, 1, 4] }, APARTMENT_SPOTS, true, 1, APARTMENT_SHARED_SPOTS),
+  ...makeBookings(HOA, { current: 5, upcoming: 8, pending: 3, pastPerDay: [2, 3, 1, 3, 2, 1, 2] }, HOA_SPOTS, false, 500),
   // The Long-term bookings tab, which only the cuts whose URL carries
   // the long-term-parking token ever show.
   ...makeLongTermBookings(HOA, HOA_SPOTS),
@@ -402,7 +437,9 @@ const data = [
 
 fs.writeFileSync(
   FILE,
-  JSON.stringify({ data, total: data.length, page: 1, pageSize: 20 }, null, 2),
+  // `seededAt` is what the server slides every booking forward from, so
+  // the demo is as busy on day thirty after a deploy as on day one.
+  JSON.stringify({ seededAt: SEEDED_AT.toISOString(), data, total: data.length, page: 1, pageSize: 20 }, null, 2),
 );
 
 const byBuilding = data.reduce((acc, r) => {
